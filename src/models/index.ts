@@ -1,0 +1,59 @@
+/**
+ * Domain models — ported from lib/models/*.dart.
+ * In TS we use plain types + constants; "copyWith" becomes object spread,
+ * and JSON (de)serialization lives in the Supabase repo (Step 5).
+ */
+
+export type PackUnit = "pack" | "carton";
+
+/** A single logged cigarette. Always logged "now" — never backdated. */
+export interface SmokeLog {
+  id: string;
+  smokedAt: Date; // full local timestamp
+  comment: string;
+  diary: string;
+}
+
+/** A purchase, used for spend + savings tracking. */
+export interface Purchase {
+  id: string;
+  unit: PackUnit;
+  quantity: number; // number of packs or cartons bought
+  price: number; // total price paid
+  boughtAt: Date;
+}
+
+/** An effective-dated daily limit (we keep the full history). */
+export interface DailyLimit {
+  id: string;
+  limit: number;
+  effectiveFrom: Date; // local day key from which this limit applies
+}
+
+/** User-tunable settings for cost + savings math. */
+export interface AppSettings {
+  currencySymbol: string; // '₪' or '$'
+  pricePerPack: number;
+  baselinePerDay: number; // cigs/day before the app (for savings)
+  dayStartHour: number; // 0–23; logs before this hour count to previous day
+}
+
+// Fixed by product definition (matches AppSettings in Dart).
+export const CIGARETTES_PER_PACK = 20;
+export const PACKS_PER_CARTON = 10;
+export const CIGS_PER_CARTON = CIGARETTES_PER_PACK * PACKS_PER_CARTON; // 200
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  currencySymbol: "₪",
+  pricePerPack: 35,
+  baselinePerDay: 20,
+  dayStartHour: 4,
+};
+
+/** Per-cigarette price, used to value savings. */
+export const pricePerCigarette = (s: AppSettings): number =>
+  s.pricePerPack / CIGARETTES_PER_PACK;
+
+/** Cigarettes contained in a purchase, respecting unit. */
+export const cigsInPurchase = (p: Purchase): number =>
+  p.unit === "carton" ? p.quantity * CIGS_PER_CARTON : p.quantity * CIGARETTES_PER_PACK;
