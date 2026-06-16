@@ -5,7 +5,9 @@
  * Imperative API: parent calls ref.present(log).
  */
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
+
+import { SheetTextInput } from "./SheetTextInput";
 
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
@@ -49,20 +51,21 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
     return (
       <BottomSheet ref={sheetRef}>
         <Text style={styles.title}>{s.editEntry}</Text>
-        <TextInput
+        <SheetTextInput
           style={styles.input}
           placeholder={s.comment}
           placeholderTextColor={colors.textDim}
           value={comment}
           onChangeText={setComment}
         />
-        <TextInput
+        <SheetTextInput
           style={[styles.input, styles.diary]}
           placeholder={s.diaryTodayOnly}
           placeholderTextColor={colors.textDim}
           value={diary}
           onChangeText={setDiary}
           multiline
+          scrollEnabled={false}
         />
         <Pressable
           style={[styles.button, saving && styles.buttonDisabled]}
@@ -86,7 +89,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: type.body.fontSize,
   },
-  diary: { minHeight: 90, textAlignVertical: "top" },
+  diary: { height: 110, textAlignVertical: "top" }, // fixed height; long text scrolls inside
   button: {
     marginTop: spacing.sm,
     backgroundColor: colors.accent,

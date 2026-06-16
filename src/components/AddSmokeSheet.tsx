@@ -7,7 +7,9 @@
  */
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+
+import { SheetTextInput } from "./SheetTextInput";
 
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
@@ -60,7 +62,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         <Text style={styles.title}>{s.logACigarette}</Text>
         <Text style={styles.sub}>{s.loggedNow}</Text>
 
-        <TextInput
+        <SheetTextInput
           style={styles.input}
           placeholder={s.commentHint}
           placeholderTextColor={colors.textDim}
@@ -74,13 +76,14 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
             <Text style={styles.info}>ⓘ</Text>
           </Pressable>
         </View>
-        <TextInput
+        <SheetTextInput
           style={[styles.input, styles.diary]}
           placeholder={s.diaryHint}
           placeholderTextColor={colors.textDim}
           value={diary}
           onChangeText={setDiary}
           multiline
+          scrollEnabled={false}
         />
 
         <Pressable
@@ -109,7 +112,7 @@ const styles = StyleSheet.create({
   diaryHeader: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
   diaryLabel: { color: colors.text, fontWeight: "600" },
   info: { color: colors.textDim, fontSize: 16 },
-  diary: { minHeight: 90, textAlignVertical: "top" },
+  diary: { height: 110, textAlignVertical: "top" }, // fixed height; long text scrolls inside
   button: {
     marginTop: spacing.sm,
     backgroundColor: colors.accent,
