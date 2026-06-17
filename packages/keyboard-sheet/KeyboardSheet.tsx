@@ -76,6 +76,13 @@ interface KeyboardSheetProps {
   backdropOpacity?: number;
   /** Breathing room (px) left below the last element when it rests on the keyboard. */
   keyboardSpacing?: number;
+  /**
+   * How far you must drag before release dismisses, as a fraction of the SHEET's
+   * own height. At 1, the sheet's top edge (grabber) is dragged all the way down
+   * to the keyboard's top edge before it closes; lower closes with less drag.
+   * Default 0.9.
+   */
+  dragDismissFraction?: number;
   /** Extra style for the inner content container. */
   contentStyle?: ViewStyle;
 }
@@ -95,12 +102,13 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
       backdropColor = "#000",
       backdropOpacity = 0.5,
       keyboardSpacing = 12,
+      dragDismissFraction = 0.9,
       contentStyle,
     },
     ref,
   ) {
     const insets = useSafeAreaInsets();
-    const { height: keyboardHeight, progress } = useReanimatedKeyboardAnimation();
+    const { progress } = useReanimatedKeyboardAnimation();
     const [mounted, setMounted] = useState(false);
 
     const sheetHeight = useSharedValue(0);
@@ -152,15 +160,19 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
             drag.value = Math.max(0, e.translationY);
           })
           .onEnd((e) => {
-            const kb = keyboardHeight.value;
-            const threshold = kb > 0 ? kb * 0.6 : DISMISS_DRAG;
+            // The sheet rests with its bottom edge on the keyboard's top edge,
+            // so the grabber (top edge) sits one sheet-height above it. Dragging
+            // down by ~the sheet height brings the grabber to the keyboard's top
+            // edge -> dismiss. Same px space as `drag`, so it's exact.
+            const sh = sheetHeight.value;
+            const threshold = sh > 0 ? sh * dragDismissFraction : DISMISS_DRAG;
             if (drag.value > threshold || e.velocityY > FLICK_VELOCITY) {
               scheduleOnRN(dismiss);
             } else {
               drag.value = withSpring(0, SPRING);
             }
           }),
-      [dismiss, drag, keyboardHeight],
+      [dismiss, drag, sheetHeight, dragDismissFraction],
     );
 
     const sheetStyle = useAnimatedStyle(() => {

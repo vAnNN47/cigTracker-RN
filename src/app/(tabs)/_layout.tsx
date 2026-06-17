@@ -51,13 +51,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <MaterialIcons name="settings" color={color} size={size} />,
         }}
       />
-      <Tabs.Screen
-        name="demo"
-        options={{
-          title: "Demo",
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="science" color={color} size={size} />,
-        }}
-      />
     </Tabs>
   );
 }
