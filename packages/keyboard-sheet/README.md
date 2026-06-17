@@ -30,9 +30,10 @@ Five interacting problems make this hard, and no single library/doc solves all:
 ## Peer dependencies
 
 ```
-npm i react-native-keyboard-controller react-native-reanimated react-native-gesture-handler react-native-safe-area-context
-# reanimated also needs react-native-worklets on RN 0.79+/SDK 53+
+npm i react-native-keyboard-controller react-native-reanimated react-native-worklets react-native-gesture-handler react-native-safe-area-context
 ```
+
+(`react-native-worklets` is used for `scheduleOnRN`, the non-deprecated replacement for Reanimated's `runOnJS`. It ships with Reanimated on RN 0.79+/SDK 53+.)
 
 These are native modules → use a dev build (not Expo Go) and rebuild after install.
 
@@ -97,6 +98,7 @@ export function Example() {
 | `handleColor` | `#3a3a3f` | grabber |
 | `cornerRadius` | `24` | top corners |
 | `backdropColor` / `backdropOpacity` | `#000` / `0.5` | dim layer |
+| `keyboardSpacing` | `12` | breathing room below the last element when it rests on the keyboard |
 | `contentStyle` | — | extra container style |
 | `onDismiss` | — | called after the sheet fully closes |
 

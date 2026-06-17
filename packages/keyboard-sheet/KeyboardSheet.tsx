@@ -46,13 +46,13 @@ import {
   useReanimatedKeyboardAnimation,
 } from "react-native-keyboard-controller";
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { scheduleOnRN } from "react-native-worklets";
 
 import { Portal } from "./Portal";
 import { SheetDragContext } from "./sheetDragContext";
@@ -74,6 +74,8 @@ interface KeyboardSheetProps {
   /** Backdrop color + max opacity. */
   backdropColor?: string;
   backdropOpacity?: number;
+  /** Breathing room (px) left below the last element when it rests on the keyboard. */
+  keyboardSpacing?: number;
   /** Extra style for the inner content container. */
   contentStyle?: ViewStyle;
 }
@@ -92,6 +94,7 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
       cornerRadius = 24,
       backdropColor = "#000",
       backdropOpacity = 0.5,
+      keyboardSpacing = 12,
       contentStyle,
     },
     ref,
@@ -113,7 +116,7 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
       KeyboardController.dismiss();
       drag.value = withTiming(0, { duration: 220 });
       open.value = withTiming(0, { duration: 220 }, (finished) => {
-        if (finished) runOnJS(finishDismiss)();
+        if (finished) scheduleOnRN(finishDismiss);
       });
     }, [drag, open, finishDismiss]);
 
@@ -152,7 +155,7 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
             const kb = keyboardHeight.value;
             const threshold = kb > 0 ? kb * 0.6 : DISMISS_DRAG;
             if (drag.value > threshold || e.velocityY > FLICK_VELOCITY) {
-              runOnJS(dismiss)();
+              scheduleOnRN(dismiss);
             } else {
               drag.value = withSpring(0, SPRING);
             }
@@ -163,7 +166,9 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
     const sheetStyle = useAnimatedStyle(() => {
       const hiddenOffset = (1 - open.value) * (sheetHeight.value || 800);
       const closedPad = insets.bottom + 16;
-      const paddingBottom = closedPad * (1 - progress.value);
+      // Rests on the keyboard with `keyboardSpacing` breathing room when open;
+      // full safe-area clearance when closed.
+      const paddingBottom = keyboardSpacing + (closedPad - keyboardSpacing) * (1 - progress.value);
       return { transform: [{ translateY: hiddenOffset + drag.value }], paddingBottom };
     });
 

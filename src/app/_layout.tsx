@@ -11,12 +11,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { PortalHost } from "@/components/Portal";
 import { ToastProvider } from "@/components/Toast";
 import { useAppStore } from "@/store/useAppStore";
-// The standalone package has its OWN portal registry, so mount its host too
-// (this is the "root setup" step from packages/keyboard-sheet/README).
-import { PortalHost as KeyboardSheetPortalHost } from "../../packages/keyboard-sheet";
+// All sheets (Today + Demo) use the standalone package, so we mount its
+// PortalHost once (the "root setup" step from packages/keyboard-sheet/README).
+import { PortalHost } from "../../packages/keyboard-sheet";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,7 +41,6 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" />
             </Stack>
             <PortalHost />
-            <KeyboardSheetPortalHost />
           </ToastProvider>
         </SafeAreaProvider>
       </KeyboardProvider>

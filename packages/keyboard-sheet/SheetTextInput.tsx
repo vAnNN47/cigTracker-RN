@@ -11,16 +11,9 @@
  *    with the sheet Pan so you can drag-to-dismiss while editing.
  */
 import { forwardRef, useCallback, useContext, useImperativeHandle, useMemo, useRef, useState } from "react";
-import {
-  NativeSyntheticEvent,
-  StyleSheet,
-  TextInput,
-  TextInputFocusEventData,
-  TextInputProps,
-  View,
-} from "react-native";
+import { StyleSheet, TextInput, TextInputProps, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { runOnJS } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 import { SheetDragContext } from "./sheetDragContext";
 
@@ -43,16 +36,18 @@ export const SheetTextInput = forwardRef<TextInput, TextInputProps>(
         Gesture.Tap()
           .maxDistance(10) // a drag > 10px fails this Tap -> falls through to Pan
           .onEnd(() => {
-            runOnJS(focusInput)();
+            scheduleOnRN(focusInput);
           }),
       [focusInput],
     );
 
-    const onFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    // Derive the handler type from props so it matches whatever this RN version
+    // defines (RN 0.85 switched these to FocusEvent/BlurEvent).
+    const onFocus: TextInputProps["onFocus"] = (e) => {
       setFocused(true);
       props.onFocus?.(e);
     };
-    const onBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const onBlur: TextInputProps["onBlur"] = (e) => {
       setFocused(false);
       props.onBlur?.(e);
     };

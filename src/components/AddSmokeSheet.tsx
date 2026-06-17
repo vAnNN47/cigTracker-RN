@@ -9,14 +9,12 @@ import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { SheetTextInput } from "./SheetTextInput";
-
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, radius, spacing, type } from "@/theme";
 
-import { BottomSheet, BottomSheetRef } from "./BottomSheet";
+import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../packages/keyboard-sheet";
 
 export interface AddSmokeSheetRef {
   present: () => void;
@@ -30,7 +28,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
   function AddSmokeSheet({ onLogged }, ref) {
     const s = useStrings();
     const addSmoke = useAppStore((st) => st.addSmoke);
-    const sheetRef = useRef<BottomSheetRef>(null);
+    const sheetRef = useRef<KeyboardSheetRef>(null);
 
     const [comment, setComment] = useState("");
     const [diary, setDiary] = useState("");
@@ -58,7 +56,13 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
     };
 
     return (
-      <BottomSheet ref={sheetRef} onDismiss={reset}>
+      <KeyboardSheet
+        ref={sheetRef}
+        onDismiss={reset}
+        backgroundColor={colors.surface}
+        handleColor={colors.line}
+        cornerRadius={radius.sheet}
+      >
         <Text style={styles.title}>{s.logACigarette}</Text>
         <Text style={styles.sub}>{s.loggedNow}</Text>
 
@@ -93,7 +97,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         >
           <Text style={styles.buttonText}>{saving ? "…" : s.add}</Text>
         </Pressable>
-      </BottomSheet>
+      </KeyboardSheet>
     );
   },
 );

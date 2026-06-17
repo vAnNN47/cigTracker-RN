@@ -7,14 +7,12 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { SheetTextInput } from "./SheetTextInput";
-
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, radius, spacing, type } from "@/theme";
 
-import { BottomSheet, BottomSheetRef } from "./BottomSheet";
+import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../packages/keyboard-sheet";
 
 export interface EditLogSheetRef {
   present: (log: SmokeLog) => void;
@@ -24,7 +22,7 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
   function EditLogSheet(_props, ref) {
     const s = useStrings();
     const editLog = useAppStore((st) => st.editLog);
-    const sheetRef = useRef<BottomSheetRef>(null);
+    const sheetRef = useRef<KeyboardSheetRef>(null);
 
     const [logId, setLogId] = useState<string | null>(null);
     const [comment, setComment] = useState("");
@@ -49,7 +47,12 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
     };
 
     return (
-      <BottomSheet ref={sheetRef}>
+      <KeyboardSheet
+        ref={sheetRef}
+        backgroundColor={colors.surface}
+        handleColor={colors.line}
+        cornerRadius={radius.sheet}
+      >
         <Text style={styles.title}>{s.editEntry}</Text>
         <SheetTextInput
           style={styles.input}
@@ -74,7 +77,7 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
         >
           <Text style={styles.buttonText}>{saving ? "…" : s.save}</Text>
         </Pressable>
-      </BottomSheet>
+      </KeyboardSheet>
     );
   },
 );
