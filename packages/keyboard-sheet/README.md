@@ -102,6 +102,8 @@ export function Example() {
 | `dismissMode` | iOS → `"keyboard"`, Android → `"swipe"` | `"keyboard"` = Flutter-style (close when the grabber is dragged to the keyboard's top edge); `"swipe"` = Android-style (close on any short downward swipe) |
 | `dragDismissFraction` | `0.9` | `"keyboard"` mode only — drag distance to dismiss as a fraction of the **sheet's** height; at 1 the grabber reaches the keyboard's top edge before closing |
 | `swipeDismissDistance` | `80` | `"swipe"` mode only — downward drag distance (px) that dismisses |
+| `overdrag` | `true` | allow dragging the sheet UP past its resting point (rubber-band that springs back); set `false` to lock it |
+| `maxOverdrag` | `80` | max upward rubber-band stretch (px) when `overdrag` is on |
 | `contentStyle` | — | extra container style |
 | `onDismiss` | — | called after the sheet fully closes |
 

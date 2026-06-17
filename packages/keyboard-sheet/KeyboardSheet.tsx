@@ -93,6 +93,13 @@ interface KeyboardSheetProps {
   dragDismissFraction?: number;
   /** "swipe" mode only. Downward drag distance (px) that dismisses. Default 80. */
   swipeDismissDistance?: number;
+  /** Allow dragging the sheet UP past its resting point (rubber-band). Default true. */
+  overdrag?: boolean;
+  /**
+   * Max upward rubber-band stretch (px) when `overdrag` is enabled; springs back
+   * on release. Default 80.
+   */
+  maxOverdrag?: number;
   /** Extra style for the inner content container. */
   contentStyle?: ViewStyle;
 }
@@ -115,6 +122,8 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
       dismissMode = Platform.OS === "ios" ? "keyboard" : "swipe",
       dragDismissFraction = 0.9,
       swipeDismissDistance = 80,
+      overdrag = true,
+      maxOverdrag = 80,
       contentStyle,
     },
     ref,
@@ -166,10 +175,21 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
     const pan = useMemo(
       () =>
         Gesture.Pan()
-          .activeOffsetY(12)
+          // activate on up+down when overdrag is on, else only downward
+          .activeOffsetY(overdrag && maxOverdrag > 0 ? [-12, 12] : 12)
           .failOffsetX([-20, 20])
           .onUpdate((e) => {
-            drag.value = Math.max(0, e.translationY);
+            const ty = e.translationY;
+            if (ty >= 0) {
+              // downward = 1:1 (drives dismiss)
+              drag.value = ty;
+            } else if (overdrag && maxOverdrag > 0) {
+              // upward = rubber-band that asymptotes toward -maxOverdrag
+              const over = -ty;
+              drag.value = -(maxOverdrag * (1 - 1 / (over / maxOverdrag + 1)));
+            } else {
+              drag.value = 0;
+            }
           })
           .onEnd((e) => {
             let threshold: number;
@@ -191,7 +211,7 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
               drag.value = withSpring(0, SPRING);
             }
           }),
-      [dismiss, drag, sheetHeight, dismissMode, dragDismissFraction, swipeDismissDistance],
+      [dismiss, drag, sheetHeight, dismissMode, dragDismissFraction, swipeDismissDistance, overdrag, maxOverdrag],
     );
 
     const sheetStyle = useAnimatedStyle(() => {
@@ -228,6 +248,15 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
                 contentStyle,
               ]}
             >
+              {/* Background that extends below the sheet so an upward over-drag
+                  doesn't reveal a gap above the keyboard. Rendered first (paints
+                  behind the content) and hidden behind the keyboard at rest. */}
+              {overdrag && maxOverdrag > 0 && (
+                <View
+                  pointerEvents="none"
+                  style={[styles.overdragFill, { height: maxOverdrag + 40, backgroundColor }]}
+                />
+              )}
               <View style={[styles.grabber, { backgroundColor: handleColor }]} />
               <SheetDragContext.Provider value={pan}>{children}</SheetDragContext.Provider>
             </Animated.View>
@@ -243,4 +272,5 @@ const styles = StyleSheet.create({
   stickyWrap: { position: "absolute", left: 0, right: 0, bottom: 0 },
   sheet: { paddingHorizontal: 20, paddingTop: 8, gap: 12 },
   grabber: { alignSelf: "center", width: 40, height: 4, borderRadius: 2, marginBottom: 8 },
+  overdragFill: { position: "absolute", left: 0, right: 0, top: "100%", zIndex: -1 },
 });
