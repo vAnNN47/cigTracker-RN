@@ -59,6 +59,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
       <KeyboardSheet
         ref={sheetRef}
         onDismiss={reset}
+        dismissMode="keyboard"
         backgroundColor={colors.surface}
         handleColor={colors.line}
         cornerRadius={radius.sheet}

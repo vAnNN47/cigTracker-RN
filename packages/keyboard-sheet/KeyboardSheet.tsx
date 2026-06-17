@@ -38,7 +38,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { BackHandler, LayoutChangeEvent, StyleSheet, View, ViewStyle } from "react-native";
+import { BackHandler, LayoutChangeEvent, Platform, StyleSheet, View, ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
   KeyboardController,
@@ -77,12 +77,22 @@ interface KeyboardSheetProps {
   /** Breathing room (px) left below the last element when it rests on the keyboard. */
   keyboardSpacing?: number;
   /**
-   * How far you must drag before release dismisses, as a fraction of the SHEET's
-   * own height. At 1, the sheet's top edge (grabber) is dragged all the way down
-   * to the keyboard's top edge before it closes; lower closes with less drag.
-   * Default 0.9.
+   * Dismiss behaviour on drag release:
+   *  - "keyboard": Flutter-style — close only when the sheet's top edge (grabber)
+   *    is dragged down to the keyboard's top edge (see `dragDismissFraction`).
+   *  - "swipe": Android-style — close on any short downward swipe past
+   *    `swipeDismissDistance`.
+   * @default Platform.OS === "ios" ? "keyboard" : "swipe"
+   */
+  dismissMode?: "keyboard" | "swipe";
+  /**
+   * "keyboard" mode only. How far to drag before release dismisses, as a fraction
+   * of the SHEET's own height. At 1, the grabber is dragged all the way to the
+   * keyboard's top edge before closing; lower closes with less drag. Default 0.9.
    */
   dragDismissFraction?: number;
+  /** "swipe" mode only. Downward drag distance (px) that dismisses. Default 80. */
+  swipeDismissDistance?: number;
   /** Extra style for the inner content container. */
   contentStyle?: ViewStyle;
 }
@@ -102,7 +112,9 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
       backdropColor = "#000",
       backdropOpacity = 0.5,
       keyboardSpacing = 12,
+      dismissMode = Platform.OS === "ios" ? "keyboard" : "swipe",
       dragDismissFraction = 0.9,
+      swipeDismissDistance = 80,
       contentStyle,
     },
     ref,
@@ -160,19 +172,26 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
             drag.value = Math.max(0, e.translationY);
           })
           .onEnd((e) => {
-            // The sheet rests with its bottom edge on the keyboard's top edge,
-            // so the grabber (top edge) sits one sheet-height above it. Dragging
-            // down by ~the sheet height brings the grabber to the keyboard's top
-            // edge -> dismiss. Same px space as `drag`, so it's exact.
-            const sh = sheetHeight.value;
-            const threshold = sh > 0 ? sh * dragDismissFraction : DISMISS_DRAG;
+            let threshold: number;
+            if (dismissMode === "swipe") {
+              // Android-style: any short downward swipe closes.
+              threshold = swipeDismissDistance;
+            } else {
+              // Flutter-style: the sheet rests with its bottom edge on the
+              // keyboard's top edge, so the grabber (top edge) sits one
+              // sheet-height above it. Dragging down by ~the sheet height brings
+              // the grabber to the keyboard's top edge -> dismiss. Same px space
+              // as `drag`, so it's exact.
+              const sh = sheetHeight.value;
+              threshold = sh > 0 ? sh * dragDismissFraction : DISMISS_DRAG;
+            }
             if (drag.value > threshold || e.velocityY > FLICK_VELOCITY) {
               scheduleOnRN(dismiss);
             } else {
               drag.value = withSpring(0, SPRING);
             }
           }),
-      [dismiss, drag, sheetHeight, dragDismissFraction],
+      [dismiss, drag, sheetHeight, dismissMode, dragDismissFraction, swipeDismissDistance],
     );
 
     const sheetStyle = useAnimatedStyle(() => {

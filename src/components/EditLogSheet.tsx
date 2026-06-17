@@ -49,6 +49,7 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
     return (
       <KeyboardSheet
         ref={sheetRef}
+        dismissMode="keyboard"
         backgroundColor={colors.surface}
         handleColor={colors.line}
         cornerRadius={radius.sheet}

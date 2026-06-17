@@ -99,7 +99,9 @@ export function Example() {
 | `cornerRadius` | `24` | top corners |
 | `backdropColor` / `backdropOpacity` | `#000` / `0.5` | dim layer |
 | `keyboardSpacing` | `12` | breathing room below the last element when it rests on the keyboard |
-| `dragDismissFraction` | `0.9` | how far to drag before release dismisses, as a fraction of the **sheet's** height; at 1 the grabber reaches the keyboard's top edge before closing, lower closes with less drag |
+| `dismissMode` | iOS → `"keyboard"`, Android → `"swipe"` | `"keyboard"` = Flutter-style (close when the grabber is dragged to the keyboard's top edge); `"swipe"` = Android-style (close on any short downward swipe) |
+| `dragDismissFraction` | `0.9` | `"keyboard"` mode only — drag distance to dismiss as a fraction of the **sheet's** height; at 1 the grabber reaches the keyboard's top edge before closing |
+| `swipeDismissDistance` | `80` | `"swipe"` mode only — downward drag distance (px) that dismisses |
 | `contentStyle` | — | extra container style |
 | `onDismiss` | — | called after the sheet fully closes |
 
