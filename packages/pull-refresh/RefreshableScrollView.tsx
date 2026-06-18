@@ -69,11 +69,14 @@ export function RefreshableScrollView({
 
   const native = Gesture.Native();
   const pan = Gesture.Pan()
+    // Only engage after a real downward drag, so micro scroll-events on a slow
+    // pull don't fight the native scroll (kills the slow-pull jitter).
+    .activeOffsetY(12)
     .onChange((e) => {
       if (busy.value === 1) return;
-      // Not at the top -> no pull (lets normal scrolling happen).
-      if (scrollY.value > 0) {
-        pull.value = 0;
+      // Genuinely scrolled into content (epsilon avoids 1px flicker at top).
+      if (scrollY.value > 2) {
+        if (pull.value !== 0) pull.value = 0;
         return;
       }
       // At the top: accumulate the pull from per-frame deltas, starting at 0.

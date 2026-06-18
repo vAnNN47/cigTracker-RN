@@ -51,7 +51,9 @@ export default function TodayScreen() {
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
       <RefreshableScrollView
         onRefresh={refresh}
-        showSpinner={false}
+        threshold={70}
+        resistance={0.8}
+        spinnerColor={colors.accent}
         style={{ backgroundColor: colors.bg }}
         contentContainerStyle={{
           paddingTop: spacing.md,
