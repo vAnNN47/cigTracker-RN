@@ -1,16 +1,17 @@
 /**
  * Today screen — ported from lib/screens/home_screen.dart.
  * Count-vs-limit ring, Add cigarette / Add purchase, today's log list with
- * long-press to edit (no delete), pull-to-refresh.
+ * long-press to edit (no delete). (Pull-to-refresh returns with Supabase sync.)
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRef, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRef } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
 import { EditLogSheet, EditLogSheetRef } from "@/components/EditLogSheet";
 import { Ring } from "@/components/Ring";
+import { RefreshableScrollView } from "../../../packages/pull-refresh";
 import { useToast } from "@/components/Toast";
 import { currentLimit, isLogEditable, logicalToday, logsForDay } from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
@@ -21,16 +22,14 @@ import { colors, radius, spacing, type } from "@/theme";
 
 export default function TodayScreen() {
   const s = useStrings();
-  const insets = useSafeAreaInsets();
   const toast = useToast();
 
   const { logs, limits, settings } = useAppStore();
-  const refresh = useAppStore((st) => st.refresh);
   const deleteLog = useAppStore((st) => st.deleteLog);
+  const refresh = useAppStore((st) => st.refresh);
 
   const addRef = useRef<AddSmokeSheetRef>(null);
   const editRef = useRef<EditLogSheetRef>(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   const todayKey = logicalToday(settings.dayStartHour);
   const todayLogs = logsForDay(logs, todayKey, settings.dayStartHour);
@@ -39,12 +38,6 @@ export default function TodayScreen() {
   const within = count <= limit;
   const pct = limit === 0 ? 1 : Math.min(1, count / limit);
   const color = within ? colors.good : colors.bad;
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refresh();
-    setRefreshing(false);
-  };
 
   const onLogged = (log: SmokeLog) => {
     toast.show({
@@ -55,17 +48,16 @@ export default function TodayScreen() {
   };
 
   return (
-    <>
-      <ScrollView
-        style={{ flex: 1, backgroundColor: colors.bg }}
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
+      <RefreshableScrollView
+        onRefresh={refresh}
+        showSpinner={false}
+        style={{ backgroundColor: colors.bg }}
         contentContainerStyle={{
-          paddingTop: insets.top + spacing.md,
+          paddingTop: spacing.md,
           paddingHorizontal: spacing.xl,
-          paddingBottom: 100,
+          paddingBottom: spacing.xxl,
         }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textDim} />
-        }
       >
         <Text style={styles.date}>{formatWeekdayDate(todayKey, s.localeCode)}</Text>
 
@@ -130,11 +122,11 @@ export default function TodayScreen() {
             );
           })
         )}
-      </ScrollView>
+      </RefreshableScrollView>
 
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
       <EditLogSheet ref={editRef} />
-    </>
+    </SafeAreaView>
   );
 }
 

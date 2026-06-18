@@ -6,12 +6,9 @@ import { USE_SUPABASE } from "@/lib/config";
 
 import { InMemoryRepository } from "./inMemoryRepository";
 import { Repository } from "./repository";
-// import { SupabaseRepository } from "./supabaseRepository"; // wired in Step 5
+import { SupabaseRepository } from "./supabaseRepository";
 
 export function createRepository(): Repository {
-  if (USE_SUPABASE) {
-    // return new SupabaseRepository();
-    throw new Error("Supabase repository is wired in Step 5 — keep USE_SUPABASE=false for now.");
-  }
+  if (USE_SUPABASE) return new SupabaseRepository();
   return new InMemoryRepository();
 }

@@ -23,8 +23,10 @@ interface AppStore {
   limits: DailyLimit[];
   purchases: Purchase[];
   settings: AppSettings;
+  locale: "device" | "en" | "he"; // UI language override (RTL handling: Step 7)
 
   // actions
+  setLocale: (locale: "device" | "en" | "he") => void;
   load: () => Promise<void>;
   refresh: () => Promise<void>;
   addSmoke: (comment?: string, diary?: string) => Promise<SmokeLog>;
@@ -42,6 +44,9 @@ export const useAppStore = create<AppStore>()((set, get) => ({
   limits: [],
   purchases: [],
   settings: { ...DEFAULT_SETTINGS },
+  locale: "device",
+
+  setLocale: (locale) => set({ locale }),
 
   load: async () => {
     set({ loading: true });

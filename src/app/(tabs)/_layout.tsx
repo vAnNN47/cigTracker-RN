@@ -4,9 +4,22 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { Pressable } from "react-native";
 
 import { useStrings } from "@/i18n/useStrings";
 import { colors } from "@/theme";
+
+// Small, contained press feedback (the default Android ripple fills the whole
+// tab slot — this keeps it a subtle circle behind the icon, Flutter-like).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function TabButton(props: any) {
+  return (
+    <Pressable
+      {...props}
+      android_ripple={{ color: colors.accentSoft, borderless: true, radius: 28 }}
+    />
+  );
+}
 
 export default function TabsLayout() {
   const s = useStrings();
@@ -19,6 +32,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: colors.textDim,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
         sceneStyle: { backgroundColor: colors.bg },
+        tabBarButton: (props) => <TabButton {...props} />,
       }}
     >
       <Tabs.Screen

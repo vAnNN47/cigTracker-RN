@@ -1,16 +1,19 @@
 /**
- * Resolves the active string table from the device locale.
- * Step 7 will add a Settings override (Device / English / עברית) + RTL; for now
- * we read the device language and pick Hebrew vs English.
+ * Resolves the active string table from the Settings locale override, falling
+ * back to the device language. (RTL via I18nManager comes in Step 7.)
  */
 import { getLocales } from "expo-localization";
 import { useMemo } from "react";
 
+import { useAppStore } from "@/store/useAppStore";
+
 import { makeStrings } from "./strings";
 
 export function useStrings() {
+  const locale = useAppStore((s) => s.locale);
   return useMemo(() => {
-    const lang = getLocales()[0]?.languageCode ?? "en";
+    const device = getLocales()[0]?.languageCode ?? "en";
+    const lang = locale === "device" ? device : locale;
     return makeStrings(lang === "he");
-  }, []);
+  }, [locale]);
 }
