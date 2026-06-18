@@ -5,8 +5,8 @@
  *
  * Imperative API: parent calls ref.present().
  */
-import { MaterialIcons } from "@expo/vector-icons";
 import { DateTimePicker } from "@expo/ui/community/datetime-picker";
+import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
@@ -162,19 +162,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: colors.accentTint,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
-    borderRadius: radius.chip,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    borderRadius: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   timePillText: { color: colors.accent, fontWeight: "700", fontSize: 14 },
   iosPicker: { transform: [{ scale: 0.95 }] },
   input: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.input,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingHorizontal: 0,
     paddingVertical: spacing.md,
     color: colors.text,
     fontSize: type.body.fontSize,

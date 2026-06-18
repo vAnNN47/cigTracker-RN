@@ -37,6 +37,7 @@ export default function SettingsScreen() {
     { key: "he", label: s.hebrew },
   ];
   const currentLangLabel = langs.find((l) => l.key === locale)?.label ?? s.device;
+  const otherLangs = langs.filter((l) => l.key !== locale);
 
   const confirmSignOut = () =>
     Alert.alert(s.signOutTitle, s.signOutBody, [
@@ -60,26 +61,33 @@ export default function SettingsScreen() {
             <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={colors.textDim} />
           </Pressable>
           {langOpen &&
-            langs.map((l) => {
-              const sel = locale === l.key;
-              return (
-                <View key={l.key}>
-                  <Divider />
-                  <Pressable
-                    style={styles.row}
-                    onPress={() => {
-                      setLocale(l.key);
-                      setLangOpen(false);
-                    }}
-                  >
-                    <Text style={[styles.rowLabel, { flex: 1, color: sel ? colors.accent : colors.text }]}>
-                      {l.label}
-                    </Text>
-                    {sel && <MaterialIcons name="check" size={18} color={colors.accent} />}
-                  </Pressable>
-                </View>
-              );
-            })}
+            otherLangs.map((l) => (
+              <View key={l.key}>
+                <Divider />
+                <Pressable
+                  style={styles.row}
+                  onPress={() => {
+                    const nextLabel = l.label;
+                    Alert.alert(
+                      s.language,
+                      `${locale === "he" ? "האם אתה בטוח שברצונך לשנות שפה ל-" : "Are you sure you want to change the language to "}${nextLabel}?`,
+                      [
+                        { text: s.cancel, style: "cancel" },
+                        {
+                          text: locale === "he" ? "כן" : "Yes",
+                          onPress: () => {
+                            setLocale(l.key);
+                            setLangOpen(false);
+                          },
+                        },
+                      ],
+                    );
+                  }}
+                >
+                  <Text style={[styles.rowLabel, { flex: 1 }]}>{l.label}</Text>
+                </Pressable>
+              </View>
+            ))}
         </Group>
 
         {/* Daily goal */}
@@ -233,7 +241,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     marginLeft: spacing.md,
   },
-  groupBox: { backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: spacing.lg },
+  groupBox: { backgroundColor: "transparent", borderRadius: 0, paddingHorizontal: 0 },
   row: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md },
   rowLabel: { color: colors.text, fontSize: type.body.fontSize },
   rowHelper: { color: colors.textDim, fontSize: 11, marginTop: 2 },
@@ -248,9 +256,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    backgroundColor: "transparent",
+    borderRadius: 0,
     paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
   },
   signOutText: { color: colors.bad, fontWeight: "600" },
 });

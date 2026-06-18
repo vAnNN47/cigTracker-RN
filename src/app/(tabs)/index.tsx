@@ -19,20 +19,20 @@ import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { Ring } from "@/components/Ring";
 import { useToast } from "@/components/Toast";
 import {
-  averagePerDay,
-  currentLimit,
-  currentStreak,
-  logicalToday,
-  logsForDay,
-  sevenDayInsight,
-  spentForDay,
-  totalSaved,
+    averagePerDay,
+    currentLimit,
+    currentStreak,
+    logicalToday,
+    logsForDay,
+    sevenDayInsight,
+    spentForDay,
+    totalSaved,
 } from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing } from "@/theme";
+import { colors, spacing } from "@/theme";
 import { RefreshableScrollView } from "../../../packages/pull-refresh";
 
 export default function TodayScreen() {
@@ -125,25 +125,17 @@ export default function TodayScreen() {
             </Ring>
           </View>
 
-          {/* Progress bar */}
           <View style={styles.track}>
             <View style={[styles.fill, { width: `${Math.round(pct * 100)}%`, backgroundColor: ringColor }]} />
           </View>
 
-          {/* Spent / Saved */}
           <View style={styles.subRow}>
             <View style={styles.subCard}>
-              <View style={styles.subHead}>
-                <MaterialIcons name="attach-money" size={14} color={colors.textDim} />
-                <Text style={styles.subLabel}>{s.spentToday}</Text>
-              </View>
+              <Text style={styles.subLabel}>{s.spentToday}</Text>
               <Text style={styles.subValue}>{money(spent)}</Text>
             </View>
             <View style={styles.subCard}>
-              <View style={styles.subHead}>
-                <MaterialIcons name="savings" size={14} color={colors.textDim} />
-                <Text style={styles.subLabel}>{s.savedShort}</Text>
-              </View>
+              <Text style={styles.subLabel}>{s.savedShort}</Text>
               <Text style={[styles.subValue, { color: colors.accent }]}>{money(saved)}</Text>
             </View>
           </View>
@@ -152,7 +144,7 @@ export default function TodayScreen() {
         {/* Actions */}
         <View style={styles.actions}>
           <Pressable style={styles.primaryBtn} onPress={() => addRef.current?.present()}>
-            <MaterialIcons name="add" size={20} color={colors.onAccent} />
+            <MaterialIcons name="add" size={20} color={colors.accent} />
             <Text style={styles.primaryText}>{s.addCigarette}</Text>
           </Pressable>
           <Pressable style={styles.outlineBtn} onPress={() => purchaseRef.current?.present()}>
@@ -305,19 +297,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.line,
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
   },
 
   hero: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: spacing.xl,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingVertical: spacing.md,
+    paddingHorizontal: 0,
   },
   heroTop: { flexDirection: "row", alignItems: "center" },
   heroLabel: { color: colors.textDim, fontSize: 14 },
@@ -331,58 +321,68 @@ const styles = StyleSheet.create({
   fill: { height: 6, borderRadius: 3 },
 
   subRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
-  subCard: { flex: 1, backgroundColor: colors.fill, borderRadius: radius.chip, padding: spacing.md },
+  subCard: { flex: 1, backgroundColor: "transparent", borderRadius: 0, paddingVertical: spacing.xs },
   subHead: { flexDirection: "row", alignItems: "center", gap: 6 },
   subLabel: { color: colors.textDim, fontSize: 12 },
-  subValue: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: 4 },
+  subValue: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: 2 },
 
-  actions: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
+  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
   primaryBtn: {
     flex: 1,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: colors.accent,
-    borderRadius: radius.button,
-    paddingVertical: 14,
+    backgroundColor: colors.accentTint,
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
+    borderRadius: 16,
+    paddingVertical: spacing.md,
   },
-  primaryText: { color: colors.onAccent, fontWeight: "700", fontSize: 15 },
+  primaryText: { color: colors.accent, fontWeight: "700", fontSize: 15 },
   outlineBtn: {
     flex: 1,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceHigh,
     borderWidth: 1,
     borderColor: colors.line,
-    borderRadius: radius.button,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: spacing.md,
   },
-  outlineText: { color: colors.textDim, fontWeight: "600", fontSize: 15 },
+  outlineText: { color: colors.text, fontWeight: "600", fontSize: 15 },
 
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md, marginTop: spacing.lg },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.lg },
   stat: {
     flexBasis: "47%",
     flexGrow: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.line,
-    padding: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    minHeight: 96,
   },
-  statAccent: { borderColor: colors.accentBorder, backgroundColor: colors.accentTint },
+  statAccent: { backgroundColor: colors.accentTint, borderColor: colors.accentBorder },
   statIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
-  statValue: { color: colors.text, fontSize: 26, fontWeight: "800" },
-  statLabel: { color: colors.textDim, fontSize: 13, marginTop: 2 },
+  statValue: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  statLabel: {
+    color: colors.textDim,
+    fontSize: 12,
+    marginTop: 2,
+    textAlign: "center",
+    lineHeight: 16,
+  },
 
   listHeader: {
     flexDirection: "row",
@@ -399,13 +399,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingHorizontal: 0,
     paddingVertical: spacing.md,
-    marginBottom: spacing.sm,
+    marginBottom: 0,
   },
   tileIcon: {
     width: 36,
@@ -419,12 +420,14 @@ const styles = StyleSheet.create({
   tileSub: { color: colors.textDim, fontSize: 13, marginTop: 2 },
 
   purchaseCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.line,
-    padding: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: spacing.md,
     marginTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
   },
   purchaseHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   purchaseRow: {
@@ -439,11 +442,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: colors.accentTint,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
-    padding: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: spacing.md,
     marginTop: spacing.lg,
   },
   insightIcon: {

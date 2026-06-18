@@ -11,19 +11,19 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { Ring } from "@/components/Ring";
 import { isSameDay, keyOf } from "@/domain/day";
 import {
-    countForDay,
-    limitForDay,
-    logicalToday,
-    logsForDay,
-    purchasesForDay,
-    spentForDay,
+  countForDay,
+  limitForDay,
+  logicalToday,
+  logsForDay,
+  purchasesForDay,
+  spentForDay,
 } from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
@@ -58,6 +58,10 @@ export default function DiaryScreen() {
   const ringColor = within ? colors.ring : colors.bad;
   const spent = spentForDay(purchases, selected, dsh);
   const isToday = isSameDay(selected, today);
+
+  const isRTL = I18nManager.isRTL;
+  const prevArrow = isRTL ? "chevron-right" : "chevron-left";
+  const nextArrow = isRTL ? "chevron-left" : "chevron-right";
 
   const monthLabel = new Intl.DateTimeFormat(s.localeCode, { month: "long", year: "numeric" }).format(selected);
   const weeks = useMemo(() => {
@@ -100,7 +104,7 @@ export default function DiaryScreen() {
               onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
               hitSlop={8}
             >
-              <MaterialIcons name="chevron-left" size={26} color={colors.text} />
+              <MaterialIcons name={prevArrow} size={26} color={colors.text} />
             </Pressable>
             <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
             <Pressable
@@ -108,7 +112,7 @@ export default function DiaryScreen() {
               hitSlop={8}
               disabled={atCurrentMonth}
             >
-              <MaterialIcons name="chevron-right" size={26} color={atCurrentMonth ? colors.line : colors.text} />
+              <MaterialIcons name={nextArrow} size={26} color={atCurrentMonth ? colors.line : colors.text} />
             </Pressable>
           </View>
           {weeks.map((week, wi) => (

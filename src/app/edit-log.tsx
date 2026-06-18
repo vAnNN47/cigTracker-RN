@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { formatTime } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, spacing, type } from "@/theme";
 
 export default function EditLogModal() {
   const s = useStrings();
@@ -108,20 +108,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: colors.fill,
-    borderRadius: radius.chip,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    paddingHorizontal: 0,
+    paddingVertical: spacing.sm,
     marginBottom: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
   },
   timeLabel: { color: colors.textDim, fontSize: type.body.fontSize },
   timeValue: { color: colors.text, fontWeight: "700" },
   fieldLabel: { color: colors.textDim, fontSize: 13, marginTop: spacing.md, marginBottom: spacing.xs },
   diaryHeader: { flexDirection: "row", alignItems: "center" },
   input: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.input,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingHorizontal: 0,
     paddingVertical: spacing.md,
     color: colors.text,
     fontSize: type.body.fontSize,

@@ -12,14 +12,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LineChart } from "@/components/LineChart";
 import { addDays } from "@/domain/day";
 import {
-  countBetween,
-  dailyStats,
-  hourlyHistogram,
-  logicalToday,
-  savingsSeries,
-  totalCigarettesBought,
-  totalSpent,
-  withinLimit,
+    countBetween,
+    dailyStats,
+    hourlyHistogram,
+    logicalToday,
+    savingsSeries,
+    totalCigarettesBought,
+    totalSpent,
+    withinLimit,
 } from "@/domain/logic";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
@@ -223,16 +223,25 @@ function Legend({ color, label }: { color: string; label: string }) {
 const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 22, fontWeight: "800", marginBottom: spacing.md },
   rangeRow: { flexDirection: "row", gap: GAP, marginBottom: GAP },
-  chip: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 12 },
+  chip: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
 
   grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
   tile: {
     flexBasis: "48%",
     flexGrow: 1,
-    borderRadius: 14,
+    borderRadius: 0,
     padding: spacing.lg,
     minHeight: 92,
     justifyContent: "center",
+    backgroundColor: "transparent",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
   },
   tileValue: { color: colors.text, fontSize: 26, fontWeight: "800" },
   tileValueDim: { color: colors.textDim, fontSize: 18, fontWeight: "700" },
@@ -240,7 +249,14 @@ const styles = StyleSheet.create({
   weekTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   deltaText: { fontSize: 12, fontWeight: "600", marginTop: 2 },
 
-  wide: { borderRadius: 14, padding: spacing.lg, marginTop: GAP },
+  wide: {
+    borderRadius: 0,
+    padding: spacing.lg,
+    marginTop: GAP,
+    backgroundColor: "transparent",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
   tileTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
   sub: { color: colors.textDim, fontSize: 12, marginTop: spacing.xs },
   legend: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.md },
