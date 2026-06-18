@@ -80,68 +80,70 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
         handleColor={colors.line}
         cornerRadius={radius.sheet}
       >
-        <Text style={styles.title}>{s.addPurchase}</Text>
+        <View style={styles.card}>
+          <Text style={styles.title}>{s.addPurchase}</Text>
 
-        {/* Unit segmented control */}
-        <View style={styles.segment}>
-          {(["pack", "carton"] as PackUnit[]).map((u) => {
-            const sel = unit === u;
-            return (
-              <Pressable
-                key={u}
-                onPress={() => {
-                  setUnit(u);
-                  if (!priceEdited) setPrice(derivedPrice(u, quantity));
-                }}
-                style={[styles.segBtn, sel && styles.segBtnSel]}
-              >
-                <Text style={[styles.segText, sel && { color: colors.onAccent }]}>
-                  {u === "carton" ? s.carton : s.pack}
-                </Text>
-              </Pressable>
-            );
-          })}
+          {/* Unit segmented control */}
+          <View style={styles.segment}>
+            {(["pack", "carton"] as PackUnit[]).map((u) => {
+              const sel = unit === u;
+              return (
+                <Pressable
+                  key={u}
+                  onPress={() => {
+                    setUnit(u);
+                    if (!priceEdited) setPrice(derivedPrice(u, quantity));
+                  }}
+                  style={[styles.segBtn, sel && styles.segBtnSel]}
+                >
+                  <Text style={[styles.segText, sel && { color: colors.onAccent }]}>
+                    {u === "carton" ? s.carton : s.pack}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Quantity */}
+          <EditRow
+            label={s.quantity}
+            value={`${quantity}`}
+            onPress={() =>
+              pad.current?.present({
+                title: s.quantity,
+                initial: quantity,
+                onSubmit: (v) => {
+                  const q = Math.max(1, Math.round(v));
+                  setQuantity(q);
+                  if (!priceEdited) setPrice(derivedPrice(unit, q));
+                },
+              })
+            }
+          />
+          {/* Total price */}
+          <EditRow
+            label={s.totalPrice}
+            value={money(price)}
+            onPress={() =>
+              pad.current?.present({
+                title: s.totalPrice,
+                initial: price,
+                decimal: true,
+                prefix: `${cur} `,
+                onSubmit: (v) => {
+                  setPrice(v);
+                  setPriceEdited(true);
+                },
+              })
+            }
+          />
+
+          <Text style={styles.hint}>{s.cigsInThis(cigs)}</Text>
+
+          <Pressable style={[styles.button, saving && styles.buttonDisabled]} onPress={save} disabled={saving}>
+            <Text style={styles.buttonText}>{saving ? "…" : s.save}</Text>
+          </Pressable>
         </View>
-
-        {/* Quantity */}
-        <EditRow
-          label={s.quantity}
-          value={`${quantity}`}
-          onPress={() =>
-            pad.current?.present({
-              title: s.quantity,
-              initial: quantity,
-              onSubmit: (v) => {
-                const q = Math.max(1, Math.round(v));
-                setQuantity(q);
-                if (!priceEdited) setPrice(derivedPrice(unit, q));
-              },
-            })
-          }
-        />
-        {/* Total price */}
-        <EditRow
-          label={s.totalPrice}
-          value={money(price)}
-          onPress={() =>
-            pad.current?.present({
-              title: s.totalPrice,
-              initial: price,
-              decimal: true,
-              prefix: `${cur} `,
-              onSubmit: (v) => {
-                setPrice(v);
-                setPriceEdited(true);
-              },
-            })
-          }
-        />
-
-        <Text style={styles.hint}>{s.cigsInThis(cigs)}</Text>
-
-        <Pressable style={[styles.button, saving && styles.buttonDisabled]} onPress={save} disabled={saving}>
-          <Text style={styles.buttonText}>{saving ? "…" : s.save}</Text>
-        </Pressable>
 
         <NumberPad
           ref={pad}
@@ -170,6 +172,12 @@ function EditRow({ label, value, onPress }: { label: string; value: string; onPr
 }
 
 const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   title: { color: colors.text, fontSize: 20, fontWeight: "700" },
   segment: {
     flexDirection: "row",
@@ -177,7 +185,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.fill,
     borderRadius: radius.chip,
     padding: 4,
-    marginTop: spacing.md,
   },
   segBtn: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: radius.chip - 2 },
   segBtnSel: { backgroundColor: colors.accent },
@@ -186,20 +193,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: colors.surface,
     borderRadius: radius.input,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   rowLabel: { color: colors.textDim, fontSize: type.body.fontSize },
   rowValue: { color: colors.text, fontSize: 18, fontWeight: "700" },
-  hint: { color: colors.textDim, fontSize: 13, marginTop: spacing.sm, marginLeft: spacing.xs },
+  hint: { color: colors.textDim, fontSize: 13, marginLeft: spacing.xs },
   button: {
-    marginTop: spacing.lg,
+    marginTop: spacing.xs,
     backgroundColor: colors.accent,
     borderRadius: radius.button,
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },

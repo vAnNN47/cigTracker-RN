@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { formatTime } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, spacing, type } from "@/theme";
+import { colors, radius, spacing, type } from "@/theme";
 
 export default function EditLogModal() {
   const s = useStrings();
@@ -54,36 +54,40 @@ export default function EditLogModal() {
         keyboardShouldPersistTaps="handled"
         bottomOffset={20}
       >
-        {log && (
-          <View style={styles.timeRow}>
-            <MaterialIcons name="schedule" size={16} color={colors.textDim} />
-            <Text style={styles.timeLabel}>{s.timeLabel}</Text>
-            <View style={{ flex: 1 }} />
-            <Text style={styles.timeValue}>{formatTime(log.smokedAt)}</Text>
+        <View style={styles.form}>
+          {log && (
+            <View style={styles.timeRow}>
+              <MaterialIcons name="schedule" size={16} color={colors.textDim} />
+              <Text style={styles.timeLabel}>{s.timeLabel}</Text>
+              <View style={{ flex: 1 }} />
+              <Text style={styles.timeValue}>{formatTime(log.smokedAt)}</Text>
+            </View>
+          )}
+
+          <View style={styles.fieldBlock}>
+            <Text style={styles.fieldLabel}>{s.comment}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={s.commentHint}
+              placeholderTextColor={colors.textDim}
+              value={comment}
+              onChangeText={setComment}
+            />
           </View>
-        )}
 
-        <Text style={styles.fieldLabel}>{s.comment}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={s.commentHint}
-          placeholderTextColor={colors.textDim}
-          value={comment}
-          onChangeText={setComment}
-        />
-
-        <View style={styles.diaryHeader}>
-          <Text style={styles.fieldLabel}>{s.diary}</Text>
+          <View style={styles.fieldBlock}>
+            <Text style={styles.fieldLabel}>{s.diary}</Text>
+            <TextInput
+              style={[styles.input, styles.diary]}
+              placeholder={s.diaryHint}
+              placeholderTextColor={colors.textDim}
+              value={diary}
+              onChangeText={setDiary}
+              multiline
+              textAlignVertical="top"
+            />
+          </View>
         </View>
-        <TextInput
-          style={[styles.input, styles.diary]}
-          placeholder={s.diaryHint}
-          placeholderTextColor={colors.textDim}
-          value={diary}
-          onChangeText={setDiary}
-          multiline
-          textAlignVertical="top"
-        />
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
@@ -103,30 +107,33 @@ const styles = StyleSheet.create({
   cancel: { color: colors.textDim, fontSize: type.body.fontSize },
   title: { color: colors.text, fontSize: 17, fontWeight: "700" },
   saveBtn: { color: colors.accent, fontSize: type.body.fontSize, fontWeight: "700" },
-  body: { padding: spacing.xl, gap: spacing.xs },
+  body: { padding: spacing.md },
+  form: {
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    paddingHorizontal: 0,
+    backgroundColor: colors.surface,
+    borderRadius: radius.input,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    marginBottom: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
   },
   timeLabel: { color: colors.textDim, fontSize: type.body.fontSize },
   timeValue: { color: colors.text, fontWeight: "700" },
-  fieldLabel: { color: colors.textDim, fontSize: 13, marginTop: spacing.md, marginBottom: spacing.xs },
-  diaryHeader: { flexDirection: "row", alignItems: "center" },
+  fieldBlock: { gap: spacing.xs },
+  fieldLabel: { color: colors.textDim, fontSize: 13 },
   input: {
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.input,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     color: colors.text,
     fontSize: type.body.fontSize,
   },

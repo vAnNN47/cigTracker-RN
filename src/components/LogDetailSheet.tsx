@@ -58,50 +58,62 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
         handleColor={colors.line}
         cornerRadius={radius.sheet}
       >
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{s.cigNumber(number)}</Text>
-            <Text style={styles.time}>{time}</Text>
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>{s.cigNumber(number)}</Text>
+              <Text style={styles.time}>{time}</Text>
+            </View>
+            {editable && (
+              <Pressable style={styles.pencil} onPress={openEdit} hitSlop={8}>
+                <MaterialIcons name="edit" size={18} color={colors.accent} />
+              </Pressable>
+            )}
           </View>
-          {editable && (
-            <Pressable style={styles.pencil} onPress={openEdit} hitSlop={8}>
-              <MaterialIcons name="edit" size={18} color={colors.accent} />
-            </Pressable>
+
+          <View style={styles.timeRow}>
+            <View style={styles.timeLeft}>
+              <MaterialIcons name="schedule" size={16} color={colors.textDim} />
+              <Text style={styles.timeLabel}>{s.timeLabel}</Text>
+            </View>
+            <Text style={styles.timeValue}>{time}</Text>
+          </View>
+
+          <View style={styles.fieldCard}>
+            <Text style={styles.fieldLabel}>{s.comment}</Text>
+            <Text style={styles.readonly}>{log?.comment || "—"}</Text>
+          </View>
+
+          <View style={styles.fieldCard}>
+            <Text style={styles.fieldLabel}>{s.diary}</Text>
+            <Text style={[styles.readonly, styles.readonlyDiary]} numberOfLines={6}>
+              {log?.diary || "—"}
+            </Text>
+          </View>
+
+          {!editable && (
+            <View style={styles.lockRow}>
+              <MaterialIcons name="lock-outline" size={15} color={colors.textDim} />
+              <Text style={styles.lockText}>{s.pastLocked}</Text>
+              <Pressable onPress={() => Alert.alert(s.whyLockTitle, s.whyLockBody)} hitSlop={8}>
+                <Text style={styles.info}>ⓘ</Text>
+              </Pressable>
+            </View>
           )}
         </View>
-
-        <View style={styles.timeRow}>
-          <View style={styles.timeLeft}>
-            <MaterialIcons name="schedule" size={16} color={colors.textDim} />
-            <Text style={styles.timeLabel}>{s.timeLabel}</Text>
-          </View>
-          <Text style={styles.timeValue}>{time}</Text>
-        </View>
-
-        <Text style={styles.fieldLabel}>{s.comment}</Text>
-        <Text style={styles.readonly}>{log?.comment || "—"}</Text>
-
-        <Text style={styles.fieldLabel}>{s.diary}</Text>
-        <Text style={[styles.readonly, styles.readonlyDiary]} numberOfLines={6}>
-          {log?.diary || "—"}
-        </Text>
-
-        {!editable && (
-          <View style={styles.lockRow}>
-            <MaterialIcons name="lock-outline" size={15} color={colors.textDim} />
-            <Text style={styles.lockText}>{s.pastLocked}</Text>
-            <Pressable onPress={() => Alert.alert(s.whyLockTitle, s.whyLockBody)} hitSlop={8}>
-              <Text style={styles.info}>ⓘ</Text>
-            </Pressable>
-          </View>
-        )}
       </KeyboardSheet>
     );
   },
 );
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.md },
+  card: {
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  header: { flexDirection: "row", alignItems: "center" },
   title: { color: colors.text, fontSize: 20, fontWeight: "700" },
   time: { color: colors.textDim, fontSize: 14, marginTop: 2 },
   pencil: {
@@ -116,29 +128,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    paddingHorizontal: 0,
+    backgroundColor: colors.surface,
+    borderRadius: radius.input,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
   },
   timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   timeLabel: { color: colors.textDim, fontSize: type.body.fontSize },
   timeValue: { color: colors.text, fontWeight: "700" },
-  fieldLabel: { color: colors.textDim, fontSize: 13, marginTop: spacing.md, marginBottom: spacing.xs },
+  fieldCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.input,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  fieldLabel: { color: colors.textDim, fontSize: 13, marginBottom: spacing.xs },
   readonly: {
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
     color: colors.text,
     fontSize: type.body.fontSize,
   },
   readonlyDiary: { minHeight: 64, fontStyle: "italic" },
-  lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.lg },
+  lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.xs },
   lockText: { color: colors.textDim, fontSize: 12, flex: 1 },
   info: { color: colors.textDim, fontSize: 16 },
 });

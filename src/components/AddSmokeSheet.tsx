@@ -83,112 +83,119 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         handleColor={colors.line}
         cornerRadius={radius.sheet}
       >
-        <View style={styles.titleRow}>
-          <Text style={styles.title}>{s.logACigarette}</Text>
-          {Platform.OS === "ios" ? (
+        <View style={styles.card}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{s.logACigarette}</Text>
+            {Platform.OS === "ios" ? (
+              <DateTimePicker
+                mode="time"
+                value={smokedAt}
+                display="compact"
+                accentColor={colors.accent}
+                themeVariant="dark"
+                onValueChange={(_e, d) => setSmokedAt(clampToday(d))}
+                style={styles.iosPicker}
+              />
+            ) : (
+              <Pressable style={styles.timePill} onPress={() => setShowPicker(true)}>
+                <MaterialIcons name="schedule" size={15} color={colors.accent} />
+                <Text style={styles.timePillText}>{formatTime(smokedAt)}</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {showPicker && Platform.OS !== "ios" && (
             <DateTimePicker
               mode="time"
               value={smokedAt}
-              display="compact"
+              is24Hour
+              display="default"
               accentColor={colors.accent}
-              themeVariant="dark"
-              onValueChange={(_e, d) => setSmokedAt(clampToday(d))}
-              style={styles.iosPicker}
+              onValueChange={(_e, d) => {
+                setSmokedAt(clampToday(d));
+                setShowPicker(false);
+              }}
+              onDismiss={() => setShowPicker(false)}
             />
-          ) : (
-            <Pressable style={styles.timePill} onPress={() => setShowPicker(true)}>
-              <MaterialIcons name="schedule" size={15} color={colors.accent} />
-              <Text style={styles.timePillText}>{formatTime(smokedAt)}</Text>
-            </Pressable>
           )}
-        </View>
 
-        {showPicker && Platform.OS !== "ios" && (
-          <DateTimePicker
-            mode="time"
-            value={smokedAt}
-            is24Hour
-            display="default"
-            accentColor={colors.accent}
-            onValueChange={(_e, d) => {
-              setSmokedAt(clampToday(d));
-              setShowPicker(false);
-            }}
-            onDismiss={() => setShowPicker(false)}
+          <SheetTextInput
+            style={styles.input}
+            placeholder={s.commentHint}
+            placeholderTextColor={colors.textDim}
+            value={comment}
+            onChangeText={setComment}
           />
-        )}
 
-        <SheetTextInput
-          style={styles.input}
-          placeholder={s.commentHint}
-          placeholderTextColor={colors.textDim}
-          value={comment}
-          onChangeText={setComment}
-        />
+          <View style={styles.diaryHeader}>
+            <Text style={styles.diaryLabel}>{s.diary}</Text>
+            <Pressable onPress={() => Alert.alert(s.whyLockTitle, s.whyLockBody)} hitSlop={8}>
+              <Text style={styles.info}>ⓘ</Text>
+            </Pressable>
+          </View>
+          <SheetTextInput
+            style={[styles.input, styles.diary]}
+            placeholder={s.diaryHint}
+            placeholderTextColor={colors.textDim}
+            value={diary}
+            onChangeText={setDiary}
+            multiline
+            scrollEnabled={false}
+          />
 
-        <View style={styles.diaryHeader}>
-          <Text style={styles.diaryLabel}>{s.diary}</Text>
-          <Pressable onPress={() => Alert.alert(s.whyLockTitle, s.whyLockBody)} hitSlop={8}>
-            <Text style={styles.info}>ⓘ</Text>
+          <Pressable
+            style={[styles.button, saving && styles.buttonDisabled]}
+            onPress={save}
+            disabled={saving}
+          >
+            <Text style={styles.buttonText}>{saving ? "…" : s.add}</Text>
           </Pressable>
         </View>
-        <SheetTextInput
-          style={[styles.input, styles.diary]}
-          placeholder={s.diaryHint}
-          placeholderTextColor={colors.textDim}
-          value={diary}
-          onChangeText={setDiary}
-          multiline
-          scrollEnabled={false}
-        />
-
-        <Pressable
-          style={[styles.button, saving && styles.buttonDisabled]}
-          onPress={save}
-          disabled={saving}
-        >
-          <Text style={styles.buttonText}>{saving ? "…" : s.add}</Text>
-        </Pressable>
       </KeyboardSheet>
     );
   },
 );
 
 const styles = StyleSheet.create({
-  titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md },
+  card: {
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
   title: { color: colors.text, fontSize: 20, fontWeight: "600" },
   sub: { color: colors.textDim, fontSize: 13 },
   timePill: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    borderRadius: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
+    backgroundColor: colors.fill,
+    borderRadius: radius.chip,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   timePillText: { color: colors.accent, fontWeight: "700", fontSize: 14 },
   iosPicker: { transform: [{ scale: 0.95 }] },
   input: {
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.input,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     color: colors.text,
     fontSize: type.body.fontSize,
   },
-  diaryHeader: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
+  diaryHeader: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
   diaryLabel: { color: colors.text, fontWeight: "600" },
   info: { color: colors.textDim, fontSize: 16 },
-  diary: { height: 110, textAlignVertical: "top" }, // fixed height; long text scrolls inside
+  diary: { height: 110, textAlignVertical: "top" },
   button: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
     backgroundColor: colors.accent,
     borderRadius: radius.button,
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },

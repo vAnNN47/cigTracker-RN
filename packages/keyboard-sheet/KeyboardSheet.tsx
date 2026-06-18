@@ -30,26 +30,26 @@
  *   </KeyboardSheet>
  */
 import {
-  forwardRef,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useState,
+    forwardRef,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useMemo,
+    useState,
 } from "react";
 import { BackHandler, LayoutChangeEvent, Platform, StyleSheet, View, ViewStyle } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
-  KeyboardController,
-  KeyboardStickyView,
-  useReanimatedKeyboardAnimation,
+    KeyboardController,
+    KeyboardStickyView,
+    useReanimatedKeyboardAnimation,
 } from "react-native-keyboard-controller";
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnRN } from "react-native-worklets";
@@ -270,7 +270,7 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
 const styles = StyleSheet.create({
   backdrop: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   stickyWrap: { position: "absolute", left: 0, right: 0, bottom: 0 },
-  sheet: { paddingHorizontal: 20, paddingTop: 8, gap: 12 },
-  grabber: { alignSelf: "center", width: 40, height: 4, borderRadius: 2, marginBottom: 8 },
+  sheet: { paddingHorizontal: 16, paddingTop: 10, gap: 8 },
+  grabber: { alignSelf: "center", width: 40, height: 4, borderRadius: 2, marginBottom: 6 },
   overdragFill: { position: "absolute", left: 0, right: 0, top: "100%", zIndex: -1 },
 });
