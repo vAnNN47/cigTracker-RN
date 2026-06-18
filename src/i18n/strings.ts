@@ -23,6 +23,41 @@ export function makeStrings(he: boolean) {
     addCigarette: he ? "הוסף סיגריה" : "Add cigarette",
     addPurchase: he ? "הוסף קנייה" : "Add purchase",
 
+    // Home — redesigned Today screen
+    appTitle: he ? "מעקב סיגריות" : "Cig Tracker",
+    todaysAllowance: he ? "המכסה היומית" : "Today's Allowance",
+    leftLabel: he ? "נותרו" : "Left",
+    usedToday: (used: number, limit: number) =>
+      he ? `${used} / ${limit} סיגריות היום` : `${used} / ${limit} cigarettes used today`,
+    spentToday: he ? "הוצאה היום" : "Spent Today",
+    savedShort: he ? "נחסך" : "Saved",
+    dayStreak: he ? "רצף ימים" : "Day Streak",
+    avgDaily: he ? "ממוצע יומי" : "Avg Daily",
+    todaysLog: he ? "יומן היום" : "Today's Log",
+    viewAll: he ? "הצג הכול" : "View All",
+    recentPurchase: he ? "קנייה אחרונה" : "Recent Purchase",
+    viewHistory: he ? "הצג היסטוריה" : "View History",
+    noPurchasesYet: he ? "עדיין אין קניות." : "No purchases yet.",
+    cigNumber: (n: number) => (he ? `סיגריה #${n}` : `Cigarette #${n}`),
+    insightFewer: (n: number) =>
+      he
+        ? `אתה מעשן ${n} פחות מהממוצע השבועי שלך. כל הכבוד!`
+        : `You're smoking ${n} fewer than your 7-day average. Keep it up!`,
+    insightMore: (n: number) =>
+      he
+        ? `אתה מעשן ${n} יותר מהממוצע השבועי שלך.`
+        : `You're smoking ${n} more than your 7-day average.`,
+    insightSame: he ? "אתה בדיוק על הממוצע השבועי שלך." : "You're right on your 7-day average.",
+
+    // Diary / History browser
+    diaryTab: he ? "יומן" : "Diary",
+    cigarettesSection: he ? "סיגריות" : "Cigarettes",
+    spentLabel: he ? "הוצאה" : "Spent",
+    loggedN: (n: number) => (he ? `נרשמו ${n}` : `Logged ${n}`),
+    logCigarette: he ? "רשום סיגריה" : "Log Cigarette",
+    timeLabel: he ? "שעה" : "Time",
+    comingSoon: he ? "בקרוב…" : "Coming soon…",
+
     // Add / edit sheet
     logACigarette: he ? "רישום סיגריה" : "Log a cigarette",
     loggedNow: he ? "נרשם עכשיו, על היום." : "Logged now, on today.",
@@ -92,6 +127,8 @@ export function makeStrings(he: boolean) {
       ? "נתוני הדגמה נשמרים בזיכרון ומתאפסים בהפעלה מחדש. חבר את Supabase כדי לשמור ולסנכרן בין מכשירים."
       : "Demo data lives in memory and resets on restart. Connect Supabase to persist and sync across devices.",
     signOut: he ? "התנתק" : "Sign out",
+    signOutTitle: he ? "להתנתק?" : "Sign out?",
+    signOutBody: he ? "תצטרך להתחבר שוב כדי לראות את הנתונים שלך." : "You'll need to sign in again to see your data.",
     pack: he ? "חפיסה" : "Pack",
     carton: he ? "קרטון" : "Carton",
     quantity: he ? "כמות" : "Quantity",
@@ -107,7 +144,9 @@ export function makeStrings(he: boolean) {
 
     // Logged toast
     loggedToast: he ? "נרשם ✓" : "Logged ✓",
+    savedToast: he ? "נשמר ✓" : "Saved ✓",
     undo: he ? "בטל" : "Undo",
+    cigsInThis: (n: number) => (he ? `${n} סיגריות` : `${n} cigarettes`),
 
     // Onboarding
     welcomeTitle: he ? "ברוך הבא" : "Welcome",

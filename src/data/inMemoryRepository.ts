@@ -74,8 +74,16 @@ export class InMemoryRepository implements Repository {
     return [...this.logs];
   }
 
-  async addLog({ comment, diary }: { comment: string; diary: string }): Promise<SmokeLog> {
-    const log: SmokeLog = { id: randomUUID(), smokedAt: new Date(), comment, diary };
+  async addLog({
+    comment,
+    diary,
+    smokedAt,
+  }: {
+    comment: string;
+    diary: string;
+    smokedAt?: Date;
+  }): Promise<SmokeLog> {
+    const log: SmokeLog = { id: randomUUID(), smokedAt: smokedAt ?? new Date(), comment, diary };
     this.logs.push(log);
     return log;
   }

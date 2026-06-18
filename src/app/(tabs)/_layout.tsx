@@ -45,9 +45,9 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="calendar"
         options={{
-          title: s.calendar,
+          title: s.diaryTab,
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="calendar-month" color={color} size={size} />
+            <MaterialIcons name="menu-book" color={color} size={size} />
           ),
         }}
       />

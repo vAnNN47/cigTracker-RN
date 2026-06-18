@@ -7,7 +7,8 @@ import { AppSettings, DailyLimit, Purchase, SmokeLog } from "@/models";
 
 export interface Repository {
   getLogs(): Promise<SmokeLog[]>;
-  addLog(args: { comment: string; diary: string }): Promise<SmokeLog>;
+  // smokedAt lets the user log a cigarette they smoked earlier (defaults to now).
+  addLog(args: { comment: string; diary: string; smokedAt?: Date }): Promise<SmokeLog>;
   updateLog(id: string, args: { comment?: string; diary?: string }): Promise<SmokeLog>;
   deleteLog(id: string): Promise<void>;
 

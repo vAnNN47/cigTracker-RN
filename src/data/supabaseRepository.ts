@@ -70,11 +70,21 @@ export class SupabaseRepository implements Repository {
     return (data ?? []).map(rowToLog);
   }
 
-  async addLog({ comment, diary }: { comment: string; diary: string }): Promise<SmokeLog> {
+  async addLog({
+    comment,
+    diary,
+    smokedAt,
+  }: {
+    comment: string;
+    diary: string;
+    smokedAt?: Date;
+  }): Promise<SmokeLog> {
     const user_id = await requireUid();
+    // Omitting smoked_at uses the DB default now(); log_date is derived from
+    // smoked_at server-side, so a custom (earlier-today) time lands correctly.
     const { data, error } = await supabase
       .from("smoke_logs")
-      .insert({ user_id, comment, diary })
+      .insert({ user_id, comment, diary, ...(smokedAt ? { smoked_at: smokedAt.toISOString() } : {}) })
       .select()
       .single();
     if (error) throw error;

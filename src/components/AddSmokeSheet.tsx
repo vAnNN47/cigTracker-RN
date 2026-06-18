@@ -5,10 +5,13 @@
  *
  * Imperative API: parent calls ref.present().
  */
+import { MaterialIcons } from "@expo/vector-icons";
+import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { formatTime } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
@@ -32,20 +35,36 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
 
     const [comment, setComment] = useState("");
     const [diary, setDiary] = useState("");
+    const [smokedAt, setSmokedAt] = useState<Date>(new Date());
+    const [showPicker, setShowPicker] = useState(false);
     const [saving, setSaving] = useState(false);
 
-    useImperativeHandle(ref, () => ({ present: () => sheetRef.current?.present() }));
+    useImperativeHandle(ref, () => ({
+      present: () => {
+        setSmokedAt(new Date()); // default to "now" each time it opens
+        sheetRef.current?.present();
+      },
+    }));
 
     const reset = () => {
       setComment("");
       setDiary("");
+      setShowPicker(false);
       setSaving(false);
+    };
+
+    // Keep the picked time on today's date and never in the future.
+    const clampToday = (picked: Date) => {
+      const now = new Date();
+      const d = new Date();
+      d.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+      return d.getTime() > now.getTime() ? now : d;
     };
 
     const save = async () => {
       setSaving(true);
       try {
-        const log = await addSmoke(comment.trim(), diary.trim());
+        const log = await addSmoke(comment.trim(), diary.trim(), smokedAt);
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         sheetRef.current?.dismiss();
         onLogged(log);
@@ -64,8 +83,40 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         handleColor={colors.line}
         cornerRadius={radius.sheet}
       >
-        <Text style={styles.title}>{s.logACigarette}</Text>
-        <Text style={styles.sub}>{s.loggedNow}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{s.logACigarette}</Text>
+          {Platform.OS === "ios" ? (
+            <DateTimePicker
+              mode="time"
+              value={smokedAt}
+              display="compact"
+              accentColor={colors.accent}
+              themeVariant="dark"
+              onValueChange={(_e, d) => setSmokedAt(clampToday(d))}
+              style={styles.iosPicker}
+            />
+          ) : (
+            <Pressable style={styles.timePill} onPress={() => setShowPicker(true)}>
+              <MaterialIcons name="schedule" size={15} color={colors.accent} />
+              <Text style={styles.timePillText}>{formatTime(smokedAt)}</Text>
+            </Pressable>
+          )}
+        </View>
+
+        {showPicker && Platform.OS !== "ios" && (
+          <DateTimePicker
+            mode="time"
+            value={smokedAt}
+            is24Hour
+            display="default"
+            accentColor={colors.accent}
+            onValueChange={(_e, d) => {
+              setSmokedAt(clampToday(d));
+              setShowPicker(false);
+            }}
+            onDismiss={() => setShowPicker(false)}
+          />
+        )}
 
         <SheetTextInput
           style={styles.input}
@@ -104,8 +155,22 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
 );
 
 const styles = StyleSheet.create({
+  titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md },
   title: { color: colors.text, fontSize: 20, fontWeight: "600" },
   sub: { color: colors.textDim, fontSize: 13 },
+  timePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.accentTint,
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
+    borderRadius: radius.chip,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+  },
+  timePillText: { color: colors.accent, fontWeight: "700", fontSize: 14 },
+  iosPicker: { transform: [{ scale: 0.95 }] },
   input: {
     backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,

@@ -165,6 +165,81 @@ export function totalCigarettesBought(purchases: Purchase[]): number {
   return purchases.reduce((sum, p) => sum + cigsInPurchase(p), 0);
 }
 
+/** Total amount spent on purchases for one logical day. */
+export function spentForDay(
+  purchases: Purchase[],
+  day: Date,
+  dayStartHour: number,
+): number {
+  return totalSpent(purchasesForDay(purchases, day, dayStartHour));
+}
+
+// ---- Headline figures for the Today screen --------------------------------
+
+/**
+ * Day streak = consecutive COMPLETED days within limit, ending yesterday.
+ * Today is in progress so it doesn't count yet; if yesterday went over the
+ * limit the streak is 0 (broken). Walks back from yesterday, stopping at the
+ * first over-limit day or before tracking began.
+ */
+export function currentStreak(
+  logs: SmokeLog[],
+  limits: DailyLimit[],
+  settings: AppSettings,
+): number {
+  const today = logicalToday(settings.dayStartHour);
+  const first = firstTrackedDay(logs, limits, settings.dayStartHour);
+  let streak = 0;
+  for (let d = addDays(today, -1); d >= first; d = addDays(d, -1)) {
+    const count = countForDay(logs, d, settings.dayStartHour);
+    const limit = limitForDay(limits, d, settings);
+    if (count <= limit) streak += 1;
+    else break;
+  }
+  return streak;
+}
+
+/** Mean cigarettes/day over the tracked range (optionally the last N days). */
+export function averagePerDay(
+  logs: SmokeLog[],
+  limits: DailyLimit[],
+  settings: AppSettings,
+  lastDays?: number,
+): number {
+  const stats = dailyStats(logs, limits, settings, lastDays);
+  if (stats.length === 0) return 0;
+  const total = stats.reduce((sum, s) => sum + s.count, 0);
+  return Math.round(total / stats.length);
+}
+
+/** Cumulative money saved to date (last point of the savings series). */
+export function totalSaved(
+  logs: SmokeLog[],
+  limits: DailyLimit[],
+  settings: AppSettings,
+): number {
+  const series = savingsSeries(logs, limits, settings);
+  return series.length ? series[series.length - 1].saved : 0;
+}
+
+/**
+ * Compare today's count to the average of the previous 7 days (excluding
+ * today). diff > 0 means smoking fewer than average (good).
+ */
+export function sevenDayInsight(
+  logs: SmokeLog[],
+  settings: AppSettings,
+): { diff: number; todayCount: number; average: number } {
+  const today = logicalToday(settings.dayStartHour);
+  const todayCount = countForDay(logs, today, settings.dayStartHour);
+  let sum = 0;
+  for (let i = 1; i <= 7; i++) {
+    sum += countForDay(logs, addDays(today, -i), settings.dayStartHour);
+  }
+  const average = sum / 7;
+  return { diff: Math.round(average) - todayCount, todayCount, average };
+}
+
 /** Cumulative savings series: per day (baseline − actual) × pricePerCig. */
 export function savingsSeries(
   logs: SmokeLog[],

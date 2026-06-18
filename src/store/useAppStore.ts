@@ -8,12 +8,16 @@
  *   const logs = useAppStore((s) => s.logs);        // re-renders only on logs change
  *   const addSmoke = useAppStore((s) => s.addSmoke);
  */
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
 import { createRepository } from "@/data/createRepository";
 import { Repository } from "@/data/repository";
 import { logicalToday } from "@/domain/logic";
+import { applyDirection, reloadForDirection } from "@/i18n/rtl";
 import { AppSettings, DailyLimit, DEFAULT_SETTINGS, Purchase, SmokeLog } from "@/models";
+
+const LOCALE_KEY = "cigtracker.locale";
 
 interface AppStore {
   // raw state
@@ -27,9 +31,10 @@ interface AppStore {
 
   // actions
   setLocale: (locale: "device" | "en" | "he") => void;
+  hydrateLocale: () => Promise<void>;
   load: () => Promise<void>;
   refresh: () => Promise<void>;
-  addSmoke: (comment?: string, diary?: string) => Promise<SmokeLog>;
+  addSmoke: (comment?: string, diary?: string, smokedAt?: Date) => Promise<SmokeLog>;
   editLog: (id: string, args: { comment?: string; diary?: string }) => Promise<void>;
   deleteLog: (id: string) => Promise<void>;
   setLimit: (limit: number) => Promise<void>;
@@ -46,7 +51,24 @@ export const useAppStore = create<AppStore>()((set, get) => ({
   settings: { ...DEFAULT_SETTINGS },
   locale: "device",
 
-  setLocale: (locale) => set({ locale }),
+  setLocale: (locale) => {
+    set({ locale });
+    AsyncStorage.setItem(LOCALE_KEY, locale).catch(() => {});
+    // Flip layout direction (LTR↔RTL); reload only if it actually changed.
+    if (applyDirection(locale)) reloadForDirection();
+  },
+
+  // Read the saved locale on boot and align the layout direction with it.
+  hydrateLocale: async () => {
+    const saved = (await AsyncStorage.getItem(LOCALE_KEY)) as
+      | "device"
+      | "en"
+      | "he"
+      | null;
+    const locale = saved ?? "device";
+    if (saved) set({ locale });
+    if (applyDirection(locale)) reloadForDirection();
+  },
 
   load: async () => {
     set({ loading: true });
@@ -58,8 +80,8 @@ export const useAppStore = create<AppStore>()((set, get) => ({
     await fetchAll(get, set);
   },
 
-  addSmoke: async (comment = "", diary = "") => {
-    const log = await get().repo.addLog({ comment, diary });
+  addSmoke: async (comment = "", diary = "", smokedAt) => {
+    const log = await get().repo.addLog({ comment, diary, smokedAt });
     set({ logs: await get().repo.getLogs() });
     return log;
   },

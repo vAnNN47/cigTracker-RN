@@ -74,6 +74,7 @@ function Gate() {
     <View style={styles.fill}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
       </Stack>
       {overlay && <View style={[StyleSheet.absoluteFill, styles.overlay]}>{overlay}</View>}
     </View>
@@ -81,6 +82,11 @@ function Gate() {
 }
 
 export default function RootLayout() {
+  // Align layout direction (LTR/RTL) with the saved language before the UI shows.
+  useEffect(() => {
+    useAppStore.getState().hydrateLocale();
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.fill}>
       <KeyboardProvider>

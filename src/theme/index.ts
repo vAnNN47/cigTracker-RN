@@ -9,26 +9,35 @@
  */
 
 export const colors = {
-  bg: "#0E0F12", // app background
-  surface: "#16181D", // cards
-  surfaceHigh: "#1E2127", // inputs / raised fills
-  text: "#F2F3F5", // primary text
-  textDim: "#9AA0AA", // secondary / labels
-  accent: "#00ec86", // calm mint — primary action
-  good: "#6CE5B1", // under-limit / positive (same mint)
-  bad: "#FF7A7A", // over-limit / negative
-  line: "#262A31", // hairline borders / dividers
-  /** Translucent accent used for the active tab indicator (alpha 0.18). */
-  accentSoft: "rgba(108, 229, 177, 0.18)",
-  /** Text/icon color when placed ON an accent-filled surface (= bg). */
-  onAccent: "#0E0F12",
+  bg: "#111827", // app background (slate-900)
+  surface: "#1F2937", // cards (slate-800)
+  surfaceHigh: "#283445", // inputs / raised fills
+  text: "#F9FAFB", // primary text
+  textDim: "#6B7280", // secondary / labels (slate-500)
+  accent: "#14B8A6", // teal — primary action
+  ring: "#2DD4BF", // brighter teal for the progress ring
+  good: "#2DD4BF", // under-limit / positive
+  bad: "#FB7185", // over-limit / negative (rose)
+  streak: "#FB923C", // day-streak flame (orange)
+  line: "rgba(255,255,255,0.08)", // hairline borders / dividers
+  /** Faint fill for sub-cards inside a card. */
+  fill: "rgba(255,255,255,0.05)",
+  /** Progress/ring track. */
+  track: "rgba(255,255,255,0.10)",
+  /** Translucent accent for active tab indicator + tinted cards. */
+  accentSoft: "rgba(20,184,166,0.18)",
+  accentTint: "rgba(20,184,166,0.12)",
+  accentBorder: "rgba(20,184,166,0.25)",
+  /** Text/icon color when placed ON an accent-filled surface. */
+  onAccent: "#111827",
 } as const;
 
-/** Corner radii, matching each Flutter widget shape. */
+/** Corner radii, matching the Figma design shapes. */
 export const radius = {
   input: 14,
-  button: 16,
-  card: 20,
+  button: 14,
+  card: 16,
+  chip: 12, // sub-cards / small fills
   sheet: 28, // bottom-sheet top corners
 } as const;
 

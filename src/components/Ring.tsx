@@ -25,7 +25,7 @@ export function Ring({ size = 84, strokeWidth = 8, pct, color, children }: RingP
     <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
       <Svg width={size} height={size} style={{ position: "absolute" }}>
         {/* track */}
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.line} strokeWidth={strokeWidth} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.track} strokeWidth={strokeWidth} fill="none" />
         {/* progress — start at 12 o'clock, go clockwise */}
         <Circle
           cx={size / 2}

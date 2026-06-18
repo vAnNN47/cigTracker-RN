@@ -1,51 +1,88 @@
 /**
- * Today screen — ported from lib/screens/home_screen.dart.
- * Count-vs-limit ring, Add cigarette / Add purchase, today's log list with
- * long-press to edit (no delete). (Pull-to-refresh returns with Supabase sync.)
+ * Today screen — redesigned from the Figma reference.
+ * Header + hero allowance card (ring, progress, spent/saved), action buttons,
+ * a 2×2 stats grid (Today / Day Streak / Avg Daily / Money Saved), today's log,
+ * a recent-purchase card and a 7-day insight banner.
+ *
+ * Day Streak / Avg Daily / the insight use first-cut domain helpers — confirm
+ * against the Flutter app before treating them as final (Step 7).
  */
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
-import { EditLogSheet, EditLogSheetRef } from "@/components/EditLogSheet";
+import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { Ring } from "@/components/Ring";
-import { RefreshableScrollView } from "../../../packages/pull-refresh";
 import { useToast } from "@/components/Toast";
-import { currentLimit, isLogEditable, logicalToday, logsForDay } from "@/domain/logic";
+import {
+  averagePerDay,
+  currentLimit,
+  currentStreak,
+  logicalToday,
+  logsForDay,
+  sevenDayInsight,
+  spentForDay,
+  totalSaved,
+} from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, radius, spacing } from "@/theme";
+import { RefreshableScrollView } from "../../../packages/pull-refresh";
 
 export default function TodayScreen() {
   const s = useStrings();
   const toast = useToast();
 
-  const { logs, limits, settings } = useAppStore();
+  const { logs, limits, purchases, settings } = useAppStore();
   const deleteLog = useAppStore((st) => st.deleteLog);
   const refresh = useAppStore((st) => st.refresh);
 
+  const router = useRouter();
   const addRef = useRef<AddSmokeSheetRef>(null);
-  const editRef = useRef<EditLogSheetRef>(null);
+  const purchaseRef = useRef<AddPurchaseSheetRef>(null);
+  const detailRef = useRef<LogDetailSheetRef>(null);
 
   const todayKey = logicalToday(settings.dayStartHour);
   const todayLogs = logsForDay(logs, todayKey, settings.dayStartHour);
   const count = todayLogs.length;
   const limit = currentLimit(limits, settings);
+  const left = Math.max(0, limit - count);
   const within = count <= limit;
   const pct = limit === 0 ? 1 : Math.min(1, count / limit);
-  const color = within ? colors.good : colors.bad;
+  const ringColor = within ? colors.ring : colors.bad;
+
+  const spent = spentForDay(purchases, todayKey, settings.dayStartHour);
+  const saved = totalSaved(logs, limits, settings);
+  const streak = currentStreak(logs, limits, settings);
+  const avg = averagePerDay(logs, limits, settings);
+  const insight = sevenDayInsight(logs, settings);
+
+  const cur = settings.currencySymbol;
+  const money = (n: number) =>
+    `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
+
+  const recent = purchases.length ? purchases[purchases.length - 1] : null;
+  const shortDate = (d: Date) =>
+    new Intl.DateTimeFormat(s.localeCode, { month: "short", day: "numeric" }).format(d);
+
+  const insightText =
+    insight.diff > 0
+      ? s.insightFewer(insight.diff)
+      : insight.diff < 0
+        ? s.insightMore(-insight.diff)
+        : s.insightSame;
 
   const onLogged = (log: SmokeLog) => {
-    toast.show({
-      message: s.loggedToast,
-      actionLabel: s.undo,
-      onAction: () => deleteLog(log.id),
-    });
+    toast.show({ message: s.loggedToast, actionLabel: s.undo, onAction: () => deleteLog(log.id) });
   };
+  const openDiary = () => router.navigate("/calendar");
+  const soon = () => toast.show({ message: s.comingSoon }); // bell → notifications (Step 22)
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -56,97 +93,252 @@ export default function TodayScreen() {
         spinnerColor={colors.accent}
         style={{ backgroundColor: colors.bg }}
         contentContainerStyle={{
-          paddingTop: spacing.md,
+          paddingTop: spacing.sm,
           paddingHorizontal: spacing.xl,
           paddingBottom: spacing.xxl,
         }}
       >
-        <Text style={styles.date}>{formatWeekdayDate(todayKey, s.localeCode)}</Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.appTitle}>{s.appTitle}</Text>
+            <Text style={styles.date}>{formatWeekdayDate(todayKey, s.localeCode)}</Text>
+          </View>
+          <Pressable style={styles.bell} onPress={soon}>
+            <MaterialIcons name="notifications-none" size={18} color={colors.textDim} />
+          </Pressable>
+        </View>
 
-        {/* Today card */}
-        <View style={styles.card}>
-          <Ring pct={pct} color={color}>
-            <Text style={styles.count}>{count}</Text>
-          </Ring>
-          <View style={styles.cardText}>
-            <Text style={styles.ofToday}>{s.ofToday(limit)}</Text>
-            <Text style={[styles.status, { color }]}>
-              {within ? s.leftInBudget(Math.max(0, limit - count)) : s.overLimit(count - limit)}
-            </Text>
+        {/* Hero — today's allowance */}
+        <View style={styles.hero}>
+          <View style={styles.heroTop}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.heroLabel}>{s.todaysAllowance}</Text>
+              <View style={styles.bigRow}>
+                <Text style={styles.big}>{left}</Text>
+                <Text style={styles.bigSuffix}>{s.leftLabel}</Text>
+              </View>
+              <Text style={styles.usedToday}>{s.usedToday(count, limit)}</Text>
+            </View>
+            <Ring size={72} strokeWidth={6} pct={pct} color={ringColor}>
+              <Text style={styles.ringPct}>{Math.round(pct * 100)}%</Text>
+            </Ring>
+          </View>
+
+          {/* Progress bar */}
+          <View style={styles.track}>
+            <View style={[styles.fill, { width: `${Math.round(pct * 100)}%`, backgroundColor: ringColor }]} />
+          </View>
+
+          {/* Spent / Saved */}
+          <View style={styles.subRow}>
+            <View style={styles.subCard}>
+              <View style={styles.subHead}>
+                <MaterialIcons name="attach-money" size={14} color={colors.textDim} />
+                <Text style={styles.subLabel}>{s.spentToday}</Text>
+              </View>
+              <Text style={styles.subValue}>{money(spent)}</Text>
+            </View>
+            <View style={styles.subCard}>
+              <View style={styles.subHead}>
+                <MaterialIcons name="savings" size={14} color={colors.textDim} />
+                <Text style={styles.subLabel}>{s.savedShort}</Text>
+              </View>
+              <Text style={[styles.subValue, { color: colors.accent }]}>{money(saved)}</Text>
+            </View>
           </View>
         </View>
 
         {/* Actions */}
-        <Pressable style={styles.primaryBtn} onPress={() => addRef.current?.present()}>
-          <MaterialIcons name="add" size={20} color={colors.onAccent} />
-          <Text style={styles.primaryText}>{s.addCigarette}</Text>
-        </Pressable>
-        <Pressable
-          style={styles.outlineBtn}
-          onPress={() => toast.show({ message: "Purchases arrive with the number pad (Step 8)." })}
-        >
-          <MaterialIcons name="shopping-bag" size={20} color={colors.accent} />
-          <Text style={styles.outlineText}>{s.addPurchase}</Text>
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable style={styles.primaryBtn} onPress={() => addRef.current?.present()}>
+            <MaterialIcons name="add" size={20} color={colors.onAccent} />
+            <Text style={styles.primaryText}>{s.addCigarette}</Text>
+          </Pressable>
+          <Pressable style={styles.outlineBtn} onPress={() => purchaseRef.current?.present()}>
+            <MaterialIcons name="shopping-cart" size={18} color={colors.textDim} />
+            <Text style={styles.outlineText}>{s.addPurchase}</Text>
+          </Pressable>
+        </View>
 
-        {/* Today's log list */}
+        {/* Stats grid */}
+        <View style={styles.grid}>
+          <StatCard icon="event" value={`${count}`} label={s.today} />
+          <StatCard
+            icon="local-fire-department"
+            emoji={streak === 0 ? "🥀" : undefined}
+            value={`${streak}`}
+            label={s.dayStreak}
+            tint={streak === 0 ? colors.bad : colors.streak}
+          />
+          <StatCard icon="show-chart" value={`${avg}`} label={s.avgDaily} />
+          <StatCard icon="savings" value={money(saved)} label={s.moneySaved} accent />
+        </View>
+
+        {/* Today's log */}
         <View style={styles.listHeader}>
-          <Text style={styles.listTitle}>{s.today}</Text>
-          <Text style={styles.dim}>
-            {todayLogs.length} {s.loggedCount}
-          </Text>
+          <Text style={styles.sectionTitle}>{s.todaysLog}</Text>
+          <Pressable onPress={openDiary}>
+            <Text style={styles.link}>{s.viewAll}</Text>
+          </Pressable>
         </View>
 
         {todayLogs.length === 0 ? (
           <Text style={styles.empty}>{s.nothingToday}</Text>
         ) : (
-          [...todayLogs].reverse().map((log) => {
-            const editable = isLogEditable(log, settings.dayStartHour);
-            const subtitle = [log.comment, log.diary].filter(Boolean).join("  ·  ");
-            return (
-              <Pressable
-                key={log.id}
-                style={styles.tile}
-                onLongPress={() => editable && editRef.current?.present(log)}
-                delayLongPress={300}
-              >
-                <MaterialIcons name="smoking-rooms" size={20} color={colors.textDim} />
-                <View style={styles.tileText}>
-                  <Text style={styles.time}>{formatTime(log.smokedAt)}</Text>
-                  {!!subtitle && (
-                    <Text style={styles.subtitle} numberOfLines={2}>
-                      {subtitle}
-                    </Text>
-                  )}
-                </View>
-                {editable && <MaterialIcons name="edit" size={16} color={colors.textDim} />}
-              </Pressable>
-            );
-          })
+          [...todayLogs]
+            .reverse()
+            .slice(0, 3)
+            .map((log, i) => {
+              const sub = [formatTime(log.smokedAt), log.comment || log.diary]
+                .filter(Boolean)
+                .join("  ·  ");
+              return (
+                <Pressable
+                  key={log.id}
+                  style={styles.tile}
+                  onPress={() => detailRef.current?.present({ log, number: count - i, editable: true })}
+                >
+                  <View style={styles.tileIcon}>
+                    <MaterialIcons name="smoking-rooms" size={18} color={colors.textDim} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.tileTitle}>{s.cigNumber(count - i)}</Text>
+                    {!!sub && (
+                      <Text style={styles.tileSub} numberOfLines={1}>
+                        {sub}
+                      </Text>
+                    )}
+                  </View>
+                  <MaterialIcons name="edit" size={14} color={colors.textDim} />
+                </Pressable>
+              );
+            })
         )}
+
+        {/* Recent purchase */}
+        <View style={styles.purchaseCard}>
+          <View style={styles.purchaseHead}>
+            <View style={styles.subHead}>
+              <MaterialIcons name="receipt-long" size={16} color={colors.textDim} />
+              <Text style={styles.subLabel}>{s.recentPurchase}</Text>
+            </View>
+            {recent && <Text style={styles.subLabel}>{shortDate(recent.boughtAt)}</Text>}
+          </View>
+          {recent ? (
+            <>
+              <View style={styles.purchaseRow}>
+                <Text style={styles.purchaseTitle}>
+                  {recent.quantity} {recent.unit === "carton" ? s.carton : s.pack}
+                </Text>
+                <Text style={styles.purchaseTitle}>{money(recent.price)}</Text>
+              </View>
+              <View style={styles.purchaseRow}>
+                <Text style={styles.tileSub}>{s.purchases}</Text>
+                <Pressable onPress={openDiary}>
+                  <Text style={styles.link}>{s.viewHistory}</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : (
+            <Text style={styles.tileSub}>{s.noPurchasesYet}</Text>
+          )}
+        </View>
+
+        {/* 7-day insight */}
+        <View style={styles.insight}>
+          <View style={styles.insightIcon}>
+            <MaterialIcons name="bolt" size={18} color={colors.accent} />
+          </View>
+          <Text style={styles.insightText}>{insightText}</Text>
+        </View>
       </RefreshableScrollView>
 
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
-      <EditLogSheet ref={editRef} />
+      <AddPurchaseSheet ref={purchaseRef} />
+      <LogDetailSheet ref={detailRef} />
     </SafeAreaView>
   );
 }
 
+function StatCard({
+  icon,
+  value,
+  label,
+  tint,
+  accent,
+  emoji,
+}: {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  value: string;
+  label: string;
+  tint?: string;
+  accent?: boolean;
+  emoji?: string;
+}) {
+  const iconColor = tint ?? (accent ? colors.accent : colors.textDim);
+  return (
+    <View style={[styles.stat, accent && styles.statAccent]}>
+      <View
+        style={[
+          styles.statIcon,
+          { backgroundColor: emoji ? colors.fill : tint ? "rgba(251,146,60,0.12)" : accent ? colors.accentTint : colors.fill },
+        ]}
+      >
+        {emoji ? (
+          <Text style={{ fontSize: 15 }}>{emoji}</Text>
+        ) : (
+          <MaterialIcons name={icon} size={16} color={iconColor} />
+        )}
+      </View>
+      <Text style={[styles.statValue, accent && { color: colors.accent }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  date: { color: colors.textDim, fontSize: 14, marginBottom: spacing.lg },
-  card: {
-    flexDirection: "row",
+  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.lg },
+  appTitle: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  date: { color: colors.textDim, fontSize: 14, marginTop: 2 },
+  bell: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.line,
     alignItems: "center",
+    justifyContent: "center",
+  },
+
+  hero: {
     backgroundColor: colors.surface,
     borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
     padding: spacing.xl,
-    gap: spacing.xl,
   },
-  count: { color: colors.text, fontSize: 28, fontWeight: "700" },
-  cardText: { flex: 1, gap: spacing.xs },
-  ofToday: { color: colors.textDim, fontSize: 16 },
-  status: { fontWeight: "600" },
+  heroTop: { flexDirection: "row", alignItems: "center" },
+  heroLabel: { color: colors.textDim, fontSize: 14 },
+  bigRow: { flexDirection: "row", alignItems: "flex-end", gap: spacing.sm, marginTop: spacing.xs },
+  big: { color: colors.text, fontSize: 44, fontWeight: "800", lineHeight: 48 },
+  bigSuffix: { color: colors.textDim, fontSize: 20, fontWeight: "600", marginBottom: 6 },
+  usedToday: { color: colors.textDim, fontSize: 13, marginTop: spacing.xs },
+  ringPct: { color: colors.text, fontSize: 14, fontWeight: "700" },
+
+  track: { height: 6, borderRadius: 3, backgroundColor: colors.track, marginTop: spacing.lg, overflow: "hidden" },
+  fill: { height: 6, borderRadius: 3 },
+
+  subRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
+  subCard: { flex: 1, backgroundColor: colors.fill, borderRadius: radius.chip, padding: spacing.md },
+  subHead: { flexDirection: "row", alignItems: "center", gap: 6 },
+  subLabel: { color: colors.textDim, fontSize: 12 },
+  subValue: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: 4 },
+
+  actions: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
   primaryBtn: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -154,42 +346,113 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     borderRadius: radius.button,
     paddingVertical: 14,
-    marginTop: spacing.xl,
   },
-  primaryText: { color: colors.onAccent, fontWeight: "600", fontSize: type.body.fontSize },
+  primaryText: { color: colors.onAccent, fontWeight: "700", fontSize: 15 },
   outlineBtn: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.sm,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.line,
     borderRadius: radius.button,
     paddingVertical: 14,
-    marginTop: spacing.sm,
   },
-  outlineText: { color: colors.accent, fontWeight: "600", fontSize: type.body.fontSize },
+  outlineText: { color: colors.textDim, fontWeight: "600", fontSize: 15 },
+
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md, marginTop: spacing.lg },
+  stat: {
+    flexBasis: "47%",
+    flexGrow: 1,
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: spacing.lg,
+  },
+  statAccent: { borderColor: colors.accentBorder, backgroundColor: colors.accentTint },
+  statIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
+  },
+  statValue: { color: colors.text, fontSize: 26, fontWeight: "800" },
+  statLabel: { color: colors.textDim, fontSize: 13, marginTop: 2 },
+
   listHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: spacing.xxl + spacing.xs,
-    marginBottom: spacing.sm,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.md,
   },
-  listTitle: { color: colors.text, fontSize: 16, fontWeight: "600" },
-  dim: { color: colors.textDim, fontSize: type.label.fontSize },
-  empty: { color: colors.textDim, textAlign: "center", paddingVertical: spacing.xxl },
+  sectionTitle: { color: colors.text, fontSize: 18, fontWeight: "700" },
+  link: { color: colors.accent, fontSize: 14, fontWeight: "600" },
+  empty: { color: colors.textDim, textAlign: "center", paddingVertical: spacing.xl },
+
   tile: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
     backgroundColor: colors.surface,
-    borderRadius: radius.button,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
     paddingHorizontal: spacing.lg,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     marginBottom: spacing.sm,
   },
-  tileText: { flex: 1 },
-  time: { color: colors.text, fontWeight: "600" },
-  subtitle: { color: colors.textDim, fontSize: 13, marginTop: 2 },
+  tileIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.fill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tileTitle: { color: colors.text, fontWeight: "700", fontSize: 15 },
+  tileSub: { color: colors.textDim, fontSize: 13, marginTop: 2 },
+
+  purchaseCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    padding: spacing.lg,
+    marginTop: spacing.md,
+  },
+  purchaseHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  purchaseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: spacing.md,
+  },
+  purchaseTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
+
+  insight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    backgroundColor: colors.accentTint,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  insightIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.accentTint,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  insightText: { color: colors.text, fontSize: 14, flex: 1, lineHeight: 20 },
 });

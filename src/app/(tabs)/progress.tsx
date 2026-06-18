@@ -1,11 +1,11 @@
 /**
- * Progress screen — ported from lib/screens/stats_screen.dart.
- * Range picker, summary stats, week-vs-week, cigs-vs-limit line chart, time-of-day
- * histogram, money-saved line chart, spend summary. Charts use react-native-svg
- * (no extra chart lib).
+ * Progress screen — bento-MOSAIC design language (its own look vs Today's boxes).
+ * Tight, tessellated, color-filled tiles with no borders — reads as a solid
+ * dashboard mosaic rather than cards floating on the background. Charts use
+ * react-native-svg. Logic ported from lib/screens/stats_screen.dart.
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -23,13 +23,16 @@ import {
 } from "@/domain/logic";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing } from "@/theme";
+import { colors, spacing } from "@/theme";
 
 const RANGES: { key: string; value: number | null }[] = [
   { key: "7d", value: 7 },
   { key: "30d", value: 30 },
   { key: "All", value: null },
 ];
+
+const GAP = 6; // tight gap so tiles tessellate
+const GOOD_TINT = "rgba(45,212,191,0.12)";
 
 export default function ProgressScreen() {
   const s = useStrings();
@@ -52,11 +55,9 @@ export default function ProgressScreen() {
   const weekPrev = countBetween(logs, addDays(today, -13), addDays(today, -7), dsh);
   const delta = weekNow - weekPrev;
   const deltaColor = delta < 0 ? colors.good : delta > 0 ? colors.bad : colors.textDim;
-  const deltaText =
-    delta < 0 ? s.fewerThanLast(-delta) : delta > 0 ? s.moreThanLast(delta) : s.sameAsLast;
+  const deltaText = delta < 0 ? s.fewerThanLast(-delta) : delta > 0 ? s.moreThanLast(delta) : s.sameAsLast;
   const deltaIcon = delta < 0 ? "trending-down" : delta > 0 ? "trending-up" : "trending-flat";
 
-  // Time-of-day histogram (plain views, like Flutter)
   const hist = Array.from({ length: 24 }, (_, h) => histogram[h] ?? 0);
   const histTotal = hist.reduce((a, b) => a + b, 0);
   const histMax = Math.max(0, ...hist);
@@ -70,9 +71,9 @@ export default function ProgressScreen() {
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}
-        contentContainerStyle={{ paddingTop: spacing.md, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
-        alwaysBounceVertical={false}
-        overScrollMode="never"
+        contentContainerStyle={{ paddingTop: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}
+        alwaysBounceVertical
+        overScrollMode="always"
       >
         <Text style={styles.title}>{s.progress}</Text>
 
@@ -84,58 +85,71 @@ export default function ProgressScreen() {
               <Pressable
                 key={r.key}
                 onPress={() => setRange(r.value)}
-                style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surface }]}
+                style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surfaceHigh }]}
               >
-                <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontWeight: "600" }}>
-                  {r.key}
-                </Text>
+                <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontWeight: "600" }}>{r.key}</Text>
               </Pressable>
             );
           })}
         </View>
 
-        {/* Summary stats */}
-        <View style={styles.statRow}>
-          <Stat label={s.avgPerDay} value={avg.toFixed(1)} color={colors.text} />
-          <Stat label={s.onTargetDays} value={`${withinDays} / ${stats.length}`} color={colors.good} />
-          <Stat label={s.saved} value={`${cur}${totalSaved.toFixed(0)}`} color={colors.good} />
-        </View>
-
-        {/* Week vs week */}
-        <View style={styles.cardBox}>
-          <Text style={styles.cardTitle}>{s.weekVsWeek}</Text>
-          <View style={styles.weekRow}>
-            <WeekStat label={s.thisWeek} value={weekNow} />
-            <WeekStat label={s.lastWeek} value={weekPrev} dim />
-            <View style={{ flex: 1 }} />
-            <MaterialIcons name={deltaIcon} size={20} color={deltaColor} />
-          </View>
-          <Text style={{ color: deltaColor, fontWeight: "600", marginTop: spacing.sm }}>{deltaText}</Text>
+        {/* Bento metric mosaic */}
+        <View style={styles.grid}>
+          <Tile bg={colors.surfaceHigh}>
+            <Text style={styles.tileValue}>{avg.toFixed(1)}</Text>
+            <Text style={styles.tileLabel}>{s.avgPerDay}</Text>
+          </Tile>
+          <Tile bg={GOOD_TINT}>
+            <Text style={[styles.tileValue, { color: colors.good }]}>
+              {withinDays}
+              <Text style={styles.tileValueDim}> / {stats.length}</Text>
+            </Text>
+            <Text style={styles.tileLabel}>{s.onTargetDays}</Text>
+          </Tile>
+          <Tile bg={colors.accentTint}>
+            <Text style={[styles.tileValue, { color: colors.accent }]}>
+              {cur}
+              {totalSaved.toFixed(0)}
+            </Text>
+            <Text style={styles.tileLabel}>{s.saved}</Text>
+          </Tile>
+          <Tile bg={colors.surfaceHigh}>
+            <View style={styles.weekTop}>
+              <Text style={styles.tileValue}>{weekNow}</Text>
+              <MaterialIcons name={deltaIcon} size={20} color={deltaColor} />
+            </View>
+            <Text style={styles.tileLabel}>{s.thisWeek}</Text>
+            <Text style={[styles.deltaText, { color: deltaColor }]} numberOfLines={1}>
+              {deltaText}
+            </Text>
+          </Tile>
         </View>
 
         {/* Cigs vs limit */}
-        <Text style={styles.section}>{s.cigsVsLimit}</Text>
-        <View style={styles.chartCard}>
-          <LineChart
-            series={[
-              { points: stats.map((st) => st.count), color: colors.accent, fill: true },
-              { points: stats.map((st) => st.limit), color: colors.textDim, dashed: true },
-            ]}
-            overMask={stats.map((st) => st.count > st.limit)}
-            overColor={colors.bad}
-            xLabels={stats.map((st) => `${st.day.getDate()}/${st.day.getMonth() + 1}`)}
-            formatY={(v) => String(Math.round(v))}
-          />
-        </View>
-        <View style={styles.legend}>
-          <Legend color={colors.accent} label={s.smoked} />
-          <Legend color={colors.textDim} label={s.limitLabel} />
-          <Legend color={colors.bad} label={s.over} />
-        </View>
+        <Wide bg={colors.surface}>
+          <Text style={styles.tileTitle}>{s.cigsVsLimit}</Text>
+          <View style={{ marginTop: spacing.md }}>
+            <LineChart
+              series={[
+                { points: stats.map((st) => st.count), color: colors.accent, fill: true },
+                { points: stats.map((st) => st.limit), color: colors.textDim, dashed: true },
+              ]}
+              overMask={stats.map((st) => st.count > st.limit)}
+              overColor={colors.bad}
+              xLabels={stats.map((st) => `${st.day.getDate()}/${st.day.getMonth() + 1}`)}
+              formatY={(v) => String(Math.round(v))}
+            />
+          </View>
+          <View style={styles.legend}>
+            <Legend color={colors.accent} label={s.smoked} />
+            <Legend color={colors.textDim} label={s.limitLabel} />
+            <Legend color={colors.bad} label={s.over} />
+          </View>
+        </Wide>
 
         {/* Time of day */}
-        <View style={[styles.cardBox, { marginTop: spacing.lg }]}>
-          <Text style={styles.cardTitle}>{s.whenYouSmoke}</Text>
+        <Wide bg={colors.surfaceHigh}>
+          <Text style={styles.tileTitle}>{s.whenYouSmoke}</Text>
           <Text style={styles.sub}>{histTotal < 3 ? s.notEnoughData : s.peakAround(peakLabel)}</Text>
           <View style={styles.histRow}>
             {hist.map((c, h) => {
@@ -162,49 +176,39 @@ export default function ProgressScreen() {
               </Text>
             ))}
           </View>
-        </View>
+        </Wide>
 
         {/* Money saved */}
-        <Text style={styles.section}>{s.moneySaved}</Text>
-        <Text style={styles.sub}>{s.baselineNote(settings.baselinePerDay)}</Text>
-        <View style={[styles.chartCard, { marginTop: spacing.sm }]}>
-          <LineChart
-            series={[{ points: savings.map((p) => p.saved), color: colors.accent, fill: true }]}
-            xLabels={savings.map((p) => `${p.day.getDate()}/${p.day.getMonth() + 1}`)}
-            formatY={(v) => `${cur}${Math.round(v)}`}
-          />
-        </View>
+        <Wide bg={colors.surface}>
+          <Text style={styles.tileTitle}>{s.moneySaved}</Text>
+          <Text style={styles.sub}>{s.baselineNote(settings.baselinePerDay)}</Text>
+          <View style={{ marginTop: spacing.md }}>
+            <LineChart
+              series={[{ points: savings.map((p) => p.saved), color: colors.accent, fill: true }]}
+              xLabels={savings.map((p) => `${p.day.getDate()}/${p.day.getMonth() + 1}`)}
+              formatY={(v) => `${cur}${Math.round(v)}`}
+            />
+          </View>
+        </Wide>
 
         {/* Spend summary */}
-        <View style={[styles.cardBox, styles.spendRow, { marginTop: spacing.lg }]}>
+        <Wide bg={colors.surfaceHigh} style={styles.spendRow}>
           <MaterialIcons name="payments" size={22} color={colors.textDim} />
           <Text style={styles.spendText}>
             {s.spentSummary(cur, totalSpent(purchases).toFixed(0), totalCigarettesBought(purchases))}
           </Text>
-        </View>
+        </Wide>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function Stat({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
+function Tile({ children, bg }: { children: ReactNode; bg: string }) {
+  return <View style={[styles.tile, { backgroundColor: bg }]}>{children}</View>;
 }
 
-function WeekStat({ label, value, dim }: { label: string; value: number; dim?: boolean }) {
-  return (
-    <View style={{ marginRight: spacing.xxl }}>
-      <Text style={{ fontSize: 24, fontWeight: "700", color: dim ? colors.textDim : colors.text }}>
-        {value}
-      </Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
+function Wide({ children, bg, style }: { children: ReactNode; bg: string; style?: object }) {
+  return <View style={[styles.wide, { backgroundColor: bg }, style]}>{children}</View>;
 }
 
 function Legend({ color, label }: { color: string; label: string }) {
@@ -217,20 +221,29 @@ function Legend({ color, label }: { color: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 22, fontWeight: "700", marginBottom: spacing.md },
-  rangeRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
-  chip: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 20 },
-  statRow: { flexDirection: "row", gap: spacing.md },
-  stat: { flex: 1, backgroundColor: colors.surface, borderRadius: 18, paddingVertical: spacing.lg, paddingHorizontal: spacing.md },
-  statValue: { fontSize: 18, fontWeight: "700" },
-  statLabel: { color: colors.textDim, fontSize: 11, marginTop: spacing.xs },
-  cardBox: { backgroundColor: colors.surface, borderRadius: 18, padding: spacing.lg, marginTop: spacing.lg },
-  cardTitle: { color: colors.text, fontSize: 16, fontWeight: "600" },
-  weekRow: { flexDirection: "row", alignItems: "center", marginTop: spacing.md },
-  section: { color: colors.text, fontSize: 16, fontWeight: "600", marginTop: spacing.xxl },
+  title: { color: colors.text, fontSize: 22, fontWeight: "800", marginBottom: spacing.md },
+  rangeRow: { flexDirection: "row", gap: GAP, marginBottom: GAP },
+  chip: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 12 },
+
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: GAP },
+  tile: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    borderRadius: 14,
+    padding: spacing.lg,
+    minHeight: 92,
+    justifyContent: "center",
+  },
+  tileValue: { color: colors.text, fontSize: 26, fontWeight: "800" },
+  tileValueDim: { color: colors.textDim, fontSize: 18, fontWeight: "700" },
+  tileLabel: { color: colors.textDim, fontSize: 12, marginTop: 2 },
+  weekTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  deltaText: { fontSize: 12, fontWeight: "600", marginTop: 2 },
+
+  wide: { borderRadius: 14, padding: spacing.lg, marginTop: GAP },
+  tileTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
   sub: { color: colors.textDim, fontSize: 12, marginTop: spacing.xs },
-  chartCard: { backgroundColor: colors.surface, borderRadius: radius.card, padding: spacing.md, marginTop: spacing.sm },
-  legend: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.sm },
+  legend: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.md },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 10, height: 10, borderRadius: 5 },
   legendText: { color: colors.textDim, fontSize: 12 },

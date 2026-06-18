@@ -6,8 +6,8 @@
  * then a demo note is shown.
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { ReactNode, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ReactNode, useRef, useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { currentLimit } from "@/domain/logic";
@@ -25,6 +25,7 @@ export default function SettingsScreen() {
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLocale = useAppStore((st) => st.setLocale);
   const pad = useRef<NumberPadRef>(null);
+  const [langOpen, setLangOpen] = useState(false);
 
   const cur = settings.currencySymbol;
   const limit = currentLimit(limits, settings);
@@ -35,34 +36,50 @@ export default function SettingsScreen() {
     { key: "en", label: s.english },
     { key: "he", label: s.hebrew },
   ];
+  const currentLangLabel = langs.find((l) => l.key === locale)?.label ?? s.device;
+
+  const confirmSignOut = () =>
+    Alert.alert(s.signOutTitle, s.signOutBody, [
+      { text: s.cancel, style: "cancel" },
+      { text: s.signOut, style: "destructive", onPress: signOut },
+    ]);
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         contentContainerStyle={{ paddingTop: spacing.md, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
-        alwaysBounceVertical={false}
-        overScrollMode="never"
+        alwaysBounceVertical
+        overScrollMode="always"
       >
         <Text style={styles.title}>{s.settings}</Text>
 
-        {/* Language */}
+        {/* Language (dropdown) */}
         <Group title={s.language}>
-          <View style={styles.segmentRow}>
-            {langs.map((l) => {
+          <Pressable style={styles.row} onPress={() => setLangOpen((v) => !v)}>
+            <Text style={[styles.rowLabel, { flex: 1 }]}>{currentLangLabel}</Text>
+            <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={colors.textDim} />
+          </Pressable>
+          {langOpen &&
+            langs.map((l) => {
               const sel = locale === l.key;
               return (
-                <Pressable
-                  key={l.key}
-                  onPress={() => setLocale(l.key)}
-                  style={[styles.segment, { backgroundColor: sel ? colors.accent : colors.surfaceHigh }]}
-                >
-                  <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontWeight: "600" }}>
-                    {l.label}
-                  </Text>
-                </Pressable>
+                <View key={l.key}>
+                  <Divider />
+                  <Pressable
+                    style={styles.row}
+                    onPress={() => {
+                      setLocale(l.key);
+                      setLangOpen(false);
+                    }}
+                  >
+                    <Text style={[styles.rowLabel, { flex: 1, color: sel ? colors.accent : colors.text }]}>
+                      {l.label}
+                    </Text>
+                    {sel && <MaterialIcons name="check" size={18} color={colors.accent} />}
+                  </Pressable>
+                </View>
               );
             })}
-          </View>
         </Group>
 
         {/* Daily goal */}
@@ -144,8 +161,8 @@ export default function SettingsScreen() {
         </Group>
 
         {USE_SUPABASE ? (
-          <Pressable style={styles.signOut} onPress={signOut}>
-            <MaterialIcons name="logout" size={18} color={colors.textDim} />
+          <Pressable style={styles.signOut} onPress={confirmSignOut}>
+            <MaterialIcons name="logout" size={18} color={colors.bad} />
             <Text style={styles.signOutText}>{s.signOut}</Text>
           </Pressable>
         ) : (
@@ -207,8 +224,16 @@ function Divider() {
 
 const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 22, fontWeight: "700", marginBottom: spacing.xl },
-  groupTitle: { color: colors.textDim, fontSize: 13, fontWeight: "600", marginBottom: spacing.sm, marginLeft: spacing.xs },
-  groupBox: { backgroundColor: colors.surface, borderRadius: 18, paddingHorizontal: spacing.lg },
+  groupTitle: {
+    color: colors.textDim,
+    fontSize: 12,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.md,
+  },
+  groupBox: { backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: spacing.lg },
   row: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md },
   rowLabel: { color: colors.text, fontSize: type.body.fontSize },
   rowHelper: { color: colors.textDim, fontSize: 11, marginTop: 2 },
@@ -223,11 +248,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: radius.input,
-    paddingVertical: 14,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingVertical: 16,
   },
-  signOutText: { color: colors.textDim, fontWeight: "600" },
+  signOutText: { color: colors.bad, fontWeight: "600" },
 });
 

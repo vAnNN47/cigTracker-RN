@@ -1,46 +1,65 @@
 /**
- * Calendar screen — ported from lib/screens/calendar_screen.dart.
- * Month grid (custom, no lib) with per-day counts colored vs the day's limit,
- * a selected-day section (count/limit chip, logs, purchases), and a locked
- * notice for past days (diary is only editable on Today).
+ * Diary / History browser (the re-scoped Calendar tab, Hebrew "יומן").
+ * Pick a day from the horizontal strip (or the month picker) and see that day's
+ * cigarettes + diary + purchases together. Tap a cigarette row to open its
+ * detail/edit sheet (editable only on today; past days are read-only). Logging a
+ * cigarette is offered only while viewing today (logs are always stamped "now").
+ *
+ * Built from the Stitch reference, reconciled to our tokens + data model:
+ * dropped its app/tab chrome, no separate "tag" field (comment shows inline; a
+ * teal badge marks entries that have a diary note).
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { addDays, isSameDay, keyOf, today as todayKey } from "@/domain/day";
+import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
+import { Ring } from "@/components/Ring";
+import { isSameDay, keyOf } from "@/domain/day";
 import {
-  countForDay,
-  limitForDay,
-  logicalToday,
-  logsForDay,
-  purchasesForDay,
+    countForDay,
+    limitForDay,
+    logicalToday,
+    logsForDay,
+    purchasesForDay,
+    spentForDay,
 } from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, radius, spacing } from "@/theme";
 
-const GOOD_SOFT = "rgba(108,229,177,0.18)";
-const BAD_SOFT = "rgba(255,122,122,0.18)";
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+// Solid cards (glassmorphism removed): opaque surfaces with a hairline border.
+const GLASS = colors.surface;
+const GLASS_BORDER = colors.line;
+const GLASS_TOP = colors.line;
 
-export default function CalendarScreen() {
+export default function DiaryScreen() {
   const s = useStrings();
   const { logs, limits, purchases, settings } = useAppStore();
   const dsh = settings.dayStartHour;
 
   const today = logicalToday(dsh);
-  const [focused, setFocused] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState<Date>(today);
+  const [focused, setFocused] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
 
-  const monthEnd = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
-  const atCurrentMonth =
-    focused.getFullYear() === monthEnd.getFullYear() && focused.getMonth() === monthEnd.getMonth();
-  const atFirstMonth = focused.getFullYear() <= 2023 && focused.getMonth() === 0;
+  const detailRef = useRef<LogDetailSheetRef>(null);
 
-  // Build the month grid as weeks of 7 (null = padding day).
+  const cur = settings.currencySymbol;
+  const money = (n: number) => `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
+
+  const selLogs = logsForDay(logs, selected, dsh);
+  const selPurchases = purchasesForDay(purchases, selected, dsh);
+  const count = selLogs.length;
+  const limit = limitForDay(limits, selected, settings);
+  const within = count <= limit;
+  const pct = limit === 0 ? 1 : Math.min(1, count / limit);
+  const ringColor = within ? colors.ring : colors.bad;
+  const spent = spentForDay(purchases, selected, dsh);
+  const isToday = isSameDay(selected, today);
+
+  const monthLabel = new Intl.DateTimeFormat(s.localeCode, { month: "long", year: "numeric" }).format(selected);
   const weeks = useMemo(() => {
     const y = focused.getFullYear();
     const m = focused.getMonth();
@@ -54,217 +73,287 @@ export default function CalendarScreen() {
     for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
     return out;
   }, [focused]);
-
-  const monthTitle = new Intl.DateTimeFormat(s.localeCode, {
-    month: "long",
-    year: "numeric",
-  }).format(focused);
-
-  const selLogs = logsForDay(logs, selected, dsh);
-  const selPurchases = purchasesForDay(purchases, selected, dsh);
-  const selCount = selLogs.length;
-  const selLimit = limitForDay(limits, selected, settings);
-  const isToday = isSameDay(selected, today);
-  const cur = settings.currencySymbol;
+  const atCurrentMonth =
+    focused.getFullYear() === today.getFullYear() && focused.getMonth() === today.getMonth();
+  const monthGridTitle = new Intl.DateTimeFormat(s.localeCode, { month: "long", year: "numeric" }).format(focused);
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
-    <ScrollView
-      style={{ flex: 1, backgroundColor: colors.bg }}
-      contentContainerStyle={{
-        paddingTop: spacing.md,
-        paddingHorizontal: spacing.lg,
-        paddingBottom: spacing.xxl,
-      }}
-      alwaysBounceVertical={false}
-      overScrollMode="never"
-    >
-      <Text style={styles.title}>{s.calendar}</Text>
-
-      {/* Month card */}
-      <View style={styles.card}>
-        <View style={styles.monthHeader}>
-          <Pressable
-            onPress={() => !atFirstMonth && setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
-            hitSlop={8}
-            disabled={atFirstMonth}
-          >
-            <MaterialIcons name="chevron-left" size={26} color={atFirstMonth ? colors.line : colors.text} />
-          </Pressable>
-          <Text style={styles.monthTitle}>{monthTitle}</Text>
-          <Pressable
-            onPress={() => !atCurrentMonth && setFocused(new Date(focused.getFullYear(), focused.getMonth() + 1, 1))}
-            hitSlop={8}
-            disabled={atCurrentMonth}
-          >
-            <MaterialIcons name="chevron-right" size={26} color={atCurrentMonth ? colors.line : colors.text} />
-          </Pressable>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: colors.bg }}
+        contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
+        alwaysBounceVertical
+        overScrollMode="always"
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{s.diaryTab}</Text>
+            <Text style={styles.month}>{monthLabel}</Text>
+          </View>
         </View>
 
-        <View style={styles.weekRow}>
-          {WEEKDAYS.map((w) => (
-            <Text key={w} style={styles.weekday}>
-              {w}
-            </Text>
+        {/* Month calendar */}
+        <View style={styles.monthCard}>
+          <View style={styles.monthHeader}>
+            <Pressable
+              onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
+              hitSlop={8}
+            >
+              <MaterialIcons name="chevron-left" size={26} color={colors.text} />
+            </Pressable>
+            <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
+            <Pressable
+              onPress={() => !atCurrentMonth && setFocused(new Date(focused.getFullYear(), focused.getMonth() + 1, 1))}
+              hitSlop={8}
+              disabled={atCurrentMonth}
+            >
+              <MaterialIcons name="chevron-right" size={26} color={atCurrentMonth ? colors.line : colors.text} />
+            </Pressable>
+          </View>
+          {weeks.map((week, wi) => (
+            <View key={wi} style={styles.weekRow}>
+              {week.map((day, di) => {
+                if (!day) return <View key={di} style={styles.cell} />;
+                const future = keyOf(day) > today;
+                const c = countForDay(logs, day, dsh);
+                const lim = limitForDay(limits, day, settings);
+                const sel = isSameDay(day, selected);
+                return (
+                  <Pressable
+                    key={di}
+                    style={styles.cell}
+                    disabled={future}
+                    onPress={() => {
+                      setSelected(keyOf(day));
+                      setFocused(new Date(day.getFullYear(), day.getMonth(), 1));
+                    }}
+                  >
+                    <View style={[styles.dayBox, sel && { backgroundColor: colors.accent }]}>
+                      <Text style={{ color: sel ? colors.onAccent : future ? colors.line : colors.text, fontWeight: "600", fontSize: 13 }}>
+                        {day.getDate()}
+                      </Text>
+                      {c > 0 && (
+                        <Text style={{ color: sel ? colors.onAccent : c <= lim ? colors.good : colors.bad, fontSize: 10 }}>
+                          {c}
+                        </Text>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
           ))}
         </View>
 
-        {weeks.map((week, wi) => (
-          <View key={wi} style={styles.weekRow}>
-            {week.map((day, di) => {
-              if (!day) return <View key={di} style={styles.cell} />;
-              const isFuture = keyOf(day) > today;
-              const count = countForDay(logs, day, dsh);
-              const limit = limitForDay(limits, day, settings);
-              const within = count <= limit;
-              const has = count > 0;
-              const isSel = isSameDay(day, selected);
-              const isTod = isSameDay(day, today);
-
-              const cellBg = isSel ? colors.accent : has ? (within ? GOOD_SOFT : BAD_SOFT) : "transparent";
-              const numColor = isSel ? colors.bg : isFuture ? colors.line : colors.text;
-              const countColor = isSel ? colors.bg : within ? colors.good : colors.bad;
-
-              return (
-                <Pressable
-                  key={di}
-                  style={styles.cell}
-                  disabled={isFuture}
-                  onPress={() => setSelected(keyOf(day))}
-                >
-                  <View
-                    style={[
-                      styles.dayBox,
-                      { backgroundColor: cellBg },
-                      isTod && !isSel ? styles.todayBorder : null,
-                    ]}
-                  >
-                    <Text style={[styles.dayNum, { color: numColor }]}>{day.getDate()}</Text>
-                    {has && <Text style={[styles.dayCount, { color: countColor }]}>{count}</Text>}
-                  </View>
-                </Pressable>
-              );
-            })}
+        {/* Day summary */}
+        <View style={styles.summary}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sumDate}>{formatWeekdayDate(selected, s.localeCode)}</Text>
+            <Text style={[styles.sumCount, { color: ringColor }]}>
+              {count} / {limit} {s.cigarettesSection.toLowerCase()}
+            </Text>
           </View>
-        ))}
-      </View>
-
-      {/* Selected day header */}
-      <View style={styles.selHeader}>
-        <Text style={styles.selDate}>{formatWeekdayDate(selected, s.localeCode)}</Text>
-        <View style={[styles.chip, { backgroundColor: selCount <= selLimit ? GOOD_SOFT : BAD_SOFT }]}>
-          <Text style={{ color: selCount <= selLimit ? colors.good : colors.bad, fontWeight: "600" }}>
-            {selCount} / {selLimit}
-          </Text>
+          <Ring size={56} strokeWidth={5} pct={pct} color={ringColor}>
+            <Text style={styles.ringPct}>{Math.round(pct * 100)}%</Text>
+          </Ring>
         </View>
-      </View>
-
-      {!isToday && (
-        <View style={styles.lockRow}>
-          <MaterialIcons name="lock-outline" size={15} color={colors.textDim} />
-          <Text style={styles.lockText}>{s.pastLocked}</Text>
+        <View style={styles.pillRow}>
+          <View style={styles.pill}>
+            <MaterialIcons name="attach-money" size={14} color={colors.textDim} />
+            <Text style={styles.pillLabel}>{s.spentLabel}</Text>
+            <Text style={styles.pillValue}>{money(spent)}</Text>
+          </View>
+          <View style={styles.pill}>
+            <MaterialIcons name="smoking-rooms" size={14} color={colors.textDim} />
+            <Text style={styles.pillValue}>{s.loggedN(count)}</Text>
+          </View>
         </View>
-      )}
 
-      {/* Logs (newest first) */}
-      {selLogs.length === 0 ? (
-        <Text style={styles.empty}>{s.noLogsThisDay}</Text>
-      ) : (
-        [...selLogs].reverse().map((l) => {
-          const sub = [l.comment, l.diary].filter(Boolean);
-          return (
-            <View key={l.id} style={styles.row}>
-              <Text style={styles.time}>{formatTime(l.smokedAt)}</Text>
-              <View style={styles.rowText}>
-                {l.comment ? <Text style={styles.comment}>{l.comment}</Text> : null}
-                {l.diary ? <Text style={styles.diary}>{l.diary}</Text> : null}
-                {sub.length === 0 ? <Text style={styles.dash}>—</Text> : null}
+        {/* Cigarettes */}
+        <Text style={styles.section}>{s.cigarettesSection}</Text>
+        {selLogs.length === 0 ? (
+          <Text style={styles.empty}>{s.noLogsThisDay}</Text>
+        ) : (
+          [...selLogs].reverse().map((log, i) => (
+            <Pressable
+              key={log.id}
+              style={styles.row}
+              onPress={() => detailRef.current?.present({ log, number: count - i, editable: isToday })}
+            >
+              <View style={styles.rowIcon}>
+                <MaterialIcons name="smoking-rooms" size={18} color={colors.textDim} />
               </View>
-            </View>
-          );
-        })
-      )}
+              <View style={{ flex: 1 }}>
+                <View style={styles.rowTitleLine}>
+                  <Text style={styles.rowTitle}>{s.cigNumber(count - i)}</Text>
+                  {!!log.diary && (
+                    <View style={styles.diaryBadge}>
+                      <MaterialIcons name="menu-book" size={11} color={colors.accent} />
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.rowSub} numberOfLines={1}>
+                  {[formatTime(log.smokedAt), log.comment].filter(Boolean).join("  ·  ")}
+                </Text>
+              </View>
+              <MaterialIcons name={isToday ? "edit" : "chevron-right"} size={isToday ? 14 : 20} color={colors.textDim} />
+            </Pressable>
+          ))
+        )}
 
-      {/* Purchases */}
-      <Text style={styles.section}>{s.purchases}</Text>
-      {selPurchases.length === 0 ? (
-        <Text style={styles.empty}>{s.noPurchasesThisDay}</Text>
-      ) : (
-        selPurchases.map((p) => (
-          <View key={p.id} style={styles.row}>
-            <MaterialIcons
-              name={p.unit === "carton" ? "inventory-2" : "local-mall"}
-              size={20}
-              color={colors.textDim}
-            />
-            <Text style={styles.rowText}>
-              {p.quantity} {p.unit === "carton" ? s.carton : s.pack}
-            </Text>
-            <Text style={styles.price}>
-              {cur}
-              {p.price.toFixed(0)}
-            </Text>
-          </View>
-        ))
-      )}
-    </ScrollView>
+        {/* Purchases */}
+        <Text style={styles.section}>{s.purchases}</Text>
+        {selPurchases.length === 0 ? (
+          <Text style={styles.empty}>{s.noPurchasesThisDay}</Text>
+        ) : (
+          selPurchases.map((p) => (
+            <View key={p.id} style={styles.row}>
+              <View style={styles.rowIcon}>
+                <MaterialIcons name={p.unit === "carton" ? "inventory-2" : "receipt-long"} size={18} color={colors.textDim} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowTitle}>
+                  {p.quantity} {p.unit === "carton" ? s.carton : s.pack}
+                </Text>
+                <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
+              </View>
+              <Text style={styles.price}>{money(p.price)}</Text>
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      <LogDetailSheet ref={detailRef} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 22, fontWeight: "700", marginBottom: spacing.sm, marginLeft: spacing.xs },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    padding: spacing.sm,
+  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.lg },
+  title: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  month: { color: colors.textDim, fontSize: 14, marginTop: 2 },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: GLASS,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER, borderTopColor: GLASS_TOP,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconBtnActive: { borderColor: colors.accentBorder, backgroundColor: colors.accentTint },
+
+  strip: { gap: spacing.sm, paddingVertical: spacing.xs, paddingRight: spacing.xs },
+  chip: {
+    width: 52,
+    paddingVertical: spacing.md,
+    borderRadius: radius.chip,
+    backgroundColor: GLASS,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER, borderTopColor: GLASS_TOP,
+    alignItems: "center",
+    gap: 2,
+  },
+  chipSel: { backgroundColor: colors.accent, borderColor: colors.accent },
+  chipWd: { color: colors.textDim, fontSize: 11, fontWeight: "600" },
+  chipNum: { color: colors.text, fontSize: 18, fontWeight: "800" },
+  todayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent, marginTop: 1 },
+
+  monthCard: {
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingVertical: spacing.sm,
   },
   monthHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
-  monthTitle: { color: colors.text, fontSize: 16, fontWeight: "600" },
+  monthGridTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
   weekRow: { flexDirection: "row" },
-  weekday: { flex: 1, textAlign: "center", color: colors.textDim, fontSize: 12, paddingVertical: spacing.xs },
-  cell: { flex: 1, aspectRatio: 1, padding: 3 },
+  cell: { flex: 1, aspectRatio: 1, padding: 2 },
   dayBox: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 34,
   },
-  todayBorder: { borderWidth: 1.4, borderColor: colors.accent },
-  dayNum: { fontWeight: "600", fontSize: 13 },
-  dayCount: { fontSize: 10, marginTop: 1 },
-  selHeader: {
+
+  summary: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
   },
-  selDate: { color: colors.text, fontSize: 16, fontWeight: "600" },
-  chip: { paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: 20 },
-  lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.sm },
-  lockText: { color: colors.textDim, fontSize: 12, flex: 1 },
+  sumDate: { color: colors.text, fontSize: 18, fontWeight: "700" },
+  sumCount: { fontSize: 15, fontWeight: "600", marginTop: spacing.xs },
+  ringPct: { color: colors.text, fontSize: 13, fontWeight: "700" },
+  pillRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.sm },
+  pill: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: spacing.xs,
+  },
+  pillLabel: { color: colors.textDim, fontSize: 12 },
+  pillValue: { color: colors.text, fontSize: 14, fontWeight: "700" },
+
+  section: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: spacing.xxl, marginBottom: spacing.sm },
   empty: { color: colors.textDim, paddingVertical: spacing.md },
-  section: { color: colors.text, fontSize: 16, fontWeight: "600", marginTop: spacing.lg, marginBottom: spacing.sm },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.input,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: "transparent",
+    borderRadius: 0,
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+    paddingHorizontal: 0,
     paddingVertical: spacing.md,
-    marginTop: spacing.sm,
+    marginBottom: 0,
   },
-  rowText: { flex: 1 },
-  time: { color: colors.text, fontWeight: "600" },
-  comment: { color: colors.text, fontSize: 13 },
-  diary: { color: colors.textDim, fontSize: 13, fontStyle: "italic", marginTop: 2 },
-  dash: { color: colors.textDim },
-  price: { color: colors.text, fontWeight: "600" },
+  rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
+  rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  rowTitle: { color: colors.text, fontWeight: "700", fontSize: 15 },
+  diaryBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.accentTint,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowSub: { color: colors.textDim, fontSize: 13, marginTop: 2 },
+  price: { color: colors.text, fontWeight: "700", fontSize: 15 },
+
+  logBtn: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
+    backgroundColor: colors.accentTint,
+    borderRadius: radius.button,
+    paddingVertical: 14,
+    marginTop: spacing.xs,
+  },
+  logBtnText: { color: colors.accent, fontWeight: "700", fontSize: 15 },
 });
