@@ -7,11 +7,13 @@
     "icon": "./assets/images/icon.png",
     "scheme": "io.supabase.cigtracker",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.cigtracker.rn",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -40,11 +42,34 @@
         }
       ],
       "expo-localization",
-      "@react-native-google-signin/google-signin"
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.83868246631-sk7stmvnt2e51uf00s0n920h96up4fb2"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              { "name": "GoogleUtilities", "modular_headers": true },
+              { "name": "RecaptchaInterop", "modular_headers": true }
+            ]
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9f787564-29b5-4fc7-9ed4-fa7e27c67ac5"
+      }
+    },
+    "owner": "leetbeck"
   }
 }

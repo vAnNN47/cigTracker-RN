@@ -1,17 +1,30 @@
 /**
  * Native Google sign-in (account picker, no browser) -> Supabase.
  * Get a Google ID token from the native SDK, hand it to Supabase
- * signInWithIdToken. Configure runs once on import.
+ * signInWithIdToken.
+ *
+ * configure() runs lazily (on first sign-in / sign-out) instead of at import,
+ * so merely importing this module (e.g. for signOut in Settings) can't crash
+ * the app. On iOS, native sign-in needs iosClientId — set
+ * EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID and add the matching iosUrlScheme to the
+ * google-signin config plugin in app.json, then rebuild.
  */
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 import { supabase } from "./supabase";
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-});
+let configured = false;
+function ensureConfigured() {
+  if (configured) return;
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  });
+  configured = true;
+}
 
 export async function signInWithGoogle(): Promise<void> {
+  ensureConfigured();
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
   const result = await GoogleSignin.signIn();
   // v13+ returns { type, data: { idToken, user } }; older returns { idToken }.
@@ -23,6 +36,7 @@ export async function signInWithGoogle(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  ensureConfigured();
   try {
     await GoogleSignin.signOut();
   } catch {

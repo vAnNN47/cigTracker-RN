@@ -19,20 +19,18 @@ import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { Ring } from "@/components/Ring";
 import { useToast } from "@/components/Toast";
 import {
-    averagePerDay,
     currentLimit,
     currentStreak,
     logicalToday,
     logsForDay,
     sevenDayInsight,
     spentForDay,
-    totalSaved,
 } from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, spacing } from "@/theme";
+import { colors, radius, spacing } from "@/theme";
 import { RefreshableScrollView } from "../../../packages/pull-refresh";
 
 export default function TodayScreen() {
@@ -58,14 +56,13 @@ export default function TodayScreen() {
   const ringColor = within ? colors.ring : colors.bad;
 
   const spent = spentForDay(purchases, todayKey, settings.dayStartHour);
-  const saved = totalSaved(logs, limits, settings);
   const streak = currentStreak(logs, limits, settings);
-  const avg = averagePerDay(logs, limits, settings);
   const insight = sevenDayInsight(logs, settings);
 
   const cur = settings.currencySymbol;
   const money = (n: number) =>
     `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
+  const streakEmoji = streak === 0 ? "🥀" : "🔥";
 
   const recent = purchases.length ? purchases[purchases.length - 1] : null;
   const shortDate = (d: Date) =>
@@ -109,14 +106,14 @@ export default function TodayScreen() {
           </Pressable>
         </View>
 
-        {/* Hero — today's allowance */}
+        {/* Hero — today's smoking summary */}
         <View style={styles.hero}>
           <View style={styles.heroTop}>
             <View style={{ flex: 1 }}>
               <Text style={styles.heroLabel}>{s.todaysAllowance}</Text>
               <View style={styles.bigRow}>
-                <Text style={styles.big}>{left}</Text>
-                <Text style={styles.bigSuffix}>{s.leftLabel}</Text>
+                <Text style={styles.big}>{count}</Text>
+                <Text style={styles.bigSuffix}>{s.cigarettesSection}</Text>
               </View>
               <Text style={styles.usedToday}>{s.usedToday(count, limit)}</Text>
             </View>
@@ -135,8 +132,10 @@ export default function TodayScreen() {
               <Text style={styles.subValue}>{money(spent)}</Text>
             </View>
             <View style={styles.subCard}>
-              <Text style={styles.subLabel}>{s.savedShort}</Text>
-              <Text style={[styles.subValue, { color: colors.accent }]}>{money(saved)}</Text>
+              <Text style={styles.subLabel}>{s.dayStreak}</Text>
+              <Text style={[styles.subValue, { color: streak === 0 ? colors.bad : colors.streak }]}> 
+                {streakEmoji} {streak}
+              </Text>
             </View>
           </View>
         </View>
@@ -153,23 +152,9 @@ export default function TodayScreen() {
           </Pressable>
         </View>
 
-        {/* Stats grid */}
-        <View style={styles.grid}>
-          <StatCard icon="event" value={`${count}`} label={s.today} />
-          <StatCard
-            icon="local-fire-department"
-            emoji={streak === 0 ? "🥀" : undefined}
-            value={`${streak}`}
-            label={s.dayStreak}
-            tint={streak === 0 ? colors.bad : colors.streak}
-          />
-          <StatCard icon="show-chart" value={`${avg}`} label={s.avgDaily} />
-          <StatCard icon="savings" value={money(saved)} label={s.moneySaved} accent />
-        </View>
-
-        {/* Today's log */}
+        {/* Recently smoked */}
         <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>{s.todaysLog}</Text>
+          <Text style={styles.sectionTitle}>{s.recentlySmoked}</Text>
           <Pressable onPress={openDiary}>
             <Text style={styles.link}>{s.viewAll}</Text>
           </Pressable>
@@ -253,42 +238,6 @@ export default function TodayScreen() {
   );
 }
 
-function StatCard({
-  icon,
-  value,
-  label,
-  tint,
-  accent,
-  emoji,
-}: {
-  icon: keyof typeof MaterialIcons.glyphMap;
-  value: string;
-  label: string;
-  tint?: string;
-  accent?: boolean;
-  emoji?: string;
-}) {
-  const iconColor = tint ?? (accent ? colors.accent : colors.textDim);
-  return (
-    <View style={[styles.stat, accent && styles.statAccent]}>
-      <View
-        style={[
-          styles.statIcon,
-          { backgroundColor: emoji ? colors.fill : tint ? "rgba(251,146,60,0.12)" : accent ? colors.accentTint : colors.fill },
-        ]}
-      >
-        {emoji ? (
-          <Text style={{ fontSize: 15 }}>{emoji}</Text>
-        ) : (
-          <MaterialIcons name={icon} size={16} color={iconColor} />
-        )}
-      </View>
-      <Text style={[styles.statValue, accent && { color: colors.accent }]}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.lg },
   appTitle: { color: colors.text, fontSize: 24, fontWeight: "800" },
@@ -303,17 +252,18 @@ const styles = StyleSheet.create({
   },
 
   hero: {
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
-    paddingVertical: spacing.md,
-    paddingHorizontal: 0,
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   heroTop: { flexDirection: "row", alignItems: "center" },
   heroLabel: { color: colors.textDim, fontSize: 14 },
   bigRow: { flexDirection: "row", alignItems: "flex-end", gap: spacing.sm, marginTop: spacing.xs },
-  big: { color: colors.text, fontSize: 44, fontWeight: "800", lineHeight: 48 },
-  bigSuffix: { color: colors.textDim, fontSize: 20, fontWeight: "600", marginBottom: 6 },
+  big: { color: colors.text, fontSize: 46, fontWeight: "800", lineHeight: 50 },
+  bigSuffix: { color: colors.textDim, fontSize: 16, fontWeight: "600", marginBottom: 6 },
   usedToday: { color: colors.textDim, fontSize: 13, marginTop: spacing.xs },
   ringPct: { color: colors.text, fontSize: 14, fontWeight: "700" },
 
@@ -321,7 +271,13 @@ const styles = StyleSheet.create({
   fill: { height: 6, borderRadius: 3 },
 
   subRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
-  subCard: { flex: 1, backgroundColor: "transparent", borderRadius: 0, paddingVertical: spacing.xs },
+  subCard: {
+    flex: 1,
+    backgroundColor: colors.fill,
+    borderRadius: radius.input,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
   subHead: { flexDirection: "row", alignItems: "center", gap: 6 },
   subLabel: { color: colors.textDim, fontSize: 12 },
   subValue: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: 2 },
@@ -333,10 +289,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: colors.accentTint,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
-    borderRadius: 16,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    borderRadius: 0,
     paddingVertical: spacing.md,
   },
   primaryText: { color: colors.accent, fontWeight: "700", fontSize: 15 },
@@ -346,50 +301,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: spacing.sm,
-    backgroundColor: colors.surfaceHigh,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 16,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    borderRadius: 0,
     paddingVertical: spacing.md,
   },
   outlineText: { color: colors.text, fontWeight: "600", fontSize: 15 },
-
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.lg },
-  stat: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.line,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    minHeight: 96,
-  },
-  statAccent: { backgroundColor: colors.accentTint, borderColor: colors.accentBorder },
-  statIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.sm,
-  },
-  statValue: { color: colors.text, fontSize: 24, fontWeight: "800" },
-  statLabel: {
-    color: colors.textDim,
-    fontSize: 12,
-    marginTop: 2,
-    textAlign: "center",
-    lineHeight: 16,
-  },
 
   listHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: spacing.xxl,
-    marginBottom: spacing.md,
+    marginTop: spacing.xl,
+    marginBottom: spacing.sm,
   },
   sectionTitle: { color: colors.text, fontSize: 18, fontWeight: "700" },
   link: { color: colors.accent, fontSize: 14, fontWeight: "600" },

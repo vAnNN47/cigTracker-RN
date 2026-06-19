@@ -34,6 +34,7 @@ export function makeStrings(he: boolean) {
     dayStreak: he ? "רצף ימים" : "Day Streak",
     avgDaily: he ? "ממוצע יומי" : "Avg Daily",
     todaysLog: he ? "יומן היום" : "Today's Log",
+    recentlySmoked: he ? "נעשנו לאחרונה" : "Recently smoked",
     viewAll: he ? "הצג הכול" : "View All",
     recentPurchase: he ? "קנייה אחרונה" : "Recent Purchase",
     viewHistory: he ? "הצג היסטוריה" : "View History",

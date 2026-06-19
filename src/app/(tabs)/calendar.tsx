@@ -63,7 +63,6 @@ export default function DiaryScreen() {
   const prevArrow = isRTL ? "chevron-right" : "chevron-left";
   const nextArrow = isRTL ? "chevron-left" : "chevron-right";
 
-  const monthLabel = new Intl.DateTimeFormat(s.localeCode, { month: "long", year: "numeric" }).format(selected);
   const weeks = useMemo(() => {
     const y = focused.getFullYear();
     const m = focused.getMonth();
@@ -91,10 +90,7 @@ export default function DiaryScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{s.diaryTab}</Text>
-            <Text style={styles.month}>{monthLabel}</Text>
-          </View>
+          <Text style={styles.title}>{s.diaryTab}</Text>
         </View>
 
         {/* Month calendar */}
@@ -104,7 +100,7 @@ export default function DiaryScreen() {
               onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
               hitSlop={8}
             >
-              <MaterialIcons name={prevArrow} size={26} color={colors.text} />
+              <MaterialIcons name={prevArrow} size={22} color={colors.textDim} />
             </Pressable>
             <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
             <Pressable
@@ -112,7 +108,7 @@ export default function DiaryScreen() {
               hitSlop={8}
               disabled={atCurrentMonth}
             >
-              <MaterialIcons name={nextArrow} size={26} color={atCurrentMonth ? colors.line : colors.text} />
+              <MaterialIcons name={nextArrow} size={22} color={atCurrentMonth ? colors.line : colors.textDim} />
             </Pressable>
           </View>
           {weeks.map((week, wi) => (
@@ -133,14 +129,30 @@ export default function DiaryScreen() {
                       setFocused(new Date(day.getFullYear(), day.getMonth(), 1));
                     }}
                   >
-                    <View style={[styles.dayBox, sel && { backgroundColor: colors.accent }]}>
-                      <Text style={{ color: sel ? colors.onAccent : future ? colors.line : colors.text, fontWeight: "600", fontSize: 13 }}>
+                    <View
+                      style={[
+                        styles.dayBox,
+                        sel && styles.dayBoxSelected,
+                        !sel && c > 0 && styles.dayBoxHasDots,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dayNumber,
+                          sel && styles.dayNumberSelected,
+                          future && styles.dayNumberFuture,
+                        ]}
+                      >
                         {day.getDate()}
                       </Text>
                       {c > 0 && (
-                        <Text style={{ color: sel ? colors.onAccent : c <= lim ? colors.good : colors.bad, fontSize: 10 }}>
-                          {c}
-                        </Text>
+                        <View
+                          style={[
+                            styles.dayDot,
+                            sel && styles.dayDotSelected,
+                            !sel && c > lim && styles.dayDotOver,
+                          ]}
+                        />
                       )}
                     </View>
                   </Pressable>
@@ -234,9 +246,8 @@ export default function DiaryScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.lg },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.sm },
   title: { color: colors.text, fontSize: 24, fontWeight: "800" },
-  month: { color: colors.textDim, fontSize: 14, marginTop: 2 },
   iconBtn: {
     width: 40,
     height: 40,
@@ -266,27 +277,62 @@ const styles = StyleSheet.create({
   todayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent, marginTop: 1 },
 
   monthCard: {
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
+    backgroundColor: colors.surfaceHigh,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.line,
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
   },
   monthHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
     paddingHorizontal: spacing.xs,
+    marginBottom: spacing.xs,
   },
-  monthGridTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
+  monthGridTitle: { color: colors.text, fontSize: 15, fontWeight: "700" },
   weekRow: { flexDirection: "row" },
   cell: { flex: 1, aspectRatio: 1, padding: 2 },
   dayBox: {
     flex: 1,
-    borderRadius: 999,
+    borderRadius: radius.card,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 34,
+    minHeight: 36,
+    paddingVertical: 2,
+  },
+  dayBoxSelected: {
+    backgroundColor: colors.accent,
+    borderRadius: 999,
+  },
+  dayBoxHasDots: {
+    backgroundColor: colors.fill,
+  },
+  dayNumber: {
+    color: colors.text,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  dayNumberSelected: {
+    color: colors.onAccent,
+  },
+  dayNumberFuture: {
+    color: colors.line,
+  },
+  dayDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.textDim,
+    marginTop: 2,
+  },
+  dayDotSelected: {
+    backgroundColor: colors.onAccent,
+  },
+  dayDotOver: {
+    backgroundColor: colors.bad,
   },
 
   summary: {

@@ -30,7 +30,12 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textDim,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.line },
+        tabBarStyle: {
+          backgroundColor: colors.bg,
+          borderTopColor: colors.line,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
         sceneStyle: { backgroundColor: colors.bg },
         tabBarButton: (props) => <TabButton {...props} />,
       }}
