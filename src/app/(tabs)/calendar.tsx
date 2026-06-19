@@ -10,11 +10,13 @@
  * teal badge marks entries that have a diary note).
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { useMemo, useRef, useState } from "react";
+import * as Haptics from "expo-haptics";
+import { useRef, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
+import { MonthPager } from "../../../packages/month-pager";
 import { Ring } from "@/components/Ring";
 import { isSameDay, keyOf } from "@/domain/day";
 import {
@@ -34,6 +36,22 @@ import { colors, radius, spacing } from "@/theme";
 const GLASS = colors.surface;
 const GLASS_BORDER = colors.line;
 const GLASS_TOP = colors.line;
+
+// Calendar grid for a given month, always padded to a fixed 6 weeks (42 cells)
+// so every month has the same height — keeps the swipe between months smooth.
+function buildWeeks(monthFirst: Date): (Date | null)[][] {
+  const y = monthFirst.getFullYear();
+  const m = monthFirst.getMonth();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const startWeekday = new Date(y, m, 1).getDay();
+  const cells: (Date | null)[] = [];
+  for (let i = 0; i < startWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(y, m, d));
+  while (cells.length < 42) cells.push(null);
+  const out: (Date | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
+  return out;
+}
 
 export default function DiaryScreen() {
   const s = useStrings();
@@ -63,22 +81,61 @@ export default function DiaryScreen() {
   const prevArrow = isRTL ? "chevron-right" : "chevron-left";
   const nextArrow = isRTL ? "chevron-left" : "chevron-right";
 
-  const weeks = useMemo(() => {
-    const y = focused.getFullYear();
-    const m = focused.getMonth();
-    const daysInMonth = new Date(y, m + 1, 0).getDate();
-    const startWeekday = new Date(y, m, 1).getDay();
-    const cells: (Date | null)[] = [];
-    for (let i = 0; i < startWeekday; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(y, m, d));
-    while (cells.length % 7 !== 0) cells.push(null);
-    const out: (Date | null)[][] = [];
-    for (let i = 0; i < cells.length; i += 7) out.push(cells.slice(i, i + 7));
-    return out;
-  }, [focused]);
   const atCurrentMonth =
     focused.getFullYear() === today.getFullYear() && focused.getMonth() === today.getMonth();
   const monthGridTitle = new Intl.DateTimeFormat(s.localeCode, { month: "long", year: "numeric" }).format(focused);
+
+  // Renders one month's grid; reused by MonthPager for prev / current / next.
+  const renderMonth = (monthFirst: Date) =>
+    buildWeeks(monthFirst).map((week, wi) => (
+      <View key={wi} style={styles.weekRow}>
+        {week.map((day, di) => {
+          if (!day) return <View key={di} style={styles.cell} />;
+          const future = keyOf(day) > today;
+          const c = countForDay(logs, day, dsh);
+          const lim = limitForDay(limits, day, settings);
+          const sel = isSameDay(day, selected);
+          return (
+            <Pressable
+              key={di}
+              style={styles.cell}
+              disabled={future}
+              onPress={() => {
+                setSelected(keyOf(day));
+                setFocused(new Date(day.getFullYear(), day.getMonth(), 1));
+              }}
+            >
+              <View
+                style={[
+                  styles.dayBox,
+                  sel && styles.dayBoxSelected,
+                  !sel && c > 0 && styles.dayBoxHasDots,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dayNumber,
+                    sel && styles.dayNumberSelected,
+                    future && styles.dayNumberFuture,
+                  ]}
+                >
+                  {day.getDate()}
+                </Text>
+                {c > 0 && (
+                  <View
+                    style={[
+                      styles.dayDot,
+                      sel && styles.dayDotSelected,
+                      !sel && c > lim && styles.dayDotOver,
+                    ]}
+                  />
+                )}
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
+    ));
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -111,55 +168,16 @@ export default function DiaryScreen() {
               <MaterialIcons name={nextArrow} size={22} color={atCurrentMonth ? colors.line : colors.textDim} />
             </Pressable>
           </View>
-          {weeks.map((week, wi) => (
-            <View key={wi} style={styles.weekRow}>
-              {week.map((day, di) => {
-                if (!day) return <View key={di} style={styles.cell} />;
-                const future = keyOf(day) > today;
-                const c = countForDay(logs, day, dsh);
-                const lim = limitForDay(limits, day, settings);
-                const sel = isSameDay(day, selected);
-                return (
-                  <Pressable
-                    key={di}
-                    style={styles.cell}
-                    disabled={future}
-                    onPress={() => {
-                      setSelected(keyOf(day));
-                      setFocused(new Date(day.getFullYear(), day.getMonth(), 1));
-                    }}
-                  >
-                    <View
-                      style={[
-                        styles.dayBox,
-                        sel && styles.dayBoxSelected,
-                        !sel && c > 0 && styles.dayBoxHasDots,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.dayNumber,
-                          sel && styles.dayNumberSelected,
-                          future && styles.dayNumberFuture,
-                        ]}
-                      >
-                        {day.getDate()}
-                      </Text>
-                      {c > 0 && (
-                        <View
-                          style={[
-                            styles.dayDot,
-                            sel && styles.dayDotSelected,
-                            !sel && c > lim && styles.dayDotOver,
-                          ]}
-                        />
-                      )}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          ))}
+          <MonthPager
+            focused={focused}
+            onChange={(next) => {
+              Haptics.selectionAsync();
+              setFocused(next);
+            }}
+            renderMonth={renderMonth}
+            canGoNext={!atCurrentMonth}
+            isRTL={isRTL}
+          />
         </View>
 
         {/* Day summary */}
@@ -381,7 +399,7 @@ const styles = StyleSheet.create({
   },
   rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
   rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  rowTitle: { color: colors.text, fontWeight: "700", fontSize: 15 },
+  rowTitle: { color: colors.text, fontWeight: "700", fontSize: 14 },
   diaryBadge: {
     width: 20,
     height: 20,

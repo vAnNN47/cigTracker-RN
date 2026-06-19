@@ -39,7 +39,7 @@ export function makeStrings(he: boolean) {
     recentPurchase: he ? "קנייה אחרונה" : "Recent Purchase",
     viewHistory: he ? "הצג היסטוריה" : "View History",
     noPurchasesYet: he ? "עדיין אין קניות." : "No purchases yet.",
-    cigNumber: (n: number) => (he ? `סיגריה #${n}` : `Cigarette #${n}`),
+    cigNumber: (n: number) => (he ? `סיגריה מס' ${n}` : `Cigarette #${n}`),
     insightFewer: (n: number) =>
       he
         ? `אתה מעשן ${n} פחות מהממוצע השבועי שלך. כל הכבוד!`

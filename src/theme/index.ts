@@ -9,17 +9,17 @@
  */
 
 export const colors = {
-  bg: "#111827", // app background (slate-900)
-  surface: "#1F2937", // cards (slate-800)
+  bg: "#16141b", // app background (slate-900)
+  surface: "#371f2c", // cards (slate-800)
   surfaceHigh: "#283445", // inputs / raised fills
-  text: "#F9FAFB", // primary text
+  text: "#b6b6b6", // primary text // c99fda
   textDim: "#6B7280", // secondary / labels (slate-500)
-  accent: "#14B8A6", // teal — primary action
-  ring: "#2DD4BF", // brighter teal for the progress ring
-  good: "#2DD4BF", // under-limit / positive
+  accent: "#df8adf", // teal — primary action
+  ring: "#9e85e0", // brighter teal for the progress ring
+  good: "#555555", // under-limit / positive
   bad: "#FB7185", // over-limit / negative (rose)
   streak: "#FB923C", // day-streak flame (orange)
-  line: "rgba(255,255,255,0.08)", // hairline borders / dividers
+  line: "rgba(48, 110, 224, 0.08)", // hairline borders / dividers
   /** Faint fill for sub-cards inside a card. */
   fill: "rgba(255,255,255,0.05)",
   /** Progress/ring track. */
