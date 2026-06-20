@@ -5,21 +5,23 @@
  *
  * Imperative API: parent calls ref.present().
  */
+import { MaterialIcons } from "@expo/vector-icons";
 import { randomUUID } from "expo-crypto";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useToast } from "@/components/Toast";
 import { useStrings } from "@/i18n/useStrings";
 import { cigsInPurchase, PACKS_PER_CARTON, PackUnit, Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../packages/keyboard-sheet";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 export interface AddPurchaseSheetRef {
-  present: () => void;
+  // Pass an existing purchase to edit it; omit to add a new one.
+  present: (purchase?: Purchase) => void;
 }
 
 export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
@@ -27,6 +29,8 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
     const s = useStrings();
     const toast = useToast();
     const addPurchase = useAppStore((st) => st.addPurchase);
+    const editPurchase = useAppStore((st) => st.editPurchase);
+    const deletePurchase = useAppStore((st) => st.deletePurchase);
     const settings = useAppStore((st) => st.settings);
     const cur = settings.currencySymbol;
     const pricePerPack = settings.pricePerPack;
@@ -38,17 +42,28 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
     const [price, setPrice] = useState(pricePerPack);
     const [priceEdited, setPriceEdited] = useState(false);
     const [saving, setSaving] = useState(false);
+    // The purchase being edited (null = adding a new one).
+    const [editing, setEditing] = useState<Purchase | null>(null);
 
     // Suggested total from the known per-pack price (×10 for a carton).
     const derivedPrice = (u: PackUnit, q: number) =>
       pricePerPack * (u === "carton" ? PACKS_PER_CARTON : 1) * q;
 
     useImperativeHandle(ref, () => ({
-      present: () => {
-        setUnit("pack");
-        setQuantity(1);
-        setPrice(derivedPrice("pack", 1));
-        setPriceEdited(false);
+      present: (purchase) => {
+        if (purchase) {
+          setUnit(purchase.unit);
+          setQuantity(purchase.quantity);
+          setPrice(purchase.price);
+          setPriceEdited(true); // keep the saved price; don't auto-derive over it
+          setEditing(purchase);
+        } else {
+          setUnit("pack");
+          setQuantity(1);
+          setPrice(derivedPrice("pack", 1));
+          setPriceEdited(false);
+          setEditing(null);
+        }
         setSaving(false);
         sheetRef.current?.present();
       },
@@ -59,17 +74,30 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
 
     const save = async () => {
       setSaving(true);
-      const purchase: Purchase = {
-        id: randomUUID(),
-        unit,
-        quantity,
-        price,
-        boughtAt: new Date(),
-      };
-      await addPurchase(purchase);
+      if (editing) {
+        await editPurchase(editing.id, { unit, quantity, price });
+      } else {
+        await addPurchase({ id: randomUUID(), unit, quantity, price, boughtAt: new Date() });
+      }
       setSaving(false);
       sheetRef.current?.dismiss();
       toast.show({ message: s.savedToast });
+    };
+
+    const remove = () => {
+      if (!editing) return;
+      Alert.alert(s.deletePurchaseTitle, s.deletePurchaseBody, [
+        { text: s.cancel, style: "cancel" },
+        {
+          text: s.delete,
+          style: "destructive",
+          onPress: async () => {
+            await deletePurchase(editing.id);
+            sheetRef.current?.dismiss();
+            toast.show({ message: s.purchaseDeletedToast });
+          },
+        },
+      ]);
     };
 
     return (
@@ -81,7 +109,14 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
         cornerRadius={radius.sheet}
       >
         <View style={styles.card}>
-          <Text style={styles.title}>{s.addPurchase}</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{editing ? s.editPurchase : s.addPurchase}</Text>
+            {editing && (
+              <Pressable onPress={remove} hitSlop={8} style={styles.deleteBtn}>
+                <MaterialIcons name="delete-outline" size={22} color={colors.bad} />
+              </Pressable>
+            )}
+          </View>
 
           {/* Unit segmented control */}
           <View style={styles.segment}>
@@ -173,12 +208,12 @@ function EditRow({ label, value, onPress }: { label: string; value: string; onPr
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.card,
     padding: spacing.md,
     gap: spacing.sm,
   },
-  title: { color: colors.text, fontSize: 20, fontWeight: "700" },
+  titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold },
+  deleteBtn: { padding: 2 },
   segment: {
     flexDirection: "row",
     gap: spacing.sm,
@@ -188,21 +223,19 @@ const styles = StyleSheet.create({
   },
   segBtn: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: radius.chip - 2 },
   segBtnSel: { backgroundColor: colors.accent },
-  segText: { color: colors.textDim, fontWeight: "700" },
+  segText: { color: colors.textDim, fontFamily: fonts.bold },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,
-    borderWidth: 1,
-    borderColor: colors.line,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  rowLabel: { color: colors.textDim, fontSize: type.body.fontSize },
-  rowValue: { color: colors.text, fontSize: 18, fontWeight: "700" },
-  hint: { color: colors.textDim, fontSize: 13, marginLeft: spacing.xs },
+  rowLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  rowValue: { color: colors.text, fontSize: 18, fontFamily: fonts.monoMedium },
+  hint: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginLeft: spacing.xs },
   button: {
     marginTop: spacing.xs,
     backgroundColor: colors.accent,
@@ -211,5 +244,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.onAccent, fontWeight: "700", fontSize: type.body.fontSize },
+  buttonText: { color: colors.onAccent, fontFamily: fonts.bold, fontSize: type.body.fontSize },
 });

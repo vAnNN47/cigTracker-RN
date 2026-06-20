@@ -2,19 +2,20 @@
  * Edit-log modal (full-screen route, presented modally). Opened from the Diary /
  * Today detail sheet's pencil for a today entry. Full-screen so a long diary has
  * room and respects safe areas (fixes the bottom-sheet overflow). Edits the
- * comment + diary and saves via the store.
+ * time (for entries logged late), comment + diary and saves via the store.
  */
+import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { formatTime } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 
 export default function EditLogModal() {
   const s = useStrings();
@@ -27,13 +28,24 @@ export default function EditLogModal() {
 
   const [comment, setComment] = useState(log?.comment ?? "");
   const [diary, setDiary] = useState(log?.diary ?? "");
+  const [smokedAt, setSmokedAt] = useState<Date>(log?.smokedAt ?? new Date());
+  const [showPicker, setShowPicker] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Keep the picked time on the entry's own day, never in the future.
+  const clampToLogDay = (picked: Date) => {
+    const base = log?.smokedAt ?? new Date();
+    const d = new Date(base);
+    d.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
+    const now = new Date();
+    return d.getTime() > now.getTime() ? now : d;
+  };
 
   const close = () => router.back();
   const save = async () => {
     if (!log) return close();
     setSaving(true);
-    await editLog(log.id, { comment: comment.trim(), diary: diary.trim() });
+    await editLog(log.id, { comment: comment.trim(), diary: diary.trim(), smokedAt });
     close();
   };
 
@@ -45,7 +57,7 @@ export default function EditLogModal() {
         </Pressable>
         <Text style={styles.title}>{s.editEntry}</Text>
         <Pressable onPress={save} hitSlop={8} disabled={saving}>
-          <Text style={styles.saveBtn}>{saving ? "…" : s.save}</Text>
+          {saving ? <ActivityIndicator color={colors.accent} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
         </Pressable>
       </View>
 
@@ -60,8 +72,37 @@ export default function EditLogModal() {
               <MaterialIcons name="schedule" size={16} color={colors.textDim} />
               <Text style={styles.timeLabel}>{s.timeLabel}</Text>
               <View style={{ flex: 1 }} />
-              <Text style={styles.timeValue}>{formatTime(log.smokedAt)}</Text>
+              {Platform.OS === "ios" ? (
+                <DateTimePicker
+                  mode="time"
+                  value={smokedAt}
+                  display="compact"
+                  accentColor={colors.accent}
+                  themeVariant="dark"
+                  onValueChange={(_e, d) => setSmokedAt(clampToLogDay(d))}
+                  style={styles.timePicker}
+                />
+              ) : (
+                <Pressable style={styles.timeEditBtn} onPress={() => setShowPicker(true)}>
+                  <Text style={styles.timeValue}>{formatTime(smokedAt)}</Text>
+                  <MaterialIcons name="edit" size={14} color={colors.accent} />
+                </Pressable>
+              )}
             </View>
+          )}
+          {showPicker && Platform.OS !== "ios" && (
+            <DateTimePicker
+              mode="time"
+              value={smokedAt}
+              is24Hour
+              display="default"
+              accentColor={colors.accent}
+              onValueChange={(_e, d) => {
+                setSmokedAt(clampToLogDay(d));
+                setShowPicker(false);
+              }}
+              onDismiss={() => setShowPicker(false)}
+            />
           )}
 
           <View style={styles.fieldBlock}>
@@ -104,9 +145,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  cancel: { color: colors.textDim, fontSize: type.body.fontSize },
-  title: { color: colors.text, fontSize: 17, fontWeight: "700" },
-  saveBtn: { color: colors.accent, fontSize: type.body.fontSize, fontWeight: "700" },
+  cancel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  title: { color: colors.text, fontSize: 17, fontFamily: fonts.bold },
+  saveBtn: { color: colors.accent, fontSize: type.body.fontSize, fontFamily: fonts.bold },
   body: { padding: spacing.md },
   form: {
     backgroundColor: colors.surfaceHigh,
@@ -123,10 +164,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize },
-  timeValue: { color: colors.text, fontWeight: "700" },
+  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  timeValue: { color: colors.text, fontFamily: fonts.monoMedium },
+  timeEditBtn: { flexDirection: "row", alignItems: "center", gap: 6 },
+  // Explicit width so the native SwiftUI picker host doesn't overflow the row.
+  timePicker: { width: 112, height: 36 },
   fieldBlock: { gap: spacing.xs },
-  fieldLabel: { color: colors.textDim, fontSize: 13 },
+  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular },
   input: {
     backgroundColor: colors.surface,
     borderRadius: radius.input,
@@ -136,6 +180,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     color: colors.text,
     fontSize: type.body.fontSize,
+    fontFamily: fonts.regular,
   },
   diary: { minHeight: 220 },
 });

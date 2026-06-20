@@ -11,16 +11,18 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { currentLimit } from "@/domain/logic";
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
-import { USE_SUPABASE } from "@/lib/config";
 import { signOut } from "@/lib/googleAuth";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../../packages/number-pad";
 
 export default function SettingsScreen() {
   const s = useStrings();
   const { limits, settings, locale } = useAppStore();
+  const dataMode = useAppStore((st) => st.dataMode);
+  const setDataMode = useAppStore((st) => st.setDataMode);
   const setLimit = useAppStore((st) => st.setLimit);
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLocale = useAppStore((st) => st.setLocale);
@@ -42,7 +44,14 @@ export default function SettingsScreen() {
   const confirmSignOut = () =>
     Alert.alert(s.signOutTitle, s.signOutBody, [
       { text: s.cancel, style: "cancel" },
-      { text: s.signOut, style: "destructive", onPress: signOut },
+      {
+        text: s.signOut,
+        style: "destructive",
+        onPress: async () => {
+          await signOut();
+          await setDataMode(null); // back to the welcome chooser
+        },
+      },
     ]);
 
   return (
@@ -160,7 +169,7 @@ export default function SettingsScreen() {
                     onPress={() => saveSettings({ ...settings, currencySymbol: c })}
                     style={[styles.curSeg, { backgroundColor: sel ? colors.accent : colors.surfaceHigh }]}
                   >
-                    <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontWeight: "700" }}>{c}</Text>
+                    <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontFamily: fonts.bold }}>{c}</Text>
                   </Pressable>
                 );
               })}
@@ -168,13 +177,19 @@ export default function SettingsScreen() {
           </View>
         </Group>
 
-        {USE_SUPABASE ? (
+        {dataMode === "supabase" ? (
           <Pressable style={styles.signOut} onPress={confirmSignOut}>
             <MaterialIcons name="logout" size={18} color={colors.bad} />
             <Text style={styles.signOutText}>{s.signOut}</Text>
           </Pressable>
         ) : (
-          <Text style={styles.demo}>{s.demoNote}</Text>
+          <Group title={s.account}>
+            <Text style={styles.localNote}>{s.localDataNote}</Text>
+            <Pressable style={styles.switchBtn} onPress={() => setDataMode(null)}>
+              <MaterialIcons name="login" size={18} color={colors.accent} />
+              <Text style={styles.switchText}>{s.signInToAccount}</Text>
+            </Pressable>
+          </Group>
         )}
       </ScrollView>
 
@@ -221,7 +236,7 @@ function EditableRow({
         {helper ? <Text style={styles.rowHelper}>{helper}</Text> : null}
       </View>
       <Text style={styles.rowValue}>{value}</Text>
-      <MaterialIcons name="edit" size={16} color={colors.textDim} style={{ marginLeft: spacing.sm }} />
+      <MaterialIcons name="edit" size={16} color={colors.textDim} style={{ marginStart: spacing.sm }} />
     </Pressable>
   );
 }
@@ -231,26 +246,27 @@ function Divider() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 22, fontWeight: "700", marginBottom: spacing.xl },
+  title: { color: colors.text, fontSize: 22, fontFamily: fonts.bold, marginBottom: spacing.xl, textAlign: textStart },
   groupTitle: {
     color: colors.textDim,
     fontSize: 12,
-    fontWeight: "600",
+    fontFamily: fonts.semibold,
     textTransform: "uppercase",
     letterSpacing: 0.6,
     marginBottom: spacing.sm,
-    marginLeft: spacing.md,
+    marginStart: spacing.md,
+    textAlign: textStart,
   },
   groupBox: { backgroundColor: "transparent", borderRadius: 0, paddingHorizontal: 0 },
   row: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md },
-  rowLabel: { color: colors.text, fontSize: type.body.fontSize },
-  rowHelper: { color: colors.textDim, fontSize: 11, marginTop: 2 },
-  rowValue: { color: colors.text, fontSize: 16, fontWeight: "700" },
+  rowLabel: { color: colors.text, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
+  rowHelper: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  rowValue: { color: colors.text, fontSize: 16, fontFamily: fonts.monoMedium },
   divider: { height: 1, backgroundColor: colors.line },
   segmentRow: { flexDirection: "row", gap: spacing.sm, paddingVertical: spacing.sm },
   segment: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 14 },
   curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
-  demo: { color: colors.textDim, fontSize: 12, marginHorizontal: spacing.xs },
+  demo: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginHorizontal: spacing.xs },
   signOut: {
     flexDirection: "row",
     alignItems: "center",
@@ -262,6 +278,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-  signOutText: { color: colors.bad, fontWeight: "600" },
+  signOutText: { color: colors.bad, fontFamily: fonts.semibold },
+  localNote: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
+  switchBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
+  },
+  switchText: { color: colors.accent, fontFamily: fonts.bold, fontSize: 15 },
 });
 

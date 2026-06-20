@@ -1,16 +1,16 @@
 /**
- * Today screen — redesigned from the Figma reference.
- * Header + hero allowance card (ring, progress, spent/saved), action buttons,
- * a 2×2 stats grid (Today / Day Streak / Avg Daily / Money Saved), today's log,
- * a recent-purchase card and a 7-day insight banner.
+ * Today — "haze" redesign.
+ * Persistent header (brand + supportive subline + streak), a hero ring with
+ * status copy, quick actions (Log one / Buy), a month money strip
+ * (spent / saved / avg per day), and a Recent list.
  *
- * Day Streak / Avg Daily / the insight use first-cut domain helpers — confirm
- * against the Flutter app before treating them as final (Step 7).
+ * Status color follows count vs allowance: under = periwinkle, at = amber,
+ * over = red. Copy stays supportive even when over.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useRef } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
@@ -18,218 +18,150 @@ import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { Ring } from "@/components/Ring";
 import { useToast } from "@/components/Toast";
-import {
-    currentLimit,
-    currentStreak,
-    logicalToday,
-    logsForDay,
-    sevenDayInsight,
-    spentForDay,
-} from "@/domain/logic";
-import { formatTime, formatWeekdayDate } from "@/i18n/format";
+import { currentLimit, currentStreak, isLogEditable, logicalDay, logicalToday, logsForDay } from "@/domain/logic";
+import { formatTime } from "@/i18n/format";
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing } from "@/theme";
-import { RefreshableScrollView } from "../../../packages/pull-refresh";
+import { colors, fonts, spacing } from "@/theme";
 
 export default function TodayScreen() {
   const s = useStrings();
   const toast = useToast();
+  const router = useRouter();
 
   const { logs, limits, purchases, settings } = useAppStore();
   const deleteLog = useAppStore((st) => st.deleteLog);
   const refresh = useAppStore((st) => st.refresh);
 
-  const router = useRouter();
   const addRef = useRef<AddSmokeSheetRef>(null);
   const purchaseRef = useRef<AddPurchaseSheetRef>(null);
   const detailRef = useRef<LogDetailSheetRef>(null);
 
-  const todayKey = logicalToday(settings.dayStartHour);
-  const todayLogs = logsForDay(logs, todayKey, settings.dayStartHour);
-  const count = todayLogs.length;
+  const dsh = settings.dayStartHour;
+  const todayKey = logicalToday(dsh);
+  const count = logsForDay(logs, todayKey, dsh).length;
   const limit = currentLimit(limits, settings);
-  const left = Math.max(0, limit - count);
-  const within = count <= limit;
-  const pct = limit === 0 ? 1 : Math.min(1, count / limit);
-  const ringColor = within ? colors.ring : colors.bad;
-
-  const spent = spentForDay(purchases, todayKey, settings.dayStartHour);
   const streak = currentStreak(logs, limits, settings);
-  const insight = sevenDayInsight(logs, settings);
 
+  const status = count > limit ? "over" : count === limit ? "at" : "under";
+  const statusColor =
+    status === "over" ? colors.over : status === "at" ? colors.atLimit : colors.under;
+  const statusLine =
+    status === "over" ? s.statusOverLine : status === "at" ? s.statusAtLine : s.statusUnderLine;
+  const subText = status === "over" ? s.subOver : status === "at" ? s.subAt : s.subUnder;
+  const pct = limit > 0 ? Math.min(1, count / limit) : count > 0 ? 1 : 0;
+
+  // Month money strip.
   const cur = settings.currencySymbol;
-  const money = (n: number) =>
-    `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
-  const streakEmoji = streak === 0 ? "🥀" : "🔥";
+  const money = (n: number) => `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
+  const now = new Date();
+  const inMonth = (d: Date) => d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  const spentMonth = purchases.filter((p) => inMonth(p.boughtAt)).reduce((a, p) => a + p.price, 0);
+  const monthLogs = logs.filter((l) => inMonth(l.smokedAt)).length;
+  const daysElapsed = now.getDate();
+  const avg = daysElapsed > 0 ? monthLogs / daysElapsed : 0;
+  const wouldHave = (settings.baselinePerDay * daysElapsed / 20) * settings.pricePerPack;
+  const savedMonth = Math.max(0, Math.round(wouldHave - spentMonth));
 
-  const recent = purchases.length ? purchases[purchases.length - 1] : null;
-  const shortDate = (d: Date) =>
-    new Intl.DateTimeFormat(s.localeCode, { month: "short", day: "numeric" }).format(d);
+  const recent = [...logs].sort((a, b) => b.smokedAt.getTime() - a.smokedAt.getTime()).slice(0, 3);
 
-  const insightText =
-    insight.diff > 0
-      ? s.insightFewer(insight.diff)
-      : insight.diff < 0
-        ? s.insightMore(-insight.diff)
-        : s.insightSame;
+  // A cigarette's ordinal within its own logical day (1-based), so "Recently"
+  // opens the detail sheet on the right number instead of #0.
+  const numberOf = (log: SmokeLog) => {
+    const dayLogs = logsForDay(logs, logicalDay(log.smokedAt, dsh), dsh);
+    return dayLogs.findIndex((l) => l.id === log.id) + 1;
+  };
 
   const onLogged = (log: SmokeLog) => {
     toast.show({ message: s.loggedToast, actionLabel: s.undo, onAction: () => deleteLog(log.id) });
   };
-  const openDiary = () => router.navigate("/calendar");
-  const soon = () => toast.show({ message: s.comingSoon }); // bell → notifications (Step 22)
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
-      <RefreshableScrollView
-        onRefresh={refresh}
-        threshold={70}
-        resistance={0.8}
-        spinnerColor={colors.accent}
-        style={{ backgroundColor: colors.bg }}
-        contentContainerStyle={{
-          paddingTop: spacing.sm,
-          paddingHorizontal: spacing.xl,
-          paddingBottom: spacing.xxl,
-        }}
-      >
+      <RefreshScroll onRefresh={refresh}>
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.appTitle}>{s.appTitle}</Text>
-            <Text style={styles.date}>{formatWeekdayDate(todayKey, s.localeCode)}</Text>
+            <View style={styles.brandRow}>
+              <View style={styles.brandDot} />
+              <Text style={styles.wordmark}>{s.appTitle}</Text>
+            </View>
+            <Text style={styles.subline}>{s.todaySub}</Text>
           </View>
-          <Pressable style={styles.bell} onPress={soon}>
-            <MaterialIcons name="notifications-none" size={18} color={colors.textDim} />
-          </Pressable>
+          <View>
+            <Text style={styles.streakCap}>{s.dayStreak}</Text>
+            <Text style={styles.streakVal}>{streak}</Text>
+          </View>
         </View>
 
-        {/* Hero — today's smoking summary */}
+        {/* Hero ring */}
         <View style={styles.hero}>
-          <View style={styles.heroTop}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.heroLabel}>{s.todaysAllowance}</Text>
-              <View style={styles.bigRow}>
-                <Text style={styles.big}>{count}</Text>
-                <Text style={styles.bigSuffix}>{s.cigarettesSection}</Text>
-              </View>
-              <Text style={styles.usedToday}>{s.usedToday(count, limit)}</Text>
-            </View>
-            <Ring size={72} strokeWidth={6} pct={pct} color={ringColor}>
-              <Text style={styles.ringPct}>{Math.round(pct * 100)}%</Text>
-            </Ring>
-          </View>
-
-          <View style={styles.track}>
-            <View style={[styles.fill, { width: `${Math.round(pct * 100)}%`, backgroundColor: ringColor }]} />
-          </View>
-
-          <View style={styles.subRow}>
-            <View style={styles.subCard}>
-              <Text style={styles.subLabel}>{s.spentToday}</Text>
-              <Text style={styles.subValue}>{money(spent)}</Text>
-            </View>
-            <View style={styles.subCard}>
-              <Text style={styles.subLabel}>{s.dayStreak}</Text>
-              <Text style={[styles.subValue, { color: streak === 0 ? colors.bad : colors.streak }]}> 
-                {streakEmoji} {streak}
-              </Text>
-            </View>
+          <Ring size={124} strokeWidth={9} pct={pct} color={statusColor}>
+            <Text style={[styles.heroCount, { color: statusColor }]}>{count}</Text>
+            <Text style={styles.heroOf}>{s.ofN(limit)}</Text>
+          </Ring>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.eyebrow}>{s.today}</Text>
+            <Text style={[styles.statusLine, { color: statusColor }]}>{statusLine}</Text>
+            <Text style={styles.subText}>{subText}</Text>
           </View>
         </View>
 
-        {/* Actions */}
+        {/* Quick actions */}
         <View style={styles.actions}>
           <Pressable style={styles.primaryBtn} onPress={() => addRef.current?.present()}>
-            <MaterialIcons name="add" size={20} color={colors.accent} />
-            <Text style={styles.primaryText}>{s.addCigarette}</Text>
+            <MaterialIcons name="add" size={20} color={colors.onAccent} />
+            <Text style={styles.primaryText}>{s.logOne}</Text>
           </Pressable>
-          <Pressable style={styles.outlineBtn} onPress={() => purchaseRef.current?.present()}>
-            <MaterialIcons name="shopping-cart" size={18} color={colors.textDim} />
-            <Text style={styles.outlineText}>{s.addPurchase}</Text>
-          </Pressable>
-        </View>
-
-        {/* Recently smoked */}
-        <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>{s.recentlySmoked}</Text>
-          <Pressable onPress={openDiary}>
-            <Text style={styles.link}>{s.viewAll}</Text>
+          <Pressable style={styles.secondaryBtn} onPress={() => purchaseRef.current?.present()}>
+            <MaterialIcons name="work-outline" size={18} color={colors.textSecondary} />
+            <Text style={styles.secondaryText}>{s.buy}</Text>
           </Pressable>
         </View>
 
-        {todayLogs.length === 0 ? (
+        {/* Money strip */}
+        <View style={styles.strip}>
+          <View style={styles.stripCell}>
+            <Text style={styles.stripLabel}>{`${s.spentLabel} · ${s.thisMonth}`}</Text>
+            <Text style={styles.stripVal}>{money(spentMonth)}</Text>
+          </View>
+          <View style={[styles.stripCell, styles.stripDivider]}>
+            <Text style={styles.stripLabel}>{`${s.savedShort} · ${s.thisMonth}`}</Text>
+            <Text style={[styles.stripVal, { color: colors.accent }]}>{money(savedMonth)}</Text>
+          </View>
+          <View style={[styles.stripCell, styles.stripDivider]}>
+            <Text style={styles.stripLabel}>{s.avgPerDay}</Text>
+            <Text style={styles.stripVal}>{avg.toFixed(1)}</Text>
+          </View>
+        </View>
+
+        {/* Recent */}
+        <Text style={styles.recentLabel}>{s.recent}</Text>
+        {recent.length === 0 ? (
           <Text style={styles.empty}>{s.nothingToday}</Text>
         ) : (
-          [...todayLogs]
-            .reverse()
-            .slice(0, 3)
-            .map((log, i) => {
-              const sub = [formatTime(log.smokedAt), log.comment || log.diary]
-                .filter(Boolean)
-                .join("  ·  ");
-              return (
-                <Pressable
-                  key={log.id}
-                  style={styles.tile}
-                  onPress={() => detailRef.current?.present({ log, number: count - i, editable: true })}
-                >
-                  <View style={styles.tileIcon}>
-                    <MaterialIcons name="smoking-rooms" size={18} color={colors.textDim} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tileTitle}>{s.cigNumber(count - i)}</Text>
-                    {!!sub && (
-                      <Text style={styles.tileSub} numberOfLines={1}>
-                        {sub}
-                      </Text>
-                    )}
-                  </View>
-                  <MaterialIcons name="edit" size={14} color={colors.textDim} />
-                </Pressable>
-              );
-            })
-        )}
-
-        {/* Recent purchase */}
-        <View style={styles.purchaseCard}>
-          <View style={styles.purchaseHead}>
-            <View style={styles.subHead}>
-              <MaterialIcons name="receipt-long" size={16} color={colors.textDim} />
-              <Text style={styles.subLabel}>{s.recentPurchase}</Text>
-            </View>
-            {recent && <Text style={styles.subLabel}>{shortDate(recent.boughtAt)}</Text>}
-          </View>
-          {recent ? (
-            <>
-              <View style={styles.purchaseRow}>
-                <Text style={styles.purchaseTitle}>
-                  {recent.quantity} {recent.unit === "carton" ? s.carton : s.pack}
+          recent.map((log) => {
+            const sub = [formatTime(log.smokedAt), log.comment || log.diary].filter(Boolean).join("  ·  ");
+            return (
+              <Pressable
+                key={log.id}
+                style={styles.row}
+                onPress={() =>
+                  detailRef.current?.present({ log, number: numberOf(log), editable: isLogEditable(log, dsh) })
+                }
+              >
+                <View style={styles.rowDot} />
+                <Text style={styles.rowText} numberOfLines={1}>
+                  {sub || s.cigarettesSection}
                 </Text>
-                <Text style={styles.purchaseTitle}>{money(recent.price)}</Text>
-              </View>
-              <View style={styles.purchaseRow}>
-                <Text style={styles.tileSub}>{s.purchases}</Text>
-                <Pressable onPress={openDiary}>
-                  <Text style={styles.link}>{s.viewHistory}</Text>
-                </Pressable>
-              </View>
-            </>
-          ) : (
-            <Text style={styles.tileSub}>{s.noPurchasesYet}</Text>
-          )}
-        </View>
-
-        {/* 7-day insight */}
-        <View style={styles.insight}>
-          <View style={styles.insightIcon}>
-            <MaterialIcons name="bolt" size={18} color={colors.accent} />
-          </View>
-          <Text style={styles.insightText}>{insightText}</Text>
-        </View>
-      </RefreshableScrollView>
+                <MaterialIcons name="chevron-right" size={18} color={colors.textFaint} />
+              </Pressable>
+            );
+          })
+        )}
+      </RefreshScroll>
 
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
       <AddPurchaseSheet ref={purchaseRef} />
@@ -238,148 +170,113 @@ export default function TodayScreen() {
   );
 }
 
+// Native iOS scroll: rubber-band overscroll (alwaysBounceVertical) + the system
+// pull-to-refresh, which carries the proper bounce feel.
+function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onRefresh: () => void | Promise<void> }) {
+  const [refreshing, setRefreshing] = useState(false);
+  const handle = async () => {
+    setRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+  return (
+    <ScrollView
+      style={{ backgroundColor: colors.bg }}
+      contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
+      alwaysBounceVertical
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handle}
+          tintColor={colors.accent}
+          colors={[colors.accent]}
+          progressBackgroundColor={colors.surface}
+        />
+      }
+    >
+      {children}
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.lg },
-  appTitle: { color: colors.text, fontSize: 24, fontWeight: "800" },
-  date: { color: colors.textDim, fontSize: 14, marginTop: 2 },
-  bell: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "transparent",
+  header: { flexDirection: "row", alignItems: "flex-start", marginBottom: 28 },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  brandDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+    shadowColor: colors.accent,
+    shadowOpacity: 0.7,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  wordmark: { color: colors.text, fontSize: 19, fontFamily: fonts.bold, letterSpacing: -0.4 },
+  subline: { color: colors.textDim, fontSize: 12, marginTop: 5, fontFamily: fonts.regular, textAlign: textStart },
+  streakCap: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, textAlign: textStart },
+  streakVal: { color: colors.accent, fontSize: 14, fontFamily: fonts.monoMedium, marginTop: 2, textAlign: textStart },
+
+  hero: { flexDirection: "row", alignItems: "center", gap: 22, marginBottom: 30 },
+  heroCount: { fontSize: 38, fontFamily: fonts.monoSemibold, lineHeight: 42 },
+  heroOf: { color: colors.textFaint, fontSize: 11, fontFamily: fonts.mono, marginTop: 3 },
+  eyebrow: {
+    color: colors.textDim,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    fontFamily: fonts.medium,
+    textAlign: textStart,
+  },
+  statusLine: { fontSize: 16, fontFamily: fonts.semibold, marginBottom: 6, textAlign: textStart },
+  subText: { color: colors.textDim, fontSize: 13, lineHeight: 20, fontFamily: fonts.regular, textAlign: textStart },
+
+  actions: { flexDirection: "row", gap: 10, marginBottom: 26 },
+  primaryBtn: {
+    flex: 1.5,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.accent,
+    borderRadius: 16,
+    paddingVertical: 16,
   },
-
-  hero: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.card,
+  primaryText: { color: colors.onAccent, fontSize: 15, fontFamily: fonts.semibold },
+  secondaryBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: colors.fill,
     borderWidth: 1,
     borderColor: colors.line,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
+    borderRadius: 16,
+    paddingVertical: 16,
   },
-  heroTop: { flexDirection: "row", alignItems: "center" },
-  heroLabel: { color: colors.textDim, fontSize: 14 },
-  bigRow: { flexDirection: "row", alignItems: "flex-end", gap: spacing.sm, marginTop: spacing.xs },
-  big: { color: colors.text, fontSize: 46, fontWeight: "800", lineHeight: 50 },
-  bigSuffix: { color: colors.textDim, fontSize: 16, fontWeight: "600", marginBottom: 6 },
-  usedToday: { color: colors.textDim, fontSize: 13, marginTop: spacing.xs },
-  ringPct: { color: colors.text, fontSize: 14, fontWeight: "700" },
+  secondaryText: { color: colors.textSecondary, fontSize: 15, fontFamily: fonts.semibold },
 
-  track: { height: 6, borderRadius: 3, backgroundColor: colors.track, marginTop: spacing.lg, overflow: "hidden" },
-  fill: { height: 6, borderRadius: 3 },
+  strip: { flexDirection: "row", marginBottom: 30 },
+  stripCell: { flex: 1, paddingHorizontal: spacing.sm },
+  stripDivider: { borderLeftWidth: 1, borderLeftColor: colors.line },
+  stripLabel: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, textAlign: textStart },
+  stripVal: { color: colors.text, fontSize: 21, fontFamily: fonts.monoMedium, marginTop: 6, textAlign: textStart },
 
-  subRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
-  subCard: {
-    flex: 1,
-    backgroundColor: colors.fill,
-    borderRadius: radius.input,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-  },
-  subHead: { flexDirection: "row", alignItems: "center", gap: 6 },
-  subLabel: { color: colors.textDim, fontSize: 12 },
-  subValue: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: 2 },
-
-  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
-  primaryBtn: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    borderRadius: 0,
-    paddingVertical: spacing.md,
-  },
-  primaryText: { color: colors.accent, fontWeight: "700", fontSize: 15 },
-  outlineBtn: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    borderRadius: 0,
-    paddingVertical: spacing.md,
-  },
-  outlineText: { color: colors.text, fontWeight: "600", fontSize: 15 },
-
-  listHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.xl,
-    marginBottom: spacing.sm,
-  },
-  sectionTitle: { color: colors.text, fontSize: 18, fontWeight: "700" },
-  link: { color: colors.accent, fontSize: 14, fontWeight: "600" },
-  empty: { color: colors.textDim, textAlign: "center", paddingVertical: spacing.xl },
-
-  tile: {
+  recentLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.medium, marginBottom: spacing.sm, textAlign: textStart },
+  empty: { color: colors.textFaint, fontSize: 13, paddingVertical: spacing.md, fontFamily: fonts.regular, textAlign: textStart },
+  row: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
-    marginBottom: 0,
   },
-  tileIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.fill,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tileTitle: { color: colors.text, fontWeight: "700", fontSize: 15 },
-  tileSub: { color: colors.textDim, fontSize: 13, marginTop: 2 },
-
-  purchaseCard: {
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
-    marginTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  purchaseHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  purchaseRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.md,
-  },
-  purchaseTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
-
-  insight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.md,
-    marginTop: spacing.lg,
-  },
-  insightIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.accentTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  insightText: { color: colors.text, fontSize: 14, flex: 1, lineHeight: 20 },
+  rowDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
+  rowText: { flex: 1, color: colors.textSecondary, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
 });

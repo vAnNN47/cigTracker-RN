@@ -12,6 +12,19 @@ import { DevSettings, I18nManager } from "react-native";
 
 export type Locale = "device" | "en" | "he";
 
+/**
+ * Text alignment for the reading START edge.
+ *
+ * React Native's `I18nManager.doLeftAndRightSwapInRTL` is ON by default, so in
+ * an RTL layout it automatically flips `textAlign: "left"` to "right". Writing
+ * "left" therefore yields start-alignment in BOTH directions (plain left in LTR;
+ * auto-swapped to right in RTL). Use this on full-width <Text> (titles, section
+ * headers, labels) whose default "auto" alignment doesn't follow RTL.
+ *
+ * (Do NOT set this to "right" in RTL — the swap would flip it back to left.)
+ */
+export const textStart = "left" as const;
+
 /** Resolve the override locale (or the device language) to a concrete lang. */
 export function resolveLang(locale: Locale): "en" | "he" {
   if (locale === "device") {

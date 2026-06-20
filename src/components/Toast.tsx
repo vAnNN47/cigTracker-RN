@@ -7,7 +7,8 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, u
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors, radius, spacing } from "@/theme";
+import { textStart } from "@/i18n/rtl";
+import { colors, fonts, radius, spacing } from "@/theme";
 
 interface ToastOptions {
   message: string;
@@ -100,6 +101,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
-  message: { flex: 1, color: colors.text, fontSize: 15 },
-  action: { color: colors.accent, fontWeight: "700", padding: spacing.sm },
+  message: { flex: 1, color: colors.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
+  action: { color: colors.accent, fontFamily: fonts.bold, padding: spacing.sm },
 });

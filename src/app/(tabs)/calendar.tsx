@@ -11,10 +11,12 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { MonthPager } from "../../../packages/month-pager";
 import { Ring } from "@/components/Ring";
@@ -28,9 +30,10 @@ import {
   spentForDay,
 } from "@/domain/logic";
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing } from "@/theme";
+import { colors, fonts, radius, spacing } from "@/theme";
 
 // Solid cards (glassmorphism removed): opaque surfaces with a hairline border.
 const GLASS = colors.surface;
@@ -55,6 +58,7 @@ function buildWeeks(monthFirst: Date): (Date | null)[][] {
 
 export default function DiaryScreen() {
   const s = useStrings();
+  const router = useRouter();
   const { logs, limits, purchases, settings } = useAppStore();
   const dsh = settings.dayStartHour;
 
@@ -63,6 +67,7 @@ export default function DiaryScreen() {
   const [focused, setFocused] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
 
   const detailRef = useRef<LogDetailSheetRef>(null);
+  const purchaseRef = useRef<AddPurchaseSheetRef>(null);
 
   const cur = settings.currencySymbol;
   const money = (n: number) => `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
@@ -237,12 +242,20 @@ export default function DiaryScreen() {
         )}
 
         {/* Purchases */}
-        <Text style={styles.section}>{s.purchases}</Text>
+        <View style={styles.sectionRow}>
+          <Text style={[styles.section, { marginTop: 0, marginBottom: 0 }]}>{s.purchases}</Text>
+          {purchases.length > 0 && (
+            <Pressable style={styles.viewAll} onPress={() => router.push("/purchases")} hitSlop={8}>
+              <Text style={styles.viewAllText}>{s.viewAll}</Text>
+              <MaterialIcons name={nextArrow} size={16} color={colors.accent} />
+            </Pressable>
+          )}
+        </View>
         {selPurchases.length === 0 ? (
           <Text style={styles.empty}>{s.noPurchasesThisDay}</Text>
         ) : (
           selPurchases.map((p) => (
-            <View key={p.id} style={styles.row}>
+            <Pressable key={p.id} style={styles.row} onPress={() => purchaseRef.current?.present(p)}>
               <View style={styles.rowIcon}>
                 <MaterialIcons name={p.unit === "carton" ? "inventory-2" : "receipt-long"} size={18} color={colors.textDim} />
               </View>
@@ -253,19 +266,21 @@ export default function DiaryScreen() {
                 <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
               </View>
               <Text style={styles.price}>{money(p.price)}</Text>
-            </View>
+              <MaterialIcons name="edit" size={14} color={colors.textDim} style={{ marginStart: spacing.sm }} />
+            </Pressable>
           ))
         )}
       </ScrollView>
 
       <LogDetailSheet ref={detailRef} />
+      <AddPurchaseSheet ref={purchaseRef} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.sm },
-  title: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold },
   iconBtn: {
     width: 40,
     height: 40,
@@ -290,8 +305,8 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   chipSel: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipWd: { color: colors.textDim, fontSize: 11, fontWeight: "600" },
-  chipNum: { color: colors.text, fontSize: 18, fontWeight: "800" },
+  chipWd: { color: colors.textDim, fontSize: 11, fontFamily: fonts.semibold },
+  chipNum: { color: colors.text, fontSize: 18, fontFamily: fonts.monoSemibold },
   todayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent, marginTop: 1 },
 
   monthCard: {
@@ -310,7 +325,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     marginBottom: spacing.xs,
   },
-  monthGridTitle: { color: colors.text, fontSize: 15, fontWeight: "700" },
+  monthGridTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.bold },
   weekRow: { flexDirection: "row" },
   cell: { flex: 1, aspectRatio: 1, padding: 2 },
   dayBox: {
@@ -330,7 +345,7 @@ const styles = StyleSheet.create({
   },
   dayNumber: {
     color: colors.text,
-    fontWeight: "600",
+    fontFamily: fonts.semibold,
     fontSize: 13,
   },
   dayNumberSelected: {
@@ -364,9 +379,9 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
-  sumDate: { color: colors.text, fontSize: 18, fontWeight: "700" },
-  sumCount: { fontSize: 15, fontWeight: "600", marginTop: spacing.xs },
-  ringPct: { color: colors.text, fontSize: 13, fontWeight: "700" },
+  sumDate: { color: colors.text, fontSize: 18, fontFamily: fonts.bold, textAlign: textStart },
+  sumCount: { fontSize: 15, fontFamily: fonts.semibold, marginTop: spacing.xs, textAlign: textStart },
+  ringPct: { color: colors.text, fontSize: 13, fontFamily: fonts.monoMedium },
   pillRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.sm },
   pill: {
     flex: 1,
@@ -379,11 +394,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingVertical: spacing.xs,
   },
-  pillLabel: { color: colors.textDim, fontSize: 12 },
-  pillValue: { color: colors.text, fontSize: 14, fontWeight: "700" },
+  pillLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
+  pillValue: { color: colors.text, fontSize: 14, fontFamily: fonts.bold },
 
-  section: { color: colors.text, fontSize: 16, fontWeight: "700", marginTop: spacing.xxl, marginBottom: spacing.sm },
-  empty: { color: colors.textDim, paddingVertical: spacing.md },
+  section: { color: colors.text, fontSize: 16, fontFamily: fonts.bold, marginTop: spacing.xxl, marginBottom: spacing.sm, textAlign: textStart },
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: spacing.xxl,
+    marginBottom: spacing.sm,
+  },
+  viewAll: { flexDirection: "row", alignItems: "center", gap: 2 },
+  viewAllText: { color: colors.accent, fontSize: 13, fontFamily: fonts.bold },
+  empty: { color: colors.textDim, fontFamily: fonts.regular, paddingVertical: spacing.md, textAlign: textStart },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -399,7 +423,7 @@ const styles = StyleSheet.create({
   },
   rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
   rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  rowTitle: { color: colors.text, fontWeight: "700", fontSize: 14 },
+  rowTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14 },
   diaryBadge: {
     width: 20,
     height: 20,
@@ -408,8 +432,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  rowSub: { color: colors.textDim, fontSize: 13, marginTop: 2 },
-  price: { color: colors.text, fontWeight: "700", fontSize: 15 },
+  rowSub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  price: { color: colors.text, fontFamily: fonts.monoMedium, fontSize: 15 },
 
   logBtn: {
     flexDirection: "row",
@@ -423,5 +447,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginTop: spacing.xs,
   },
-  logBtnText: { color: colors.accent, fontWeight: "700", fontSize: 15 },
+  logBtnText: { color: colors.accent, fontFamily: fonts.bold, fontSize: 15 },
 });

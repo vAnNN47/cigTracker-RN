@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useStrings } from "@/i18n/useStrings";
 import { signInWithGoogle } from "@/lib/googleAuth";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 
 export function LoginView() {
   const s = useStrings();
@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { color: colors.text, fontSize: 24, fontWeight: "700", marginTop: spacing.xxl },
-  tagline: { color: colors.textDim, textAlign: "center", marginTop: spacing.sm },
+  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xxl },
+  tagline: { color: colors.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
   btn: {
     flexDirection: "row",
     alignItems: "center",
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxl + spacing.md,
   },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: colors.onAccent, fontWeight: "600", fontSize: type.body.fontSize },
-  err: { color: colors.bad, fontSize: 12, textAlign: "center", marginTop: spacing.lg },
+  btnText: { color: colors.onAccent, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
+  err: { color: colors.bad, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
 });

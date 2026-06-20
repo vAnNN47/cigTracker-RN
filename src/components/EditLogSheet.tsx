@@ -10,7 +10,7 @@ import { Pressable, StyleSheet, Text } from "react-native";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../packages/keyboard-sheet";
 
@@ -84,7 +84,7 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
 );
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 18, fontWeight: "600" },
+  title: { color: colors.text, fontSize: 18, fontFamily: fonts.semibold },
   input: {
     backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,
@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     color: colors.text,
     fontSize: type.body.fontSize,
+    fontFamily: fonts.regular,
   },
   diary: { height: 110, textAlignVertical: "top" }, // fixed height; long text scrolls inside
   button: {
@@ -102,5 +103,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.onAccent, fontWeight: "600", fontSize: type.body.fontSize },
+  buttonText: { color: colors.onAccent, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
 });

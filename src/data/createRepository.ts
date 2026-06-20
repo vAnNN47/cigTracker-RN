@@ -1,14 +1,23 @@
 /**
- * Single place that decides which Repository implementation the app uses,
- * based on the USE_SUPABASE flag. The store calls this once.
+ * Single place that maps a runtime data mode to a Repository implementation.
+ *
+ *  - "local"    → AsyncStorageRepository (persists on-device, no account)
+ *  - "supabase" → SupabaseRepository (cloud, requires Google sign-in)
+ *  - null       → InMemoryRepository (placeholder before the user has chosen;
+ *                 the welcome screen is shown over it, so it's never really used)
+ *
+ * The store picks the mode (persisted) and calls this; nothing else needs to
+ * know which backend is active.
  */
-import { USE_SUPABASE } from "@/lib/config";
-
+import { AsyncStorageRepository } from "./asyncStorageRepository";
 import { InMemoryRepository } from "./inMemoryRepository";
 import { Repository } from "./repository";
 import { SupabaseRepository } from "./supabaseRepository";
 
-export function createRepository(): Repository {
-  if (USE_SUPABASE) return new SupabaseRepository();
+export type DataMode = "local" | "supabase";
+
+export function createRepository(mode: DataMode | null): Repository {
+  if (mode === "supabase") return new SupabaseRepository();
+  if (mode === "local") return new AsyncStorageRepository();
   return new InMemoryRepository();
 }

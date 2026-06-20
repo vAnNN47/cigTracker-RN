@@ -21,9 +21,10 @@ import {
     totalSpent,
     withinLimit,
 } from "@/domain/logic";
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, spacing } from "@/theme";
+import { colors, fonts, spacing } from "@/theme";
 
 const RANGES: { key: string; value: number | null }[] = [
   { key: "7d", value: 7 },
@@ -87,7 +88,7 @@ export default function ProgressScreen() {
                 onPress={() => setRange(r.value)}
                 style={[styles.chip, { backgroundColor: sel ? colors.accent : colors.surfaceHigh }]}
               >
-                <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontWeight: "600" }}>{r.key}</Text>
+                <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontFamily: fonts.semibold }}>{r.key}</Text>
               </Pressable>
             );
           })}
@@ -221,7 +222,7 @@ function Legend({ color, label }: { color: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 22, fontWeight: "800", marginBottom: spacing.md },
+  title: { color: colors.text, fontSize: 22, fontFamily: fonts.bold, marginBottom: spacing.md, textAlign: textStart },
   rangeRow: { flexDirection: "row", gap: GAP, marginBottom: GAP },
   chip: {
     paddingHorizontal: spacing.lg,
@@ -243,11 +244,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  tileValue: { color: colors.text, fontSize: 26, fontWeight: "800" },
-  tileValueDim: { color: colors.textDim, fontSize: 18, fontWeight: "700" },
-  tileLabel: { color: colors.textDim, fontSize: 12, marginTop: 2 },
+  tileValue: { color: colors.text, fontSize: 26, fontFamily: fonts.monoSemibold, textAlign: textStart },
+  tileValueDim: { color: colors.textDim, fontSize: 18, fontFamily: fonts.mono },
+  tileLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   weekTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  deltaText: { fontSize: 12, fontWeight: "600", marginTop: 2 },
+  deltaText: { fontSize: 12, fontFamily: fonts.semibold, marginTop: 2, textAlign: textStart },
 
   wide: {
     borderRadius: 0,
@@ -257,15 +258,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
   },
-  tileTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
-  sub: { color: colors.textDim, fontSize: 12, marginTop: spacing.xs },
+  tileTitle: { color: colors.text, fontSize: 16, fontFamily: fonts.bold, textAlign: textStart },
+  sub: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: spacing.xs, textAlign: textStart },
   legend: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.md },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { color: colors.textDim, fontSize: 12 },
+  legendText: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
   histRow: { flexDirection: "row", alignItems: "flex-end", height: 56, marginTop: spacing.md },
   ticks: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  tick: { color: colors.textDim, fontSize: 10 },
+  tick: { color: colors.textDim, fontSize: 10, fontFamily: fonts.regular },
   spendRow: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  spendText: { color: colors.textDim, flex: 1 },
+  spendText: { color: colors.textDim, flex: 1, fontFamily: fonts.regular },
 });

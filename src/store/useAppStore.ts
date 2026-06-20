@@ -11,17 +11,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
-import { createRepository } from "@/data/createRepository";
+import { createRepository, DataMode } from "@/data/createRepository";
 import { Repository } from "@/data/repository";
 import { logicalToday } from "@/domain/logic";
 import { applyDirection, reloadForDirection } from "@/i18n/rtl";
 import { AppSettings, DailyLimit, DEFAULT_SETTINGS, Purchase, SmokeLog } from "@/models";
 
 const LOCALE_KEY = "cigtracker.locale";
+const MODE_KEY = "cigtracker.dataMode";
 
 interface AppStore {
   // raw state
   repo: Repository;
+  dataMode: DataMode | null; // null = not chosen yet (welcome screen)
   loading: boolean;
   logs: SmokeLog[];
   limits: DailyLimit[];
@@ -30,26 +32,50 @@ interface AppStore {
   locale: "device" | "en" | "he"; // UI language override (RTL handling: Step 7)
 
   // actions
+  setDataMode: (mode: DataMode | null) => Promise<void>;
+  hydrateDataMode: () => Promise<void>;
   setLocale: (locale: "device" | "en" | "he") => void;
   hydrateLocale: () => Promise<void>;
   load: () => Promise<void>;
   refresh: () => Promise<void>;
   addSmoke: (comment?: string, diary?: string, smokedAt?: Date) => Promise<SmokeLog>;
-  editLog: (id: string, args: { comment?: string; diary?: string }) => Promise<void>;
+  editLog: (id: string, args: { comment?: string; diary?: string; smokedAt?: Date }) => Promise<void>;
   deleteLog: (id: string) => Promise<void>;
   setLimit: (limit: number) => Promise<void>;
   addPurchase: (purchase: Purchase) => Promise<void>;
+  editPurchase: (
+    id: string,
+    args: { unit?: Purchase["unit"]; quantity?: number; price?: number; boughtAt?: Date },
+  ) => Promise<void>;
+  deletePurchase: (id: string) => Promise<void>;
   saveSettings: (settings: AppSettings) => Promise<void>;
 }
 
 export const useAppStore = create<AppStore>()((set, get) => ({
-  repo: createRepository(),
+  repo: createRepository(null),
+  dataMode: null,
   loading: true,
   logs: [],
   limits: [],
   purchases: [],
   settings: { ...DEFAULT_SETTINGS },
   locale: "device",
+
+  // Choose (or clear) the data backend. Persists the choice and swaps the repo.
+  // Pass null to "forget" the choice and return to the welcome screen.
+  setDataMode: async (mode) => {
+    if (mode) await AsyncStorage.setItem(MODE_KEY, mode).catch(() => {});
+    else await AsyncStorage.removeItem(MODE_KEY).catch(() => {});
+    set({ dataMode: mode, repo: createRepository(mode) });
+  },
+
+  // Read the saved data mode on boot and build the matching repo.
+  hydrateDataMode: async () => {
+    const saved = (await AsyncStorage.getItem(MODE_KEY)) as DataMode | null;
+    if (saved === "local" || saved === "supabase") {
+      set({ dataMode: saved, repo: createRepository(saved) });
+    }
+  },
 
   setLocale: (locale) => {
     set({ locale });
@@ -86,8 +112,8 @@ export const useAppStore = create<AppStore>()((set, get) => ({
     return log;
   },
 
-  editLog: async (id, { comment, diary }) => {
-    await get().repo.updateLog(id, { comment, diary });
+  editLog: async (id, { comment, diary, smokedAt }) => {
+    await get().repo.updateLog(id, { comment, diary, smokedAt });
     set({ logs: await get().repo.getLogs() });
   },
 
@@ -104,6 +130,16 @@ export const useAppStore = create<AppStore>()((set, get) => ({
 
   addPurchase: async (purchase) => {
     await get().repo.addPurchase(purchase);
+    set({ purchases: await get().repo.getPurchases() });
+  },
+
+  editPurchase: async (id, args) => {
+    await get().repo.updatePurchase(id, args);
+    set({ purchases: await get().repo.getPurchases() });
+  },
+
+  deletePurchase: async (id) => {
+    await get().repo.deletePurchase(id);
     set({ purchases: await get().repo.getPurchases() });
   },
 

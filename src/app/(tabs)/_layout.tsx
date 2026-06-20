@@ -1,16 +1,17 @@
 /**
- * Bottom tab navigator — ported from NavScaffold's NavigationBar.
- * Order + icons match Flutter: Today / Calendar / Progress / Settings.
+ * Bottom tab navigator — "haze" design.
+ * Order + icons: Today (home) · Diary (list) · Stats (bar-chart) · Settings.
+ * Active = periwinkle, inactive = faint; 21px icons, 10px medium labels.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Pressable } from "react-native";
 
 import { useStrings } from "@/i18n/useStrings";
-import { colors } from "@/theme";
+import { colors, fonts } from "@/theme";
 
 // Small, contained press feedback (the default Android ripple fills the whole
-// tab slot — this keeps it a subtle circle behind the icon, Flutter-like).
+// tab slot — this keeps it a subtle circle behind the icon).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function TabButton(props: any) {
   return (
@@ -29,7 +30,8 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textDim,
+        tabBarInactiveTintColor: colors.textFaint,
+        tabBarLabelStyle: { fontSize: 10, fontFamily: fonts.medium },
         tabBarStyle: {
           backgroundColor: colors.bg,
           borderTopColor: colors.line,
@@ -44,30 +46,28 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: s.today,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="today" color={color} size={size} />,
+          tabBarIcon: ({ color }) => <MaterialIcons name="home-filled" color={color} size={21} />,
         }}
       />
       <Tabs.Screen
         name="calendar"
         options={{
           title: s.diaryTab,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="menu-book" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color }) => <MaterialIcons name="list" color={color} size={21} />,
         }}
       />
       <Tabs.Screen
         name="progress"
         options={{
           title: s.progress,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="show-chart" color={color} size={size} />,
+          tabBarIcon: ({ color }) => <MaterialIcons name="bar-chart" color={color} size={21} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: s.settings,
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="settings" color={color} size={size} />,
+          tabBarIcon: ({ color }) => <MaterialIcons name="settings" color={color} size={21} />,
         }}
       />
     </Tabs>

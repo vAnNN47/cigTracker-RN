@@ -9,6 +9,7 @@ import {
   AppSettings,
   DailyLimit,
   DEFAULT_SETTINGS,
+  PackUnit,
   Purchase,
   SmokeLog,
 } from "@/models";
@@ -90,7 +91,7 @@ export class InMemoryRepository implements Repository {
 
   async updateLog(
     id: string,
-    { comment, diary }: { comment?: string; diary?: string },
+    { comment, diary, smokedAt }: { comment?: string; diary?: string; smokedAt?: Date },
   ): Promise<SmokeLog> {
     const i = this.logs.findIndex((l) => l.id === id);
     if (i === -1) throw new Error("log not found");
@@ -98,6 +99,7 @@ export class InMemoryRepository implements Repository {
       ...this.logs[i],
       comment: comment ?? this.logs[i].comment,
       diary: diary ?? this.logs[i].diary,
+      smokedAt: smokedAt ?? this.logs[i].smokedAt,
     };
     this.logs[i] = updated;
     return updated;
@@ -130,6 +132,27 @@ export class InMemoryRepository implements Repository {
   async addPurchase(purchase: Purchase): Promise<Purchase> {
     this.purchases.push(purchase);
     return purchase;
+  }
+
+  async updatePurchase(
+    id: string,
+    { unit, quantity, price, boughtAt }: { unit?: PackUnit; quantity?: number; price?: number; boughtAt?: Date },
+  ): Promise<Purchase> {
+    const i = this.purchases.findIndex((p) => p.id === id);
+    if (i === -1) throw new Error("purchase not found");
+    const updated: Purchase = {
+      ...this.purchases[i],
+      unit: unit ?? this.purchases[i].unit,
+      quantity: quantity ?? this.purchases[i].quantity,
+      price: price ?? this.purchases[i].price,
+      boughtAt: boughtAt ?? this.purchases[i].boughtAt,
+    };
+    this.purchases[i] = updated;
+    return updated;
+  }
+
+  async deletePurchase(id: string): Promise<void> {
+    this.purchases = this.purchases.filter((p) => p.id !== id);
   }
 
   async getSettings(): Promise<AppSettings> {

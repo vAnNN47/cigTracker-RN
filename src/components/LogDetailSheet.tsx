@@ -15,7 +15,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { formatTime } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../packages/keyboard-sheet";
 
@@ -108,14 +108,12 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.card,
     padding: spacing.md,
     gap: spacing.sm,
   },
   header: { flexDirection: "row", alignItems: "center" },
-  title: { color: colors.text, fontSize: 20, fontWeight: "700" },
-  time: { color: colors.textDim, fontSize: 14, marginTop: 2 },
+  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold },
+  time: { color: colors.textDim, fontSize: 14, fontFamily: fonts.regular, marginTop: 2 },
   pencil: {
     width: 36,
     height: 36,
@@ -128,27 +126,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize },
-  timeValue: { color: colors.text, fontWeight: "700" },
+  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  timeValue: { color: colors.text, fontFamily: fonts.monoMedium },
   fieldCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  fieldLabel: { color: colors.textDim, fontSize: 13, marginBottom: spacing.xs },
+  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginBottom: spacing.xs },
   readonly: {
     color: colors.text,
     fontSize: type.body.fontSize,
+    fontFamily: fonts.regular,
   },
-  readonlyDiary: { minHeight: 64, fontStyle: "italic" },
+  readonlyDiary: { minHeight: 64 },
   lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.xs },
-  lockText: { color: colors.textDim, fontSize: 12, flex: 1 },
-  info: { color: colors.textDim, fontSize: 16 },
+  lockText: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, flex: 1 },
+  info: { color: colors.textDim, fontSize: 16, fontFamily: fonts.regular },
 });

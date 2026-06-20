@@ -6,6 +6,18 @@
  * The <Stack> stays mounted always (so the router is happy); the splash/login/
  * onboarding render as a full-screen overlay on top of it.
  */
+import {
+  HankenGrotesk_400Regular,
+  HankenGrotesk_500Medium,
+  HankenGrotesk_600SemiBold,
+  HankenGrotesk_700Bold,
+  useFonts,
+} from "@expo-google-fonts/hanken-grotesk";
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_600SemiBold,
+} from "@expo-google-fonts/jetbrains-mono";
 import { Session } from "@supabase/supabase-js";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -19,6 +31,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { LoginView } from "@/auth/LoginView";
 import { OnboardingView } from "@/auth/OnboardingView";
 import { SplashView } from "@/auth/SplashView";
+import { WelcomeView } from "@/auth/WelcomeView";
 import { ToastProvider } from "@/components/Toast";
 import { USE_SUPABASE } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
@@ -31,12 +44,21 @@ function Gate() {
   const load = useAppStore((s) => s.load);
   const loading = useAppStore((s) => s.loading);
   const limits = useAppStore((s) => s.limits);
+  const dataMode = useAppStore((s) => s.dataMode);
+  const setDataMode = useAppStore((s) => s.setDataMode);
 
+  const [modeHydrated, setModeHydrated] = useState(false);
   // session: undefined = resolving, null = signed out, Session = signed in.
   const [session, setSession] = useState<Session | null | undefined>(USE_SUPABASE ? undefined : null);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [onboardDone, setOnboardDone] = useState(false);
 
+  // Boot: read the persisted data mode (local / supabase / none).
+  useEffect(() => {
+    useAppStore.getState().hydrateDataMode().finally(() => setModeHydrated(true));
+  }, []);
+
+  // Supabase session — only the "supabase" mode acts on it.
   useEffect(() => {
     if (!USE_SUPABASE) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -50,22 +72,37 @@ function Gate() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  const authed = USE_SUPABASE ? !!session : true;
+  // A Google sign-in started from the welcome screen → adopt supabase mode.
+  useEffect(() => {
+    if (session && dataMode === null) setDataMode("supabase");
+  }, [session, dataMode, setDataMode]);
+
+  // Switching modes (or signing out) forces a fresh load with the new repo.
+  useEffect(() => {
+    setDataLoaded(false);
+    setOnboardDone(false);
+  }, [dataMode]);
+
+  const authed = dataMode === "local" || (dataMode === "supabase" && !!session);
 
   useEffect(() => {
-    if (authed && !dataLoaded) {
+    if (modeHydrated && authed && !dataLoaded) {
       load().then(() => setDataLoaded(true));
     }
-  }, [authed, dataLoaded, load]);
+  }, [modeHydrated, authed, dataLoaded, load]);
 
   useEffect(() => {
-    if (dataLoaded) SplashScreen.hideAsync();
-    else if (USE_SUPABASE && session === null) SplashScreen.hideAsync(); // login visible
-  }, [dataLoaded, session]);
+    if (!modeHydrated) return;
+    if (dataMode === null) SplashScreen.hideAsync(); // welcome visible
+    else if (dataMode === "supabase" && session === null) SplashScreen.hideAsync(); // login visible
+    else if (dataLoaded) SplashScreen.hideAsync();
+  }, [modeHydrated, dataMode, session, dataLoaded]);
 
   let overlay: React.ReactNode = null;
-  if (USE_SUPABASE && session === undefined) overlay = <SplashView />;
-  else if (USE_SUPABASE && session === null) overlay = <LoginView />;
+  if (!modeHydrated) overlay = <SplashView />;
+  else if (dataMode === null) overlay = <WelcomeView />;
+  else if (dataMode === "supabase" && session === undefined) overlay = <SplashView />;
+  else if (dataMode === "supabase" && session === null) overlay = <LoginView />;
   else if (!dataLoaded || loading) overlay = <SplashView />;
   else if (limits.length === 0 && !onboardDone)
     overlay = <OnboardingView onDone={() => setOnboardDone(true)} />;
@@ -75,6 +112,7 @@ function Gate() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
+        <Stack.Screen name="purchases" />
       </Stack>
       {overlay && <View style={[StyleSheet.absoluteFill, styles.overlay]}>{overlay}</View>}
     </View>
@@ -82,10 +120,23 @@ function Gate() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    HankenGrotesk_400Regular,
+    HankenGrotesk_500Medium,
+    HankenGrotesk_600SemiBold,
+    HankenGrotesk_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_600SemiBold,
+  });
+
   // Align layout direction (LTR/RTL) with the saved language before the UI shows.
   useEffect(() => {
     useAppStore.getState().hydrateLocale();
   }, []);
+
+  // Hold the native splash until fonts are ready (keeps the first paint correct).
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={styles.fill}>

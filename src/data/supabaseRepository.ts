@@ -12,6 +12,7 @@ import {
   AppSettings,
   DailyLimit,
   DEFAULT_SETTINGS,
+  PackUnit,
   Purchase,
   SmokeLog,
 } from "@/models";
@@ -91,10 +92,16 @@ export class SupabaseRepository implements Repository {
     return rowToLog(data);
   }
 
-  async updateLog(id: string, { comment, diary }: { comment?: string; diary?: string }): Promise<SmokeLog> {
+  async updateLog(
+    id: string,
+    { comment, diary, smokedAt }: { comment?: string; diary?: string; smokedAt?: Date },
+  ): Promise<SmokeLog> {
     const patch: Record<string, string> = {};
     if (comment !== undefined) patch.comment = comment;
     if (diary !== undefined) patch.diary = diary;
+    // log_date is derived from smoked_at server-side, so changing the time
+    // re-buckets the entry to the correct day automatically.
+    if (smokedAt !== undefined) patch.smoked_at = smokedAt.toISOString();
     const { data, error } = await supabase.from("smoke_logs").update(patch).eq("id", id).select().single();
     if (error) throw error;
     return rowToLog(data);
@@ -146,6 +153,26 @@ export class SupabaseRepository implements Repository {
       .single();
     if (error) throw error;
     return rowToPurchase(data);
+  }
+
+  async updatePurchase(
+    id: string,
+    { unit, quantity, price, boughtAt }: { unit?: PackUnit; quantity?: number; price?: number; boughtAt?: Date },
+  ): Promise<Purchase> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const patch: Record<string, any> = {};
+    if (unit !== undefined) patch.unit = unit;
+    if (quantity !== undefined) patch.quantity = quantity;
+    if (price !== undefined) patch.price = price;
+    if (boughtAt !== undefined) patch.bought_at = boughtAt.toISOString();
+    const { data, error } = await supabase.from("purchases").update(patch).eq("id", id).select().single();
+    if (error) throw error;
+    return rowToPurchase(data);
+  }
+
+  async deletePurchase(id: string): Promise<void> {
+    const { error } = await supabase.from("purchases").delete().eq("id", id);
+    if (error) throw error;
   }
 
   async getSettings(): Promise<AppSettings> {

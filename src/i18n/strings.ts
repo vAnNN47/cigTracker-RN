@@ -23,7 +23,20 @@ export function makeStrings(he: boolean) {
     addCigarette: he ? "הוסף סיגריה" : "Add cigarette",
     addPurchase: he ? "הוסף קנייה" : "Add purchase",
 
-    // Home — redesigned Today screen
+    // Home — redesigned Today screen (haze)
+    todaySub: he ? "לאט ובטוח, יום אחד בכל פעם" : "Easy does it today",
+    statusUnderLine: he ? "אתה בקצב טוב" : "You're pacing well",
+    statusAtLine: he ? "הגעת בדיוק למכסה" : "Right at your limit",
+    statusOverLine: he ? "מעל המכסה היום" : "Over for today",
+    subUnder: he ? "המשך כך — יום אחד בכל פעם." : "Keep going — one at a time.",
+    subAt: he ? "אתה בדיוק על היעד." : "You're right on target.",
+    subOver: he ? "בלי לשפוט. מחר התחלה חדשה." : "No judgment — tomorrow's fresh.",
+    recent: he ? "לאחרונה" : "Recent",
+    logOne: he ? "רשום אחת" : "Log one",
+    buy: he ? "קנייה" : "Buy",
+    ofN: (n: number) => (he ? `מתוך ${n}` : `of ${n}`),
+    thisMonth: he ? "החודש" : "this month",
+
     appTitle: he ? "מעקב סיגריות" : "Cig Tracker",
     todaysAllowance: he ? "המכסה היומית" : "Today's Allowance",
     leftLabel: he ? "נותרו" : "Left",
@@ -134,6 +147,10 @@ export function makeStrings(he: boolean) {
     carton: he ? "קרטון" : "Carton",
     quantity: he ? "כמות" : "Quantity",
     totalPrice: he ? "מחיר כולל" : "Total price",
+    editPurchase: he ? "עריכת קנייה" : "Edit purchase",
+    deletePurchaseTitle: he ? "למחוק את הקנייה?" : "Delete purchase?",
+    deletePurchaseBody: he ? "לא ניתן לבטל פעולה זו." : "This can't be undone.",
+    purchaseDeletedToast: he ? "הקנייה נמחקה" : "Purchase deleted",
 
     // Login
     appName: he ? "מעקב סיגריות" : "Cigarette Tracker",
@@ -142,6 +159,29 @@ export function makeStrings(he: boolean) {
       : "Track your smoking and bring it down, gradually.",
     continueWithGoogle: he ? "המשך עם Google" : "Continue with Google",
     signingIn: he ? "מתחבר…" : "Signing in…",
+
+    // Welcome / choose data mode
+    welcomeHeadline: he ? "ברוך הבא למעקב סיגריות" : "Welcome to Cig Tracker",
+    welcomeBlurb: he
+      ? "עקוב אחר העישון שלך, ראה כמה חסכת, והפחת בהדרגה."
+      : "Track your smoking, see what you save, and cut down gradually.",
+    continueLocally: he ? "המשך ללא חשבון" : "Continue without an account",
+    orDivider: he ? "או" : "or",
+    localModeNote: he
+      ? "הנתונים יישמרו במכשיר זה בלבד. אפשר להתחבר לחשבון מאוחר יותר."
+      : "Your data stays on this device. You can sign in to an account later.",
+    cloudModeNote: he
+      ? "ההתחברות שומרת ומסנכרנת את הנתונים בין מכשירים."
+      : "Signing in saves and syncs your data across devices.",
+
+    // Settings — account / data mode
+    account: he ? "חשבון" : "Account",
+    localDataNote: he ? "הנתונים נשמרים במכשיר זה." : "Your data is saved on this device.",
+    signInToAccount: he ? "התחבר לחשבון" : "Sign in to an account",
+
+    // Purchase history
+    purchaseHistory: he ? "היסטוריית קניות" : "Purchase history",
+    totalSpentLabel: he ? "סך הכל הוצאה" : "Total spent",
 
     // Logged toast
     loggedToast: he ? "נרשם ✓" : "Logged ✓",

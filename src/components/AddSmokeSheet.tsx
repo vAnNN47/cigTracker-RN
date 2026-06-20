@@ -9,13 +9,13 @@ import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { formatTime } from "@/i18n/format";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../packages/keyboard-sheet";
 
@@ -94,7 +94,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
                 accentColor={colors.accent}
                 themeVariant="dark"
                 onValueChange={(_e, d) => setSmokedAt(clampToday(d))}
-                style={styles.iosPicker}
+                style={styles.timePicker}
               />
             ) : (
               <Pressable style={styles.timePill} onPress={() => setShowPicker(true)}>
@@ -148,7 +148,11 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
             onPress={save}
             disabled={saving}
           >
-            <Text style={styles.buttonText}>{saving ? "…" : s.add}</Text>
+            {saving ? (
+              <ActivityIndicator color={colors.onAccent} />
+            ) : (
+              <Text style={styles.buttonText}>{s.add}</Text>
+            )}
           </Pressable>
         </View>
       </KeyboardSheet>
@@ -158,14 +162,12 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.card,
     padding: spacing.md,
     gap: spacing.sm,
   },
   titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
-  title: { color: colors.text, fontSize: 20, fontWeight: "600" },
-  sub: { color: colors.textDim, fontSize: 13 },
+  title: { color: colors.text, fontSize: 20, fontFamily: fonts.semibold },
+  sub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular },
   timePill: {
     flexDirection: "row",
     alignItems: "center",
@@ -175,21 +177,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
-  timePillText: { color: colors.accent, fontWeight: "700", fontSize: 14 },
-  iosPicker: { transform: [{ scale: 0.95 }] },
+  timePillText: { color: colors.accent, fontFamily: fonts.monoMedium, fontSize: 14 },
+  // Width must be explicit: the native SwiftUI picker host only matches content
+  // vertically, so without a width it collapses/overflows in a flex row.
+  timePicker: { width: 112, height: 36 },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,
-    borderWidth: 1,
-    borderColor: colors.line,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     color: colors.text,
     fontSize: type.body.fontSize,
+    fontFamily: fonts.regular,
   },
   diaryHeader: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
-  diaryLabel: { color: colors.text, fontWeight: "600" },
-  info: { color: colors.textDim, fontSize: 16 },
+  diaryLabel: { color: colors.text, fontFamily: fonts.semibold },
+  info: { color: colors.textDim, fontSize: 16, fontFamily: fonts.regular },
   diary: { height: 110, textAlignVertical: "top" },
   button: {
     marginTop: spacing.xs,
@@ -199,5 +202,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.onAccent, fontWeight: "600", fontSize: type.body.fontSize },
+  buttonText: { color: colors.onAccent, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
 });

@@ -10,7 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, radius, spacing, type } from "@/theme";
+import { colors, fonts, radius, spacing, type } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 export function OnboardingView({ onDone }: { onDone: () => void }) {
@@ -103,9 +103,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { color: colors.text, fontSize: 24, fontWeight: "700", marginTop: spacing.xl },
-  intro: { color: colors.textDim, marginTop: spacing.sm },
-  pickLabel: { color: colors.text, fontWeight: "600", marginBottom: spacing.sm },
+  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl },
+  intro: { color: colors.textDim, fontFamily: fonts.regular, marginTop: spacing.sm },
+  pickLabel: { color: colors.text, fontFamily: fonts.semibold, marginBottom: spacing.sm },
   pickBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 16,
   },
-  pickValue: { color: colors.text, fontSize: 20, fontWeight: "700" },
+  pickValue: { color: colors.text, fontSize: 20, fontFamily: fonts.monoSemibold },
   btn: {
     backgroundColor: colors.accent,
     borderRadius: radius.button,
@@ -124,5 +124,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxl,
   },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: colors.onAccent, fontWeight: "600", fontSize: type.body.fontSize },
+  btnText: { color: colors.onAccent, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
 });
