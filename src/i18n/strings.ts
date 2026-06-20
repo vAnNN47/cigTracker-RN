@@ -120,6 +120,9 @@ export function makeStrings(he: boolean) {
     noLogsThisDay: he ? "לא נרשמו סיגריות ביום זה." : "No cigarettes logged this day.",
     purchases: he ? "קניות" : "Purchases",
     noPurchasesThisDay: he ? "לא נרשמו קניות ביום זה." : "No purchases this day.",
+    daysUnder: he ? "ימים מתחת" : "Days under",
+    daysOver: he ? "ימים מעל" : "Days over",
+    monthTotal: he ? "סה״כ החודש" : "Month total",
 
     // Stats
     avgPerDay: he ? "ממוצע ליום" : "Avg / day",
@@ -142,6 +145,9 @@ export function makeStrings(he: boolean) {
     device: he ? "מכשיר" : "Device",
     english: "English",
     hebrew: "עברית",
+    reductionPlan: he ? "תוכנית הפחתה" : "Reduction plan",
+    oldHabit: he ? "הרגל ישן" : "Old habit",
+    todaysLimitShort: he ? "מכסה היום" : "Today's limit",
     dailyGoal: he ? "יעד יומי" : "Daily goal",
     maxPerDay: he ? "מקסימום סיגריות ליום" : "Max cigarettes per day",
     appliesFromToday: he

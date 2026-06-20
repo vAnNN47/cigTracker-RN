@@ -1,13 +1,10 @@
 /**
- * Diary / History browser (the re-scoped Calendar tab, Hebrew "יומן").
- * Pick a day from the horizontal strip (or the month picker) and see that day's
- * cigarettes + diary + purchases together. Tap a cigarette row to open its
- * detail/edit sheet (editable only on today; past days are read-only). Logging a
- * cigarette is offered only while viewing today (logs are always stamped "now").
- *
- * Built from the Stitch reference, reconciled to our tokens + data model:
- * dropped its app/tab chrome, no separate "tag" field (comment shows inline; a
- * teal badge marks entries that have a diary note).
+ * History — color-coded calendar (design handoff). Each day cell shows that
+ * day's count, tinted by status: under/at allowance = periwinkle, over = red, no
+ * logs = faint. A weekday header tops the grid; a month tally (days under / days
+ * over / month total) sits below. Tapping a day opens its detail underneath —
+ * that day's cigarettes (editable only on today) + purchases — which we keep on
+ * top of the handoff's browse view so logs stay reachable for editing.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -18,7 +15,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
-import { MonthPager } from "../../../packages/month-pager";
 import { Ring } from "@/components/Ring";
 import { isSameDay, keyOf } from "@/domain/day";
 import {
@@ -34,14 +30,14 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, fonts, radius, spacing } from "@/theme";
+import { MonthPager } from "../../../packages/month-pager";
 
-// Solid cards (glassmorphism removed): opaque surfaces with a hairline border.
-const GLASS = colors.surface;
-const GLASS_BORDER = colors.line;
-const GLASS_TOP = colors.line;
+// Status tints not in the token set (the under-tints reuse the accent tokens).
+const OVER_BG = "rgba(224,138,138,0.16)";
+const OVER_BORDER = "rgba(224,138,138,0.35)";
 
-// Calendar grid for a given month, always padded to a fixed 6 weeks (42 cells)
-// so every month has the same height — keeps the swipe between months smooth.
+// Calendar grid for a month, padded to a fixed 6 weeks (42 cells) so every month
+// is the same height — keeps the swipe between months smooth.
 function buildWeeks(monthFirst: Date): (Date | null)[][] {
   const y = monthFirst.getFullYear();
   const m = monthFirst.getMonth();
@@ -56,7 +52,7 @@ function buildWeeks(monthFirst: Date): (Date | null)[][] {
   return out;
 }
 
-export default function DiaryScreen() {
+export default function HistoryScreen() {
   const s = useStrings();
   const router = useRouter();
   const { logs, limits, purchases, settings } = useAppStore();
@@ -90,7 +86,31 @@ export default function DiaryScreen() {
     focused.getFullYear() === today.getFullYear() && focused.getMonth() === today.getMonth();
   const monthGridTitle = new Intl.DateTimeFormat(s.localeCode, { month: "long", year: "numeric" }).format(focused);
 
-  // Renders one month's grid; reused by MonthPager for prev / current / next.
+  // Locale-aware narrow weekday headers, Sunday-first (Jan 1 2023 was a Sunday).
+  const weekdays = Array.from({ length: 7 }, (_, i) =>
+    new Intl.DateTimeFormat(s.localeCode, { weekday: "narrow" }).format(new Date(2023, 0, 1 + i)),
+  );
+
+  // Month tally over elapsed days of the focused month.
+  let daysUnder = 0;
+  let daysOver = 0;
+  let monthTotal = 0;
+  {
+    const y = focused.getFullYear();
+    const m = focused.getMonth();
+    const dim = new Date(y, m + 1, 0).getDate();
+    for (let d = 1; d <= dim; d++) {
+      const day = new Date(y, m, d);
+      if (keyOf(day) > today) break;
+      const c = countForDay(logs, day, dsh);
+      const lim = limitForDay(limits, day, settings);
+      monthTotal += c;
+      if (c > lim) daysOver += 1;
+      else daysUnder += 1;
+    }
+  }
+
+  // One month's grid; reused by MonthPager for prev / current / next.
   const renderMonth = (monthFirst: Date) =>
     buildWeeks(monthFirst).map((week, wi) => (
       <View key={wi} style={styles.weekRow}>
@@ -100,6 +120,8 @@ export default function DiaryScreen() {
           const c = countForDay(logs, day, dsh);
           const lim = limitForDay(limits, day, settings);
           const sel = isSameDay(day, selected);
+          const isTodayCell = isSameDay(day, today);
+          const status = future ? "future" : c === 0 ? "none" : c <= lim ? "under" : "over";
           return (
             <Pressable
               key={di}
@@ -113,27 +135,27 @@ export default function DiaryScreen() {
               <View
                 style={[
                   styles.dayBox,
-                  sel && styles.dayBoxSelected,
-                  !sel && c > 0 && styles.dayBoxHasDots,
+                  status === "under" && styles.dayUnder,
+                  status === "over" && styles.dayOver,
+                  status === "none" && styles.dayNone,
+                  isTodayCell && styles.dayToday,
+                  sel && !isTodayCell && styles.daySelected,
                 ]}
               >
                 <Text
                   style={[
-                    styles.dayNumber,
-                    sel && styles.dayNumberSelected,
-                    future && styles.dayNumberFuture,
+                    styles.dayNum,
+                    status === "under" && styles.dayNumUnder,
+                    status === "over" && styles.dayNumOver,
+                    (status === "none" || status === "future") && styles.dayNumFaint,
                   ]}
                 >
                   {day.getDate()}
                 </Text>
-                {c > 0 && (
-                  <View
-                    style={[
-                      styles.dayDot,
-                      sel && styles.dayDotSelected,
-                      !sel && c > lim && styles.dayDotOver,
-                    ]}
-                  />
+                {!future && c > 0 && (
+                  <Text style={[styles.dayCount, status === "over" ? styles.dayCountOver : styles.dayCountUnder]}>
+                    {c}
+                  </Text>
                 )}
               </View>
             </Pressable>
@@ -150,39 +172,63 @@ export default function DiaryScreen() {
         alwaysBounceVertical
         overScrollMode="always"
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{s.diaryTab}</Text>
+        <Text style={styles.title}>{s.diaryTab}</Text>
+
+        {/* Month nav */}
+        <View style={styles.monthHeader}>
+          <Pressable
+            onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
+            hitSlop={8}
+            style={styles.navBtn}
+          >
+            <MaterialIcons name={prevArrow} size={20} color={colors.textDim} />
+          </Pressable>
+          <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
+          <Pressable
+            onPress={() => !atCurrentMonth && setFocused(new Date(focused.getFullYear(), focused.getMonth() + 1, 1))}
+            hitSlop={8}
+            disabled={atCurrentMonth}
+            style={styles.navBtn}
+          >
+            <MaterialIcons name={nextArrow} size={20} color={atCurrentMonth ? colors.line : colors.textDim} />
+          </Pressable>
         </View>
 
-        {/* Month calendar */}
-        <View style={styles.monthCard}>
-          <View style={styles.monthHeader}>
-            <Pressable
-              onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
-              hitSlop={8}
-            >
-              <MaterialIcons name={prevArrow} size={22} color={colors.textDim} />
-            </Pressable>
-            <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
-            <Pressable
-              onPress={() => !atCurrentMonth && setFocused(new Date(focused.getFullYear(), focused.getMonth() + 1, 1))}
-              hitSlop={8}
-              disabled={atCurrentMonth}
-            >
-              <MaterialIcons name={nextArrow} size={22} color={atCurrentMonth ? colors.line : colors.textDim} />
-            </Pressable>
+        {/* Weekday header */}
+        <View style={styles.weekdayRow}>
+          {weekdays.map((w, i) => (
+            <Text key={i} style={styles.weekday}>
+              {w}
+            </Text>
+          ))}
+        </View>
+
+        {/* Calendar */}
+        <MonthPager
+          focused={focused}
+          onChange={(next) => {
+            Haptics.selectionAsync();
+            setFocused(next);
+          }}
+          renderMonth={renderMonth}
+          canGoNext={!atCurrentMonth}
+          isRTL={isRTL}
+        />
+
+        {/* Month tally */}
+        <View style={styles.tally}>
+          <View style={styles.tallyCell}>
+            <Text style={[styles.tallyVal, { color: colors.accent }]}>{daysUnder}</Text>
+            <Text style={styles.tallyLabel}>{s.daysUnder}</Text>
           </View>
-          <MonthPager
-            focused={focused}
-            onChange={(next) => {
-              Haptics.selectionAsync();
-              setFocused(next);
-            }}
-            renderMonth={renderMonth}
-            canGoNext={!atCurrentMonth}
-            isRTL={isRTL}
-          />
+          <View style={[styles.tallyCell, styles.tallyDivider]}>
+            <Text style={[styles.tallyVal, { color: colors.overText }]}>{daysOver}</Text>
+            <Text style={styles.tallyLabel}>{s.daysOver}</Text>
+          </View>
+          <View style={[styles.tallyCell, styles.tallyDivider]}>
+            <Text style={styles.tallyVal}>{monthTotal}</Text>
+            <Text style={styles.tallyLabel}>{s.monthTotal}</Text>
+          </View>
         </View>
 
         {/* Day summary */}
@@ -279,96 +325,67 @@ export default function DiaryScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.sm },
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: GLASS,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER, borderTopColor: GLASS_TOP,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconBtnActive: { borderColor: colors.accentBorder, backgroundColor: colors.accentTint },
+  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
 
-  strip: { gap: spacing.sm, paddingVertical: spacing.xs, paddingRight: spacing.xs },
-  chip: {
-    width: 52,
-    paddingVertical: spacing.md,
-    borderRadius: radius.chip,
-    backgroundColor: GLASS,
-    borderWidth: 1,
-    borderColor: GLASS_BORDER, borderTopColor: GLASS_TOP,
-    alignItems: "center",
-    gap: 2,
-  },
-  chipSel: { backgroundColor: colors.accent, borderColor: colors.accent },
-  chipWd: { color: colors.textDim, fontSize: 11, fontFamily: fonts.semibold },
-  chipNum: { color: colors.text, fontSize: 18, fontFamily: fonts.monoSemibold },
-  todayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent, marginTop: 1 },
-
-  monthCard: {
-    paddingVertical: spacing.sm,
-  },
   monthHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
-  monthGridTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.bold },
-  weekRow: { flexDirection: "row" },
-  cell: { flex: 1, aspectRatio: 1, padding: 2 },
-  dayBox: {
-    flex: 1,
-    borderRadius: radius.card,
+  monthGridTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.semibold },
+  navBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: colors.line,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 36,
-    paddingVertical: 2,
   },
-  dayBoxSelected: {
-    backgroundColor: colors.accent,
-    borderRadius: 999,
+
+  weekdayRow: { flexDirection: "row", marginBottom: spacing.xs },
+  weekday: { flex: 1, textAlign: "center", color: colors.textFaint, fontSize: 10, fontFamily: fonts.medium },
+
+  weekRow: { flexDirection: "row" },
+  cell: { flex: 1, aspectRatio: 1, padding: 3 },
+  dayBox: {
+    flex: 1,
+    borderRadius: radius.cell,
+    borderWidth: 1,
+    borderColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 1,
   },
-  dayBoxHasDots: {
-    backgroundColor: colors.fill,
+  dayUnder: { backgroundColor: colors.accentTint, borderColor: colors.accentBorder },
+  dayOver: { backgroundColor: OVER_BG, borderColor: OVER_BORDER },
+  dayNone: { backgroundColor: colors.fill, borderColor: colors.line },
+  dayToday: { borderColor: colors.accent, borderWidth: 2 },
+  daySelected: { borderColor: colors.accentText },
+  dayNum: { fontSize: 11, fontFamily: fonts.mono, color: colors.text },
+  dayNumUnder: { color: colors.accentText },
+  dayNumOver: { color: colors.overText },
+  dayNumFaint: { color: colors.textFaint },
+  dayCount: { fontSize: 13, fontFamily: fonts.semibold },
+  dayCountUnder: { color: colors.accentText },
+  dayCountOver: { color: colors.overText },
+
+  tally: {
+    flexDirection: "row",
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.line,
   },
-  dayNumber: {
-    color: colors.text,
-    fontFamily: fonts.semibold,
-    fontSize: 13,
-  },
-  dayNumberSelected: {
-    color: colors.onAccent,
-  },
-  dayNumberFuture: {
-    color: colors.line,
-  },
-  dayDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.textDim,
-    marginTop: 2,
-  },
-  dayDotSelected: {
-    backgroundColor: colors.onAccent,
-  },
-  dayDotOver: {
-    backgroundColor: colors.bad,
-  },
+  tallyCell: { flex: 1, paddingHorizontal: spacing.sm },
+  tallyDivider: { borderLeftWidth: 1, borderLeftColor: colors.line },
+  tallyVal: { color: colors.text, fontSize: 21, fontFamily: fonts.monoMedium, textAlign: textStart },
+  tallyLabel: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
 
   summary: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
     paddingVertical: spacing.md,
     marginTop: spacing.md,
     borderTopWidth: 1,
@@ -378,17 +395,7 @@ const styles = StyleSheet.create({
   sumCount: { fontSize: 15, fontFamily: fonts.semibold, marginTop: spacing.xs, textAlign: textStart },
   ringPct: { color: colors.text, fontSize: 13, fontFamily: fonts.monoMedium },
   pillRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.sm },
-  pill: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: spacing.xs,
-  },
+  pill: { flex: 1, flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: spacing.xs },
   pillLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
   pillValue: { color: colors.text, fontSize: 14, fontFamily: fonts.bold },
 
@@ -416,14 +423,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    backgroundColor: "transparent",
-    borderRadius: 0,
-    borderWidth: 0,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
-    paddingHorizontal: 0,
     paddingVertical: spacing.md,
-    marginBottom: 0,
   },
   rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
   rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
@@ -438,18 +440,4 @@ const styles = StyleSheet.create({
   },
   rowSub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   price: { color: colors.text, fontFamily: fonts.monoMedium, fontSize: 15 },
-
-  logBtn: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.accentBorder,
-    backgroundColor: colors.accentTint,
-    borderRadius: radius.button,
-    paddingVertical: 14,
-    marginTop: spacing.xs,
-  },
-  logBtnText: { color: colors.accent, fontFamily: fonts.bold, fontSize: 15 },
 });

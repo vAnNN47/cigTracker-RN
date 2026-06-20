@@ -1,13 +1,13 @@
 /**
- * Settings screen — ported from lib/screens/settings_screen.dart.
- * Language (Device/EN/עברית), Daily goal (max/day, baseline, day-start) and
- * Pricing (price-per-pack, currency) — numeric fields use the in-app number pad
- * (packages/number-pad). Sign-out appears once auth is wired (Step 5); until
- * then a demo note is shown.
+ * Settings — rebuilt to the "haze" handoff: a reduction-plan banner (Old habit →
+ * Today's limit, big mono numbers) and −/+ stepper rows for the plan + pricing.
+ * The value in each stepper is still tappable to open the in-app number pad for
+ * direct entry. Language stays a real switcher (Device / English / עברית),
+ * rendered as chips. Account/sign-out kept from before.
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { ReactNode, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ReactNode, useRef } from "react";
+import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { currentLimit } from "@/domain/logic";
@@ -27,19 +27,27 @@ export default function SettingsScreen() {
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLocale = useAppStore((st) => st.setLocale);
   const pad = useRef<NumberPadRef>(null);
-  const [langOpen, setLangOpen] = useState(false);
 
   const cur = settings.currencySymbol;
   const limit = currentLimit(limits, settings);
   const priceText = `${cur}${Number.isInteger(settings.pricePerPack) ? settings.pricePerPack.toFixed(0) : settings.pricePerPack.toFixed(2)}`;
+  const planArrow = I18nManager.isRTL ? "arrow-back" : "arrow-forward";
 
   const langs: { key: "device" | "en" | "he"; label: string }[] = [
     { key: "device", label: s.device },
     { key: "en", label: s.english },
     { key: "he", label: s.hebrew },
   ];
-  const currentLangLabel = langs.find((l) => l.key === locale)?.label ?? s.device;
-  const otherLangs = langs.filter((l) => l.key !== locale);
+
+  const confirmLang = (l: { key: "device" | "en" | "he"; label: string }) =>
+    Alert.alert(
+      s.language,
+      `${locale === "he" ? "האם אתה בטוח שברצונך לשנות שפה ל-" : "Are you sure you want to change the language to "}${l.label}?`,
+      [
+        { text: s.cancel, style: "cancel" },
+        { text: locale === "he" ? "כן" : "Yes", onPress: () => setLocale(l.key) },
+      ],
+    );
 
   const confirmSignOut = () =>
     Alert.alert(s.signOutTitle, s.signOutBody, [
@@ -49,7 +57,7 @@ export default function SettingsScreen() {
         style: "destructive",
         onPress: async () => {
           await signOut();
-          await setDataMode(null); // back to the welcome chooser
+          await setDataMode(null);
         },
       },
     ]);
@@ -63,62 +71,31 @@ export default function SettingsScreen() {
       >
         <Text style={styles.title}>{s.settings}</Text>
 
-        {/* Language (dropdown) */}
-        <Group title={s.language}>
-          <Pressable style={styles.row} onPress={() => setLangOpen((v) => !v)}>
-            <Text style={[styles.rowLabel, { flex: 1 }]}>{currentLangLabel}</Text>
-            <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={colors.textDim} />
-          </Pressable>
-          {langOpen &&
-            otherLangs.map((l) => (
-              <View key={l.key}>
-                <Divider />
-                <Pressable
-                  style={styles.row}
-                  onPress={() => {
-                    const nextLabel = l.label;
-                    Alert.alert(
-                      s.language,
-                      `${locale === "he" ? "האם אתה בטוח שברצונך לשנות שפה ל-" : "Are you sure you want to change the language to "}${nextLabel}?`,
-                      [
-                        { text: s.cancel, style: "cancel" },
-                        {
-                          text: locale === "he" ? "כן" : "Yes",
-                          onPress: () => {
-                            setLocale(l.key);
-                            setLangOpen(false);
-                          },
-                        },
-                      ],
-                    );
-                  }}
-                >
-                  <Text style={[styles.rowLabel, { flex: 1 }]}>{l.label}</Text>
-                </Pressable>
-              </View>
-            ))}
-        </Group>
+        {/* Reduction plan banner */}
+        <Text style={styles.groupTitle}>{s.reductionPlan}</Text>
+        <View style={styles.plan}>
+          <View style={styles.planSide}>
+            <Text style={styles.planLabel}>{s.oldHabit}</Text>
+            <Text style={styles.planValueDim}>{settings.baselinePerDay}</Text>
+          </View>
+          <MaterialIcons name={planArrow} size={22} color={colors.accent} />
+          <View style={styles.planSide}>
+            <Text style={styles.planLabel}>{s.todaysLimitShort}</Text>
+            <Text style={styles.planValue}>{limit}</Text>
+          </View>
+        </View>
 
-        {/* Daily goal */}
+        {/* Daily goal — steppers */}
         <Group title={s.dailyGoal}>
-          <EditableRow
-            label={s.maxPerDay}
-            value={`${limit}`}
-            helper={s.appliesFromToday}
-            onPress={() =>
-              pad.current?.present({
-                title: s.maxPerDay,
-                initial: limit,
-                onSubmit: (v) => setLimit(Math.round(v)),
-              })
-            }
-          />
-          <Divider />
-          <EditableRow
+          <StepperRow
             label={s.baseline}
-            value={`${settings.baselinePerDay}`}
-            helper={s.baselineHelper}
-            onPress={() =>
+            hint={s.baselineHelper}
+            value={settings.baselinePerDay}
+            display={`${settings.baselinePerDay}`}
+            min={1}
+            max={60}
+            onChange={(v) => saveSettings({ ...settings, baselinePerDay: v })}
+            onPressValue={() =>
               pad.current?.present({
                 title: s.baseline,
                 initial: settings.baselinePerDay,
@@ -127,16 +104,32 @@ export default function SettingsScreen() {
             }
           />
           <Divider />
-          <EditableRow
+          <StepperRow
+            label={s.maxPerDay}
+            hint={s.appliesFromToday}
+            value={limit}
+            display={`${limit}`}
+            min={1}
+            max={40}
+            onChange={(v) => setLimit(v)}
+            onPressValue={() =>
+              pad.current?.present({ title: s.maxPerDay, initial: limit, onSubmit: (v) => setLimit(Math.round(v)) })
+            }
+          />
+          <Divider />
+          <StepperRow
             label={s.dayStart}
-            value={`${String(settings.dayStartHour).padStart(2, "0")}:00`}
-            helper={s.dayStartHelper}
-            onPress={() =>
+            hint={s.dayStartHelper}
+            value={settings.dayStartHour}
+            display={`${String(settings.dayStartHour).padStart(2, "0")}:00`}
+            min={0}
+            max={23}
+            onChange={(v) => saveSettings({ ...settings, dayStartHour: v })}
+            onPressValue={() =>
               pad.current?.present({
                 title: s.dayStart,
                 initial: settings.dayStartHour,
-                onSubmit: (v) =>
-                  saveSettings({ ...settings, dayStartHour: Math.min(23, Math.max(0, Math.round(v))) }),
+                onSubmit: (v) => saveSettings({ ...settings, dayStartHour: Math.min(23, Math.max(0, Math.round(v))) }),
               })
             }
           />
@@ -144,10 +137,15 @@ export default function SettingsScreen() {
 
         {/* Pricing */}
         <Group title={s.pricing}>
-          <EditableRow
+          <StepperRow
             label={s.pricePerPack(cur)}
-            value={priceText}
-            onPress={() =>
+            value={settings.pricePerPack}
+            display={priceText}
+            min={1}
+            max={40}
+            step={0.5}
+            onChange={(v) => saveSettings({ ...settings, pricePerPack: v })}
+            onPressValue={() =>
               pad.current?.present({
                 title: s.pricePerPack(cur),
                 initial: settings.pricePerPack,
@@ -174,6 +172,24 @@ export default function SettingsScreen() {
                 );
               })}
             </View>
+          </View>
+        </Group>
+
+        {/* Language — chips */}
+        <Group title={s.language}>
+          <View style={styles.chipRow}>
+            {langs.map((l) => {
+              const sel = locale === l.key;
+              return (
+                <Pressable
+                  key={l.key}
+                  style={[styles.langChip, sel && styles.langChipSel]}
+                  onPress={() => !sel && confirmLang(l)}
+                >
+                  <Text style={[styles.langChipText, sel && styles.langChipTextSel]}>{l.label}</Text>
+                </Pressable>
+              );
+            })}
           </View>
         </Group>
 
@@ -213,31 +229,51 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <View style={{ marginBottom: spacing.lg }}>
       <Text style={styles.groupTitle}>{title}</Text>
-      <View style={styles.groupBox}>{children}</View>
+      <View>{children}</View>
     </View>
   );
 }
 
-function EditableRow({
+function StepperRow({
   label,
+  hint,
   value,
-  helper,
-  onPress,
+  display,
+  min,
+  max,
+  step = 1,
+  onChange,
+  onPressValue,
 }: {
   label: string;
-  value: string;
-  helper?: string;
-  onPress: () => void;
+  hint?: string;
+  value: number;
+  display: string;
+  min: number;
+  max: number;
+  step?: number;
+  onChange: (v: number) => void;
+  onPressValue: () => void;
 }) {
+  const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100));
   return (
-    <Pressable onPress={onPress} style={styles.row}>
+    <View style={styles.row}>
       <View style={{ flex: 1 }}>
         <Text style={styles.rowLabel}>{label}</Text>
-        {helper ? <Text style={styles.rowHelper}>{helper}</Text> : null}
+        {hint ? <Text style={styles.rowHint}>{hint}</Text> : null}
       </View>
-      <Text style={styles.rowValue}>{value}</Text>
-      <MaterialIcons name="edit" size={16} color={colors.textDim} style={{ marginStart: spacing.sm }} />
-    </Pressable>
+      <View style={styles.stepper}>
+        <Pressable style={styles.stepBtn} onPress={() => onChange(clamp(value - step))} hitSlop={6}>
+          <MaterialIcons name="remove" size={18} color={colors.text} />
+        </Pressable>
+        <Pressable onPress={onPressValue} hitSlop={6}>
+          <Text style={styles.stepValue}>{display}</Text>
+        </Pressable>
+        <Pressable style={styles.stepBtn} onPress={() => onChange(clamp(value + step))} hitSlop={6}>
+          <MaterialIcons name="add" size={18} color={colors.text} />
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -257,23 +293,60 @@ const styles = StyleSheet.create({
     marginStart: spacing.md,
     textAlign: textStart,
   },
-  groupBox: { backgroundColor: "transparent", borderRadius: 0, paddingHorizontal: 0 },
+
+  plan: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: spacing.lg,
+    marginBottom: spacing.xl,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.line,
+  },
+  planSide: { alignItems: "center", flex: 1 },
+  planLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginBottom: 4 },
+  planValue: { color: colors.accent, fontSize: 26, fontFamily: fonts.monoMedium },
+  planValueDim: { color: colors.textDim, fontSize: 26, fontFamily: fonts.monoMedium },
+
   row: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md },
   rowLabel: { color: colors.text, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
-  rowHelper: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  rowValue: { color: colors.text, fontSize: 16, fontFamily: fonts.monoMedium },
+  rowHint: { color: colors.textFaint, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   divider: { height: 1, backgroundColor: colors.line },
-  segmentRow: { flexDirection: "row", gap: spacing.sm, paddingVertical: spacing.sm },
-  segment: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: 14 },
+
+  stepper: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  stepBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.line,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stepValue: { color: colors.text, fontSize: 16, fontFamily: fonts.monoMedium, minWidth: 44, textAlign: "center" },
+
+  segmentRow: { flexDirection: "row", gap: spacing.sm },
   curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
-  demo: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginHorizontal: spacing.xs },
+
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  langChip: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.fill,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  langChipSel: { backgroundColor: colors.accentSoft, borderColor: colors.accentBorderStrong },
+  langChipText: { color: colors.textSecondary, fontSize: 13, fontFamily: fonts.medium },
+  langChipTextSel: { color: colors.accentText },
+
   signOut: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    backgroundColor: "transparent",
-    borderRadius: 0,
     paddingVertical: 16,
     borderTopWidth: 1,
     borderTopColor: colors.line,
@@ -290,4 +363,3 @@ const styles = StyleSheet.create({
   },
   switchText: { color: colors.accent, fontFamily: fonts.bold, fontSize: 15 },
 });
-
