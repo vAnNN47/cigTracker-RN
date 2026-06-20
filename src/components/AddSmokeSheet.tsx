@@ -12,6 +12,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { formatTime } from "@/i18n/format";
+import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
@@ -120,7 +121,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
           )}
 
           <SheetTextInput
-            style={styles.input}
+            style={[styles.input, inputAlign]}
             placeholder={s.commentHint}
             placeholderTextColor={colors.textDim}
             value={comment}
@@ -134,7 +135,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
             </Pressable>
           </View>
           <SheetTextInput
-            style={[styles.input, styles.diary]}
+            style={[styles.input, styles.diary, inputAlign]}
             placeholder={s.diaryHint}
             placeholderTextColor={colors.textDim}
             value={diary}
@@ -166,8 +167,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
-  title: { color: colors.text, fontSize: 20, fontFamily: fonts.semibold },
-  sub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular },
+  title: { color: colors.text, fontSize: 20, fontFamily: fonts.semibold, textAlign: textStart },
+  sub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
   timePill: {
     flexDirection: "row",
     alignItems: "center",
@@ -189,9 +190,10 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: type.body.fontSize,
     fontFamily: fonts.regular,
+    textAlign: textStart,
   },
   diaryHeader: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
-  diaryLabel: { color: colors.text, fontFamily: fonts.semibold },
+  diaryLabel: { color: colors.text, fontFamily: fonts.semibold, textAlign: textStart },
   info: { color: colors.textDim, fontSize: 16, fontFamily: fonts.regular },
   diary: { height: 110, textAlignVertical: "top" },
   button: {

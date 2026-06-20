@@ -7,6 +7,7 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 
+import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
@@ -56,14 +57,14 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
       >
         <Text style={styles.title}>{s.editEntry}</Text>
         <SheetTextInput
-          style={styles.input}
+          style={[styles.input, inputAlign]}
           placeholder={s.comment}
           placeholderTextColor={colors.textDim}
           value={comment}
           onChangeText={setComment}
         />
         <SheetTextInput
-          style={[styles.input, styles.diary]}
+          style={[styles.input, styles.diary, inputAlign]}
           placeholder={s.diaryTodayOnly}
           placeholderTextColor={colors.textDim}
           value={diary}
@@ -84,7 +85,7 @@ export const EditLogSheet = forwardRef<EditLogSheetRef, object>(
 );
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 18, fontFamily: fonts.semibold },
+  title: { color: colors.text, fontSize: 18, fontFamily: fonts.semibold, textAlign: textStart },
   input: {
     backgroundColor: colors.surfaceHigh,
     borderRadius: radius.input,

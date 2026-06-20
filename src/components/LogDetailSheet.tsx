@@ -13,6 +13,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { formatTime } from "@/i18n/format";
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { colors, fonts, radius, spacing, type } from "@/theme";
@@ -112,8 +113,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   header: { flexDirection: "row", alignItems: "center" },
-  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold },
-  time: { color: colors.textDim, fontSize: 14, fontFamily: fonts.regular, marginTop: 2 },
+  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
+  time: { color: colors.textDim, fontSize: 14, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   pencil: {
     width: 36,
     height: 36,
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
   timeValue: { color: colors.text, fontFamily: fonts.monoMedium },
   fieldCard: {
     backgroundColor: colors.surfaceHigh,
@@ -140,14 +141,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginBottom: spacing.xs },
+  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginBottom: spacing.xs, textAlign: textStart },
   readonly: {
     color: colors.text,
     fontSize: type.body.fontSize,
     fontFamily: fonts.regular,
+    textAlign: textStart,
   },
   readonlyDiary: { minHeight: 64 },
   lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.xs },
-  lockText: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, flex: 1 },
+  lockText: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, flex: 1, textAlign: textStart },
   info: { color: colors.textDim, fontSize: 16, fontFamily: fonts.regular },
 });

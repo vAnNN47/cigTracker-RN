@@ -280,7 +280,7 @@ export default function DiaryScreen() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", marginBottom: spacing.sm },
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold },
+  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart },
   iconBtn: {
     width: 40,
     height: 40,
@@ -310,12 +310,7 @@ const styles = StyleSheet.create({
   todayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.accent, marginTop: 1 },
 
   monthCard: {
-    backgroundColor: colors.surfaceHigh,
-    borderRadius: radius.card,
-    borderWidth: 1,
-    borderColor: colors.line,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
   },
   monthHeader: {
     flexDirection: "row",
@@ -397,7 +392,16 @@ const styles = StyleSheet.create({
   pillLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
   pillValue: { color: colors.text, fontSize: 14, fontFamily: fonts.bold },
 
-  section: { color: colors.text, fontSize: 16, fontFamily: fonts.bold, marginTop: spacing.xxl, marginBottom: spacing.sm, textAlign: textStart },
+  section: {
+    color: colors.textDim,
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    fontFamily: fonts.medium,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.sm,
+    textAlign: textStart,
+  },
   sectionRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, fonts, radius, spacing, type } from "@/theme";
@@ -103,9 +104,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl },
-  intro: { color: colors.textDim, fontFamily: fonts.regular, marginTop: spacing.sm },
-  pickLabel: { color: colors.text, fontFamily: fonts.semibold, marginBottom: spacing.sm },
+  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: textStart },
+  intro: { color: colors.textDim, fontFamily: fonts.regular, marginTop: spacing.sm, textAlign: textStart },
+  pickLabel: { color: colors.text, fontFamily: fonts.semibold, marginBottom: spacing.sm, textAlign: textStart },
   pickBox: {
     flexDirection: "row",
     alignItems: "center",

@@ -25,6 +25,20 @@ export type Locale = "device" | "en" | "he";
  */
 export const textStart = "left" as const;
 
+/**
+ * Alignment + base writing direction for editable <TextInput>s.
+ *
+ * The L/R auto-swap that start-aligns <Text> is unreliable for TextInput, and it
+ * never sets the field's *writing direction* — so an empty Hebrew field keeps an
+ * LTR caret and a left-stuck placeholder. We therefore set both explicitly from
+ * the resolved direction (writingDirection isn't a left/right value, so the swap
+ * can't flip it). Apply as the LAST style: `style={[styles.input, inputAlign]}`.
+ */
+export const inputAlign = {
+  textAlign: (I18nManager.isRTL ? "right" : "left") as "right" | "left",
+  writingDirection: (I18nManager.isRTL ? "rtl" : "ltr") as "rtl" | "ltr",
+};
+
 /** Resolve the override locale (or the device language) to a concrete lang. */
 export function resolveLang(locale: Locale): "en" | "he" {
   if (locale === "device") {

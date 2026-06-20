@@ -13,6 +13,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { formatTime } from "@/i18n/format";
+import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, fonts, radius, spacing, type } from "@/theme";
@@ -108,7 +109,7 @@ export default function EditLogModal() {
           <View style={styles.fieldBlock}>
             <Text style={styles.fieldLabel}>{s.comment}</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, inputAlign]}
               placeholder={s.commentHint}
               placeholderTextColor={colors.textDim}
               value={comment}
@@ -119,7 +120,7 @@ export default function EditLogModal() {
           <View style={styles.fieldBlock}>
             <Text style={styles.fieldLabel}>{s.diary}</Text>
             <TextInput
-              style={[styles.input, styles.diary]}
+              style={[styles.input, styles.diary, inputAlign]}
               placeholder={s.diaryHint}
               placeholderTextColor={colors.textDim}
               value={diary}
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
   // Explicit width so the native SwiftUI picker host doesn't overflow the row.
   timePicker: { width: 112, height: 36 },
   fieldBlock: { gap: spacing.xs },
-  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular },
+  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
   input: {
     backgroundColor: colors.surface,
     borderRadius: radius.input,
@@ -181,6 +182,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: type.body.fontSize,
     fontFamily: fonts.regular,
+    textAlign: textStart,
   },
   diary: { minHeight: 220 },
 });

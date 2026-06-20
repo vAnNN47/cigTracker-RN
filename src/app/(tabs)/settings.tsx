@@ -250,9 +250,9 @@ const styles = StyleSheet.create({
   groupTitle: {
     color: colors.textDim,
     fontSize: 12,
-    fontFamily: fonts.semibold,
+    fontFamily: fonts.medium,
     textTransform: "uppercase",
-    letterSpacing: 0.6,
+    letterSpacing: 1.2,
     marginBottom: spacing.sm,
     marginStart: spacing.md,
     textAlign: textStart,

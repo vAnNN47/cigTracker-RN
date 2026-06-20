@@ -11,6 +11,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useToast } from "@/components/Toast";
+import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { cigsInPurchase, PACKS_PER_CARTON, PackUnit, Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold },
+  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
   deleteBtn: { padding: 2 },
   segment: {
     flexDirection: "row",
@@ -233,9 +234,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  rowLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  rowLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
   rowValue: { color: colors.text, fontSize: 18, fontFamily: fonts.monoMedium },
-  hint: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginLeft: spacing.xs },
+  hint: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginLeft: spacing.xs, textAlign: textStart },
   button: {
     marginTop: spacing.xs,
     backgroundColor: colors.accent,
