@@ -70,19 +70,22 @@ export default function EditLogModal() {
         <View style={styles.form}>
           {log && (
             <View style={styles.timeRow}>
-              <MaterialIcons name="schedule" size={16} color={colors.textDim} />
-              <Text style={styles.timeLabel}>{s.timeLabel}</Text>
-              <View style={{ flex: 1 }} />
+              <View style={styles.timeLeft}>
+                <MaterialIcons name="schedule" size={16} color={colors.textDim} />
+                <Text style={styles.timeLabel}>{s.timeLabel}</Text>
+              </View>
               {Platform.OS === "ios" ? (
-                <DateTimePicker
-                  mode="time"
-                  value={smokedAt}
-                  display="compact"
-                  accentColor={colors.accent}
-                  themeVariant="dark"
-                  onValueChange={(_e, d) => setSmokedAt(clampToLogDay(d))}
-                  style={styles.timePicker}
-                />
+                <View style={styles.timePickerWrap}>
+                  <DateTimePicker
+                    mode="time"
+                    value={smokedAt}
+                    display="compact"
+                    accentColor={colors.accent}
+                    themeVariant="dark"
+                    onValueChange={(_e, d) => setSmokedAt(clampToLogDay(d))}
+                    style={styles.timePicker}
+                  />
+                </View>
               ) : (
                 <Pressable style={styles.timeEditBtn} onPress={() => setShowPicker(true)}>
                   <Text style={styles.timeValue}>{formatTime(smokedAt)}</Text>
@@ -159,12 +162,15 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    justifyContent: "space-between",
     backgroundColor: colors.surface,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
+  timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  // Fixed box that clips the native picker so it can't bleed past the row edge.
+  timePickerWrap: { width: 112, height: 36, overflow: "hidden", justifyContent: "center" },
   timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
   timeValue: { color: colors.text, fontFamily: fonts.monoMedium },
   timeEditBtn: { flexDirection: "row", alignItems: "center", gap: 6 },

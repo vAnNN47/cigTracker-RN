@@ -19,6 +19,8 @@ import {
   AppSettings,
   DailyLimit,
   DEFAULT_SETTINGS,
+  DEFAULT_TAG,
+  LocationTag,
   PackUnit,
   Purchase,
   SmokeLog,
@@ -47,6 +49,7 @@ const parse = <T,>(raw: string | null, fallback: T): any => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const reviveLog = (r: any): SmokeLog => ({
   id: r.id,
+  tag: r.tag ?? DEFAULT_TAG, // older entries had no location
   smokedAt: new Date(r.smokedAt),
   comment: r.comment ?? "",
   diary: r.diary ?? "",
@@ -108,16 +111,18 @@ export class AsyncStorageRepository implements Repository {
   }
 
   async addLog({
+    tag,
     comment,
     diary,
     smokedAt,
   }: {
+    tag: LocationTag;
     comment: string;
     diary: string;
     smokedAt?: Date;
   }): Promise<SmokeLog> {
     await this.ensureLoaded();
-    const log: SmokeLog = { id: randomUUID(), smokedAt: smokedAt ?? new Date(), comment, diary };
+    const log: SmokeLog = { id: randomUUID(), tag, smokedAt: smokedAt ?? new Date(), comment, diary };
     this.logs.push(log);
     await this.persistLogs();
     return log;
@@ -125,13 +130,14 @@ export class AsyncStorageRepository implements Repository {
 
   async updateLog(
     id: string,
-    { comment, diary, smokedAt }: { comment?: string; diary?: string; smokedAt?: Date },
+    { tag, comment, diary, smokedAt }: { tag?: LocationTag; comment?: string; diary?: string; smokedAt?: Date },
   ): Promise<SmokeLog> {
     await this.ensureLoaded();
     const i = this.logs.findIndex((l) => l.id === id);
     if (i === -1) throw new Error("log not found");
     const updated: SmokeLog = {
       ...this.logs[i],
+      tag: tag ?? this.logs[i].tag,
       comment: comment ?? this.logs[i].comment,
       diary: diary ?? this.logs[i].diary,
       smokedAt: smokedAt ?? this.logs[i].smokedAt,

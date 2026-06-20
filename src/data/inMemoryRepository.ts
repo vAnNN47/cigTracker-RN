@@ -9,6 +9,8 @@ import {
   AppSettings,
   DailyLimit,
   DEFAULT_SETTINGS,
+  LOCATION_TAGS,
+  LocationTag,
   PackUnit,
   Purchase,
   SmokeLog,
@@ -47,6 +49,7 @@ export class InMemoryRepository implements Repository {
       for (let i = 0; i < n; i++) {
         this.logs.push({
           id: randomUUID(),
+          tag: LOCATION_TAGS[(back + i) % LOCATION_TAGS.length],
           smokedAt: new Date(
             day.getFullYear(),
             day.getMonth(),
@@ -76,27 +79,30 @@ export class InMemoryRepository implements Repository {
   }
 
   async addLog({
+    tag,
     comment,
     diary,
     smokedAt,
   }: {
+    tag: LocationTag;
     comment: string;
     diary: string;
     smokedAt?: Date;
   }): Promise<SmokeLog> {
-    const log: SmokeLog = { id: randomUUID(), smokedAt: smokedAt ?? new Date(), comment, diary };
+    const log: SmokeLog = { id: randomUUID(), tag, smokedAt: smokedAt ?? new Date(), comment, diary };
     this.logs.push(log);
     return log;
   }
 
   async updateLog(
     id: string,
-    { comment, diary, smokedAt }: { comment?: string; diary?: string; smokedAt?: Date },
+    { tag, comment, diary, smokedAt }: { tag?: LocationTag; comment?: string; diary?: string; smokedAt?: Date },
   ): Promise<SmokeLog> {
     const i = this.logs.findIndex((l) => l.id === id);
     if (i === -1) throw new Error("log not found");
     const updated: SmokeLog = {
       ...this.logs[i],
+      tag: tag ?? this.logs[i].tag,
       comment: comment ?? this.logs[i].comment,
       diary: diary ?? this.logs[i].diary,
       smokedAt: smokedAt ?? this.logs[i].smokedAt,

@@ -12,6 +12,8 @@ import {
   AppSettings,
   DailyLimit,
   DEFAULT_SETTINGS,
+  DEFAULT_TAG,
+  LocationTag,
   PackUnit,
   Purchase,
   SmokeLog,
@@ -43,6 +45,7 @@ function parseDateOnly(s: string): Date {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rowToLog = (r: any): SmokeLog => ({
   id: r.id,
+  tag: r.tag ?? DEFAULT_TAG,
   smokedAt: new Date(r.smoked_at),
   comment: r.comment ?? "",
   diary: r.diary ?? "",
@@ -72,10 +75,12 @@ export class SupabaseRepository implements Repository {
   }
 
   async addLog({
+    tag,
     comment,
     diary,
     smokedAt,
   }: {
+    tag: LocationTag;
     comment: string;
     diary: string;
     smokedAt?: Date;
@@ -85,7 +90,7 @@ export class SupabaseRepository implements Repository {
     // smoked_at server-side, so a custom (earlier-today) time lands correctly.
     const { data, error } = await supabase
       .from("smoke_logs")
-      .insert({ user_id, comment, diary, ...(smokedAt ? { smoked_at: smokedAt.toISOString() } : {}) })
+      .insert({ user_id, tag, comment, diary, ...(smokedAt ? { smoked_at: smokedAt.toISOString() } : {}) })
       .select()
       .single();
     if (error) throw error;
@@ -94,9 +99,10 @@ export class SupabaseRepository implements Repository {
 
   async updateLog(
     id: string,
-    { comment, diary, smokedAt }: { comment?: string; diary?: string; smokedAt?: Date },
+    { tag, comment, diary, smokedAt }: { tag?: LocationTag; comment?: string; diary?: string; smokedAt?: Date },
   ): Promise<SmokeLog> {
     const patch: Record<string, string> = {};
+    if (tag !== undefined) patch.tag = tag;
     if (comment !== undefined) patch.comment = comment;
     if (diary !== undefined) patch.diary = diary;
     // log_date is derived from smoked_at server-side, so changing the time

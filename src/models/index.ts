@@ -6,10 +6,22 @@
 
 export type PackUnit = "pack" | "carton";
 
-/** A single logged cigarette. Always logged "now" — never backdated. */
+/** Where a cigarette was smoked (drives the Stats location breakdown). */
+export type LocationTag = "home" | "work" | "car" | "social";
+
+export const LOCATION_TAGS: LocationTag[] = ["home", "work", "car", "social"];
+export const DEFAULT_TAG: LocationTag = "home";
+
+/**
+ * A single logged cigarette.
+ *  - tag     = where it happened (location).
+ *  - comment = how it felt — a feeling chip value or free text (same field).
+ *  - diary   = optional "anything else about this one" note.
+ */
 export interface SmokeLog {
   id: string;
   smokedAt: Date; // full local timestamp
+  tag: LocationTag;
   comment: string;
   diary: string;
 }

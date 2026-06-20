@@ -15,7 +15,7 @@ import { createRepository, DataMode } from "@/data/createRepository";
 import { Repository } from "@/data/repository";
 import { logicalToday } from "@/domain/logic";
 import { applyDirection, reloadForDirection } from "@/i18n/rtl";
-import { AppSettings, DailyLimit, DEFAULT_SETTINGS, Purchase, SmokeLog } from "@/models";
+import { AppSettings, DailyLimit, DEFAULT_SETTINGS, LocationTag, Purchase, SmokeLog } from "@/models";
 
 const LOCALE_KEY = "cigtracker.locale";
 const MODE_KEY = "cigtracker.dataMode";
@@ -38,8 +38,11 @@ interface AppStore {
   hydrateLocale: () => Promise<void>;
   load: () => Promise<void>;
   refresh: () => Promise<void>;
-  addSmoke: (comment?: string, diary?: string, smokedAt?: Date) => Promise<SmokeLog>;
-  editLog: (id: string, args: { comment?: string; diary?: string; smokedAt?: Date }) => Promise<void>;
+  addSmoke: (args: { tag: LocationTag; comment?: string; diary?: string; smokedAt?: Date }) => Promise<SmokeLog>;
+  editLog: (
+    id: string,
+    args: { tag?: LocationTag; comment?: string; diary?: string; smokedAt?: Date },
+  ) => Promise<void>;
   deleteLog: (id: string) => Promise<void>;
   setLimit: (limit: number) => Promise<void>;
   addPurchase: (purchase: Purchase) => Promise<void>;
@@ -106,14 +109,14 @@ export const useAppStore = create<AppStore>()((set, get) => ({
     await fetchAll(get, set);
   },
 
-  addSmoke: async (comment = "", diary = "", smokedAt) => {
-    const log = await get().repo.addLog({ comment, diary, smokedAt });
+  addSmoke: async ({ tag, comment = "", diary = "", smokedAt }) => {
+    const log = await get().repo.addLog({ tag, comment, diary, smokedAt });
     set({ logs: await get().repo.getLogs() });
     return log;
   },
 
-  editLog: async (id, { comment, diary, smokedAt }) => {
-    await get().repo.updateLog(id, { comment, diary, smokedAt });
+  editLog: async (id, { tag, comment, diary, smokedAt }) => {
+    await get().repo.updateLog(id, { tag, comment, diary, smokedAt });
     set({ logs: await get().repo.getLogs() });
   },
 
