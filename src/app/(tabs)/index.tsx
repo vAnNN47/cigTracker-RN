@@ -1,11 +1,12 @@
 /**
- * Today — "haze" redesign.
- * Persistent header (brand + supportive subline + streak), a hero ring with
- * status copy, quick actions (Log one / Buy), a month money strip
- * (spent / saved / avg per day), and a Recent list.
+ * Today — "v2" light/green redesign (design handoff). Calm, navigable, 2000s-ish:
+ * centered header, a soft filled hero circle (count / allowance), a streak pill,
+ * a bright-green weekly-savings card with quick actions, a recent-log card
+ * (last 6 hours, up to 5, a dot marks entries that carry a note), a motivational
+ * quote card, and a floating green "Log cigarette" button.
  *
- * Status color follows count vs allowance: under = periwinkle, at = amber,
- * over = red. Copy stays supportive even when over.
+ * Uses the new `green` palette but keeps our fonts + the existing bottom-sheet
+ * logic. Other screens migrate to this look later.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -16,7 +17,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
-import { Ring } from "@/components/Ring";
 import { useToast } from "@/components/Toast";
 import { currentLimit, currentStreak, isLogEditable, logicalDay, logicalToday, logsForDay } from "@/domain/logic";
 import { formatTime } from "@/i18n/format";
@@ -24,7 +24,9 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, spacing } from "@/theme";
+import { fonts, green, spacing } from "@/theme";
+
+const HOUR = 60 * 60 * 1000;
 
 export default function TodayScreen() {
   const s = useStrings();
@@ -44,124 +46,130 @@ export default function TodayScreen() {
   const count = logsForDay(logs, todayKey, dsh).length;
   const limit = currentLimit(limits, settings);
   const streak = currentStreak(logs, limits, settings);
+  const left = Math.max(0, limit - count);
 
-  const status = count > limit ? "over" : count === limit ? "at" : "under";
-  const statusColor =
-    status === "over" ? colors.over : status === "at" ? colors.atLimit : colors.under;
-  const statusLine =
-    status === "over" ? s.statusOverLine : status === "at" ? s.statusAtLine : s.statusUnderLine;
-  const subText = status === "over" ? s.subOver : status === "at" ? s.subAt : s.subUnder;
-  const pct = limit > 0 ? Math.min(1, count / limit) : count > 0 ? 1 : 0;
-
-  // Month money strip.
+  // Weekly savings (matches the "חיסכון שבועי" card).
   const cur = settings.currencySymbol;
   const money = (n: number) => `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
   const now = new Date();
-  const inMonth = (d: Date) => d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-  const spentMonth = purchases.filter((p) => inMonth(p.boughtAt)).reduce((a, p) => a + p.price, 0);
-  const monthLogs = logs.filter((l) => inMonth(l.smokedAt)).length;
-  const daysElapsed = now.getDate();
-  const avg = daysElapsed > 0 ? monthLogs / daysElapsed : 0;
-  const wouldHave = (settings.baselinePerDay * daysElapsed / 20) * settings.pricePerPack;
-  const savedMonth = Math.max(0, Math.round(wouldHave - spentMonth));
+  const weekAgo = now.getTime() - 7 * 24 * HOUR;
+  const spentWeek = purchases.filter((p) => p.boughtAt.getTime() >= weekAgo).reduce((a, p) => a + p.price, 0);
+  const wouldHaveWeek = ((settings.baselinePerDay * 7) / 20) * settings.pricePerPack;
+  const savedWeek = Math.max(0, Math.round(wouldHaveWeek - spentWeek));
 
-  const recent = [...logs].sort((a, b) => b.smokedAt.getTime() - a.smokedAt.getTime()).slice(0, 3);
+  // Recent: last 6 hours, newest first, up to 5.
+  const sixAgo = now.getTime() - 6 * HOUR;
+  const recent = [...logs]
+    .filter((l) => l.smokedAt.getTime() >= sixAgo)
+    .sort((a, b) => b.smokedAt.getTime() - a.smokedAt.getTime())
+    .slice(0, 5);
 
-  // A cigarette's ordinal within its own logical day (1-based), so "Recently"
-  // opens the detail sheet on the right number instead of #0.
   const numberOf = (log: SmokeLog) => {
     const dayLogs = logsForDay(logs, logicalDay(log.smokedAt, dsh), dsh);
     return dayLogs.findIndex((l) => l.id === log.id) + 1;
   };
+
+  // Stable per-day quote from the ready list.
+  const quote = s.quotes[now.getDate() % s.quotes.length];
 
   const onLogged = (log: SmokeLog) => {
     toast.show({ message: s.loggedToast, actionLabel: s.undo, onAction: () => deleteLog(log.id) });
   };
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <RefreshScroll onRefresh={refresh}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <View style={styles.brandRow}>
-              <View style={styles.brandDot} />
-              <Text style={styles.wordmark}>{s.appTitle}</Text>
+        <Text style={styles.brand}>{s.reduceTitle}</Text>
+        <Text style={styles.impact}>{s.todayImpact}</Text>
+        <Text style={styles.momentum}>{s.keepMomentum}</Text>
+
+        {/* Hero circle */}
+        <View style={styles.heroWrap}>
+          <View style={styles.hero}>
+            <Text style={styles.heroCount}>
+              {count}/{limit}
+            </Text>
+            <Text style={styles.heroLabel}>{s.smokedTodayShort}</Text>
+            <Text style={styles.heroLeft}>{s.leftTodayN(left)}</Text>
+          </View>
+        </View>
+
+        {/* Streak pill */}
+        <View style={styles.streakWrap}>
+          <View style={styles.streakPill}>
+            <MaterialIcons name="local-fire-department" size={16} color={green.green} />
+            <Text style={styles.streakText}>{s.streakDaysN(streak)}</Text>
+          </View>
+        </View>
+
+        {/* Weekly savings card */}
+        <View style={styles.saveCard}>
+          <View style={styles.saveTop}>
+            <View style={styles.saveIcon}>
+              <MaterialIcons name="attach-money" size={18} color={green.greenDeep} />
             </View>
-            <Text style={styles.subline}>{s.todaySub}</Text>
+            <Text style={styles.saveLabel}>{s.weeklySavings}</Text>
           </View>
-          <View>
-            <Text style={styles.streakCap}>{s.dayStreak}</Text>
-            <Text style={styles.streakVal}>{streak}</Text>
+          <Text style={styles.saveValue}>{money(savedWeek)}</Text>
+          <View style={styles.saveActions}>
+            <Pressable style={styles.saveBtn} onPress={() => purchaseRef.current?.present()}>
+              <MaterialIcons name="add-shopping-cart" size={16} color={green.greenDeep} />
+              <Text style={styles.saveBtnText}>{s.logPurchaseBtn}</Text>
+            </Pressable>
+            <Pressable style={styles.saveBtn} onPress={() => router.push("/purchases")}>
+              <MaterialIcons name="history" size={16} color={green.greenDeep} />
+              <Text style={styles.saveBtnText}>{s.purchaseHistoryBtn}</Text>
+            </Pressable>
           </View>
         </View>
 
-        {/* Hero ring */}
-        <View style={styles.hero}>
-          <Ring size={124} strokeWidth={9} pct={pct} color={statusColor}>
-            <Text style={[styles.heroCount, { color: statusColor }]}>{count}</Text>
-            <Text style={styles.heroOf}>{s.ofN(limit)}</Text>
-          </Ring>
+        {/* Recent log */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{s.recentLogTitle}</Text>
+          {recent.length === 0 ? (
+            <Text style={styles.empty}>{s.nothingToday}</Text>
+          ) : (
+            recent.map((log, i) => {
+              const hasNote = !!(log.comment || log.diary);
+              return (
+                <Pressable
+                  key={log.id}
+                  style={[styles.recentRow, i > 0 && styles.recentDivider]}
+                  onPress={() =>
+                    detailRef.current?.present({ log, number: numberOf(log), editable: isLogEditable(log, dsh) })
+                  }
+                >
+                  <View style={[styles.recentDot, !hasNote && styles.recentDotMuted]} />
+                  <Text style={styles.recentTime}>{formatTime(log.smokedAt)}</Text>
+                  {log.comment ? (
+                    <Text style={styles.recentNote} numberOfLines={1}>
+                      {log.comment}
+                    </Text>
+                  ) : null}
+                </Pressable>
+              );
+            })
+          )}
+        </View>
+
+        {/* Momentum quote */}
+        <View style={styles.quoteCard}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.eyebrow}>{s.today}</Text>
-            <Text style={[styles.statusLine, { color: statusColor }]}>{statusLine}</Text>
-            <Text style={styles.subText}>{subText}</Text>
+            <Text style={styles.quoteTitle}>{s.gainingMomentum}</Text>
+            <Text style={styles.quoteText}>{quote}</Text>
+          </View>
+          <View style={styles.quoteIcon}>
+            <MaterialIcons name="lightbulb-outline" size={20} color={green.green} />
           </View>
         </View>
-
-        {/* Quick actions */}
-        <View style={styles.actions}>
-          <Pressable style={styles.primaryBtn} onPress={() => addRef.current?.present()}>
-            <MaterialIcons name="add" size={20} color={colors.onAccent} />
-            <Text style={styles.primaryText}>{s.logOne}</Text>
-          </Pressable>
-          <Pressable style={styles.secondaryBtn} onPress={() => purchaseRef.current?.present()}>
-            <MaterialIcons name="work-outline" size={18} color={colors.textSecondary} />
-            <Text style={styles.secondaryText}>{s.buy}</Text>
-          </Pressable>
-        </View>
-
-        {/* Money strip */}
-        <View style={styles.strip}>
-          <View style={styles.stripCell}>
-            <Text style={styles.stripLabel}>{`${s.spentLabel} · ${s.thisMonth}`}</Text>
-            <Text style={styles.stripVal}>{money(spentMonth)}</Text>
-          </View>
-          <View style={[styles.stripCell, styles.stripDivider]}>
-            <Text style={styles.stripLabel}>{`${s.savedShort} · ${s.thisMonth}`}</Text>
-            <Text style={[styles.stripVal, { color: colors.accent }]}>{money(savedMonth)}</Text>
-          </View>
-          <View style={[styles.stripCell, styles.stripDivider]}>
-            <Text style={styles.stripLabel}>{s.avgPerDay}</Text>
-            <Text style={styles.stripVal}>{avg.toFixed(1)}</Text>
-          </View>
-        </View>
-
-        {/* Recent */}
-        <Text style={styles.recentLabel}>{s.recent}</Text>
-        {recent.length === 0 ? (
-          <Text style={styles.empty}>{s.nothingToday}</Text>
-        ) : (
-          recent.map((log) => {
-            const sub = [formatTime(log.smokedAt), log.comment || log.diary].filter(Boolean).join("  ·  ");
-            return (
-              <Pressable
-                key={log.id}
-                style={styles.row}
-                onPress={() =>
-                  detailRef.current?.present({ log, number: numberOf(log), editable: isLogEditable(log, dsh) })
-                }
-              >
-                <View style={styles.rowDot} />
-                <Text style={styles.rowText} numberOfLines={1}>
-                  {sub || s.cigarettesSection}
-                </Text>
-                <MaterialIcons name="chevron-right" size={18} color={colors.textFaint} />
-              </Pressable>
-            );
-          })
-        )}
       </RefreshScroll>
+
+      {/* Floating log button */}
+      <Pressable style={styles.logBtn} onPress={() => addRef.current?.present()}>
+        <MaterialIcons name="smoking-rooms" size={20} color={green.onGreen} />
+        <Text style={styles.logBtnText}>{s.logCigarette}</Text>
+      </Pressable>
 
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
       <AddPurchaseSheet ref={purchaseRef} />
@@ -170,8 +178,6 @@ export default function TodayScreen() {
   );
 }
 
-// Native iOS scroll: rubber-band overscroll (alwaysBounceVertical) + the system
-// pull-to-refresh, which carries the proper bounce feel.
 function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onRefresh: () => void | Promise<void> }) {
   const [refreshing, setRefreshing] = useState(false);
   const handle = async () => {
@@ -184,16 +190,15 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
   };
   return (
     <ScrollView
-      style={{ backgroundColor: colors.bg }}
-      contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
+      style={{ backgroundColor: green.bg }}
+      contentContainerStyle={{ paddingTop: spacing.lg, paddingHorizontal: 22, paddingBottom: 96 }}
       alwaysBounceVertical
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={handle}
-          tintColor={colors.accent}
-          colors={[colors.accent]}
-          progressBackgroundColor={colors.surface}
+          tintColor={green.green}
+          colors={[green.green]}
         />
       }
     >
@@ -203,80 +208,130 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: "row", alignItems: "flex-start", marginBottom: 28 },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  brandDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.7,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  wordmark: { color: colors.text, fontSize: 19, fontFamily: fonts.bold, letterSpacing: -0.4 },
-  subline: { color: colors.textDim, fontSize: 12, marginTop: 5, fontFamily: fonts.regular, textAlign: textStart },
-  streakCap: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, textAlign: textStart },
-  streakVal: { color: colors.accent, fontSize: 14, fontFamily: fonts.monoMedium, marginTop: 2, textAlign: textStart },
+  brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
+  impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
+  momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },
 
-  hero: { flexDirection: "row", alignItems: "center", gap: 22, marginBottom: 30 },
-  heroCount: { fontSize: 38, fontFamily: fonts.monoSemibold, lineHeight: 42 },
-  heroOf: { color: colors.textFaint, fontSize: 11, fontFamily: fonts.mono, marginTop: 3 },
-  eyebrow: {
-    color: colors.textDim,
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: 8,
-    fontFamily: fonts.medium,
-    textAlign: textStart,
-  },
-  statusLine: { fontSize: 16, fontFamily: fonts.semibold, marginBottom: 6, textAlign: textStart },
-  subText: { color: colors.textDim, fontSize: 13, lineHeight: 20, fontFamily: fonts.regular, textAlign: textStart },
-
-  actions: { flexDirection: "row", gap: 10, marginBottom: 26 },
-  primaryBtn: {
-    flex: 1.5,
-    flexDirection: "row",
+  heroWrap: { alignItems: "center", marginTop: spacing.xl },
+  hero: {
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: green.ring,
+    borderWidth: 1,
+    borderColor: green.ringStroke,
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    backgroundColor: colors.accent,
-    borderRadius: 16,
-    paddingVertical: 16,
+    shadowColor: "#1B2A4A",
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
-  primaryText: { color: colors.onAccent, fontSize: 15, fontFamily: fonts.semibold },
-  secondaryBtn: {
+  heroCount: { color: green.green, fontSize: 44, fontFamily: fonts.monoSemibold },
+  heroLabel: { color: green.green, fontSize: 14, fontFamily: fonts.medium, marginTop: 4 },
+  heroLeft: { color: green.green, fontSize: 14, fontFamily: fonts.semibold, marginTop: 2 },
+
+  streakWrap: { alignItems: "center", marginTop: spacing.lg },
+  streakPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: green.cardSoft,
+    borderRadius: 999,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  streakText: { color: green.green, fontSize: 13, fontFamily: fonts.semibold },
+
+  saveCard: {
+    backgroundColor: green.greenBright,
+    borderRadius: 24,
+    padding: spacing.xl,
+    marginTop: spacing.xl,
+  },
+  saveTop: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  saveIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "rgba(0,80,39,0.12)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveLabel: { color: green.greenDeep, fontSize: 14, fontFamily: fonts.semibold, textAlign: textStart },
+  saveValue: { color: green.greenDeep, fontSize: 32, fontFamily: fonts.bold, marginTop: spacing.sm, textAlign: textStart },
+  saveActions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
+  saveBtn: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    backgroundColor: colors.fill,
+    gap: 6,
+    backgroundColor: "rgba(0,80,39,0.1)",
     borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 16,
-    paddingVertical: 16,
+    borderColor: "rgba(0,80,39,0.2)",
+    borderRadius: 17,
+    paddingVertical: 10,
   },
-  secondaryText: { color: colors.textSecondary, fontSize: 15, fontFamily: fonts.semibold },
+  saveBtnText: { color: green.greenDeep, fontSize: 13, fontFamily: fonts.semibold },
 
-  strip: { flexDirection: "row", marginBottom: 30 },
-  stripCell: { flex: 1, paddingHorizontal: spacing.sm },
-  stripDivider: { borderLeftWidth: 1, borderLeftColor: colors.line },
-  stripLabel: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, textAlign: textStart },
-  stripVal: { color: colors.text, fontSize: 21, fontFamily: fonts.monoMedium, marginTop: 6, textAlign: textStart },
+  card: {
+    backgroundColor: green.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: green.border,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+  },
+  cardTitle: { color: green.text, fontSize: 16, fontFamily: fonts.bold, marginBottom: spacing.sm, textAlign: textStart },
+  empty: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
+  recentRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingVertical: 12 },
+  recentDivider: { borderTopWidth: 1, borderTopColor: green.border },
+  recentDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: green.dot },
+  recentDotMuted: { backgroundColor: green.border },
+  recentTime: { color: green.text, fontSize: 15, fontFamily: fonts.monoMedium },
+  recentNote: { flex: 1, color: green.green, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
 
-  recentLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.medium, marginBottom: spacing.sm, textAlign: textStart },
-  empty: { color: colors.textFaint, fontSize: 13, paddingVertical: spacing.md, fontFamily: fonts.regular, textAlign: textStart },
-  row: {
+  quoteCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    backgroundColor: green.cardSoft,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: green.border,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
   },
-  rowDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
-  rowText: { flex: 1, color: colors.textSecondary, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
+  quoteTitle: { color: green.text, fontSize: 15, fontFamily: fonts.bold, textAlign: textStart },
+  quoteText: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
+  quoteIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: green.bg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  logBtn: {
+    position: "absolute",
+    left: 22,
+    right: 22,
+    bottom: spacing.lg,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    backgroundColor: green.green,
+    borderRadius: 28,
+    paddingVertical: 16,
+    shadowColor: green.green,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  logBtnText: { color: green.onGreen, fontSize: 16, fontFamily: fonts.bold },
 });

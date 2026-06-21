@@ -38,6 +38,33 @@ export function makeStrings(he: boolean) {
     thisMonth: he ? "החודש" : "this month",
 
     appTitle: he ? "מעקב סיגריות" : "Cig Tracker",
+    // v2 light Today
+    reduceTitle: he ? "הפחתת סיגריות" : "Reduce cigarettes",
+    todayImpact: he ? "ההשפעה של היום" : "Today's impact",
+    keepMomentum: he ? "שמור על המומנטום שלך." : "Keep your momentum.",
+    smokedTodayShort: he ? "עושנו היום" : "Smoked today",
+    leftTodayN: (n: number) => (he ? `${n} נותרו להיום` : `${n} left today`),
+    streakDaysN: (n: number) => (he ? `רצף: ${n} ימים` : `Streak: ${n} days`),
+    weeklySavings: he ? "חיסכון שבועי" : "Weekly savings",
+    logPurchaseBtn: he ? "תיעוד רכישה" : "Log purchase",
+    purchaseHistoryBtn: he ? "היסטוריית רכישות" : "Purchase history",
+    recentLogTitle: he ? "יומן אחרון" : "Recent log",
+    gainingMomentum: he ? "צוברים תאוצה" : "Gaining momentum",
+    quotes: he
+      ? [
+          "כל סיגריה שלא עישנת היא ניצחון.",
+          "התקדמות, לא שלמות.",
+          "אתה חזק יותר מהדחף.",
+          "יום אחד בכל פעם.",
+          "הגוף שלך מודה לך כבר עכשיו.",
+        ]
+      : [
+          "Every cigarette you skip is a win.",
+          "Progress, not perfection.",
+          "You're stronger than the urge.",
+          "One day at a time.",
+          "Your body is already thanking you.",
+        ],
     todaysAllowance: he ? "המכסה היומית" : "Today's Allowance",
     leftLabel: he ? "נותרו" : "Left",
     usedToday: (used: number, limit: number) =>

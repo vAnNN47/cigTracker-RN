@@ -28,9 +28,18 @@ import {
 import { formatTime, formatWeekdayDate } from "@/i18n/format";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
+import { LocationTag } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, fonts, radius, spacing } from "@/theme";
 import { MonthPager } from "../../../packages/month-pager";
+
+// Per-cigarette location icon (design handoff: Home / Work / Car / Social).
+const TAG_ICON: Record<LocationTag, keyof typeof MaterialIcons.glyphMap> = {
+  home: "home",
+  work: "work-outline",
+  car: "directions-car",
+  social: "groups",
+};
 
 // Status tints not in the token set (the under-tints reuse the accent tokens).
 const OVER_BG = "rgba(224,138,138,0.16)";
@@ -267,7 +276,7 @@ export default function HistoryScreen() {
               onPress={() => detailRef.current?.present({ log, number: count - i, editable: isToday })}
             >
               <View style={styles.rowIcon}>
-                <MaterialIcons name="smoking-rooms" size={18} color={colors.textDim} />
+                <MaterialIcons name={TAG_ICON[log.tag]} size={18} color={colors.textDim} />
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.rowTitleLine}>

@@ -55,6 +55,30 @@ export const colors = {
   tagSocial: "#c69ce0",
 } as const;
 
+/**
+ * "v2" light/green palette (design handoff: 2000s-style, calm, navigable).
+ * Lives alongside the dark `colors` while screens migrate one at a time.
+ */
+export const green = {
+  bg: "#F7F9FF", // app surface
+  card: "#FFFFFF", // raised cards
+  cardSoft: "#E3EFFF", // soft-blue cards (quote, pills, buttons-in-card)
+  border: "rgba(187,203,187,0.3)", // hairline card border (#BBCBBB @ 30%)
+
+  text: "#091D2E", // primary
+  textSecondary: "#3D4A3E",
+  textDim: "#6C7B6D", // muted
+
+  green: "#006D37", // deep green — titles, numbers, primary button
+  greenBright: "#2ECC71", // bright green — savings card, active tab
+  greenDeep: "#005027", // text/icon on bright green
+  onGreen: "#FFFFFF", // text on the deep-green button
+  dot: "#4AE183", // recent-entry dot
+
+  ring: "#D1E4FB", // hero circle fill
+  ringStroke: "#C9DCF3",
+} as const;
+
 /** Font families (loaded via @expo-google-fonts in the root layout). */
 export const fonts = {
   regular: "HankenGrotesk_400Regular",
