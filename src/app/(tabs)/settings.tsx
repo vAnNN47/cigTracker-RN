@@ -1,12 +1,17 @@
 /**
- * Settings — rebuilt to the "haze" handoff: a reduction-plan banner (Old habit →
- * Today's limit, big mono numbers) and −/+ stepper rows for the plan + pricing.
- * The value in each stepper is still tappable to open the in-app number pad for
- * direct entry. Language stays a real switcher (Device / English / עברית),
- * rendered as chips. Account/sign-out kept from before.
+ * Settings — "haze" handoff: a reduction-plan banner (Old habit → Today's limit,
+ * big mono numbers) and −/+ stepper rows for the plan + pricing. The stepper
+ * value is also tappable to open the in-app number pad.
+ *
+ * Stepper writes are DEBOUNCED: each tap updates local draft state instantly
+ * (snappy UI) and the actual persist (AsyncStorage / Supabase) fires only after
+ * a short idle — otherwise every tap awaited a disk write or a network round
+ * trip, which made the buttons lag. Pending writes flush on unmount.
+ *
+ * Language is a real switcher (Device / English / עברית) shown as a dropdown.
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -14,9 +19,12 @@ import { currentLimit } from "@/domain/logic";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { signOut } from "@/lib/googleAuth";
+import { AppSettings } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { colors, fonts, radius, spacing, type } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../../packages/number-pad";
+
+const COMMIT_MS = 400;
 
 export default function SettingsScreen() {
   const s = useStrings();
@@ -28,9 +36,57 @@ export default function SettingsScreen() {
   const setLocale = useAppStore((st) => st.setLocale);
   const pad = useRef<NumberPadRef>(null);
 
-  const cur = settings.currencySymbol;
-  const limit = currentLimit(limits, settings);
-  const priceText = `${cur}${Number.isInteger(settings.pricePerPack) ? settings.pricePerPack.toFixed(0) : settings.pricePerPack.toFixed(2)}`;
+  // Local drafts — the UI reads these so steps are instant; persistence is debounced.
+  const [form, setForm] = useState<AppSettings>(settings);
+  const [limitDraft, setLimitDraft] = useState(() => currentLimit(limits, settings));
+  const [langOpen, setLangOpen] = useState(false);
+
+  const formRef = useRef(form);
+  formRef.current = form;
+  const limitRef = useRef(limitDraft);
+  limitRef.current = limitDraft;
+  const settingsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const limitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Flush any pending write when leaving the screen so nothing is lost.
+  useEffect(
+    () => () => {
+      if (settingsTimer.current) saveSettings(formRef.current);
+      if (limitTimer.current) setLimit(limitRef.current);
+    },
+    [saveSettings, setLimit],
+  );
+
+  const commitSettings = (next: AppSettings, now = false) => {
+    setForm(next);
+    if (settingsTimer.current) clearTimeout(settingsTimer.current);
+    if (now) {
+      settingsTimer.current = null;
+      saveSettings(next);
+    } else {
+      settingsTimer.current = setTimeout(() => {
+        settingsTimer.current = null;
+        saveSettings(next);
+      }, COMMIT_MS);
+    }
+  };
+
+  const commitLimit = (v: number, now = false) => {
+    setLimitDraft(v);
+    if (limitTimer.current) clearTimeout(limitTimer.current);
+    if (now) {
+      limitTimer.current = null;
+      setLimit(v);
+    } else {
+      limitTimer.current = setTimeout(() => {
+        limitTimer.current = null;
+        setLimit(v);
+      }, COMMIT_MS);
+    }
+  };
+
+  const cur = form.currencySymbol;
+  const priceText = `${cur}${Number.isInteger(form.pricePerPack) ? form.pricePerPack.toFixed(0) : form.pricePerPack.toFixed(2)}`;
   const planArrow = I18nManager.isRTL ? "arrow-back" : "arrow-forward";
 
   const langs: { key: "device" | "en" | "he"; label: string }[] = [
@@ -38,6 +94,8 @@ export default function SettingsScreen() {
     { key: "en", label: s.english },
     { key: "he", label: s.hebrew },
   ];
+  const currentLangLabel = langs.find((l) => l.key === locale)?.label ?? s.device;
+  const otherLangs = langs.filter((l) => l.key !== locale);
 
   const confirmLang = (l: { key: "device" | "en" | "he"; label: string }) =>
     Alert.alert(
@@ -76,12 +134,12 @@ export default function SettingsScreen() {
         <View style={styles.plan}>
           <View style={styles.planSide}>
             <Text style={styles.planLabel}>{s.oldHabit}</Text>
-            <Text style={styles.planValueDim}>{settings.baselinePerDay}</Text>
+            <Text style={styles.planValueDim}>{form.baselinePerDay}</Text>
           </View>
           <MaterialIcons name={planArrow} size={22} color={colors.accent} />
           <View style={styles.planSide}>
             <Text style={styles.planLabel}>{s.todaysLimitShort}</Text>
-            <Text style={styles.planValue}>{limit}</Text>
+            <Text style={styles.planValue}>{limitDraft}</Text>
           </View>
         </View>
 
@@ -90,16 +148,16 @@ export default function SettingsScreen() {
           <StepperRow
             label={s.baseline}
             hint={s.baselineHelper}
-            value={settings.baselinePerDay}
-            display={`${settings.baselinePerDay}`}
+            value={form.baselinePerDay}
+            display={`${form.baselinePerDay}`}
             min={1}
             max={60}
-            onChange={(v) => saveSettings({ ...settings, baselinePerDay: v })}
+            onChange={(v) => commitSettings({ ...form, baselinePerDay: v })}
             onPressValue={() =>
               pad.current?.present({
                 title: s.baseline,
-                initial: settings.baselinePerDay,
-                onSubmit: (v) => saveSettings({ ...settings, baselinePerDay: Math.round(v) }),
+                initial: form.baselinePerDay,
+                onSubmit: (v) => commitSettings({ ...form, baselinePerDay: Math.round(v) }, true),
               })
             }
           />
@@ -107,29 +165,34 @@ export default function SettingsScreen() {
           <StepperRow
             label={s.maxPerDay}
             hint={s.appliesFromToday}
-            value={limit}
-            display={`${limit}`}
+            value={limitDraft}
+            display={`${limitDraft}`}
             min={1}
             max={40}
-            onChange={(v) => setLimit(v)}
+            onChange={(v) => commitLimit(v)}
             onPressValue={() =>
-              pad.current?.present({ title: s.maxPerDay, initial: limit, onSubmit: (v) => setLimit(Math.round(v)) })
+              pad.current?.present({
+                title: s.maxPerDay,
+                initial: limitDraft,
+                onSubmit: (v) => commitLimit(Math.round(v), true),
+              })
             }
           />
           <Divider />
           <StepperRow
             label={s.dayStart}
             hint={s.dayStartHelper}
-            value={settings.dayStartHour}
-            display={`${String(settings.dayStartHour).padStart(2, "0")}:00`}
+            value={form.dayStartHour}
+            display={`${String(form.dayStartHour).padStart(2, "0")}:00`}
             min={0}
             max={23}
-            onChange={(v) => saveSettings({ ...settings, dayStartHour: v })}
+            onChange={(v) => commitSettings({ ...form, dayStartHour: v })}
             onPressValue={() =>
               pad.current?.present({
                 title: s.dayStart,
-                initial: settings.dayStartHour,
-                onSubmit: (v) => saveSettings({ ...settings, dayStartHour: Math.min(23, Math.max(0, Math.round(v))) }),
+                initial: form.dayStartHour,
+                onSubmit: (v) =>
+                  commitSettings({ ...form, dayStartHour: Math.min(23, Math.max(0, Math.round(v))) }, true),
               })
             }
           />
@@ -139,19 +202,19 @@ export default function SettingsScreen() {
         <Group title={s.pricing}>
           <StepperRow
             label={s.pricePerPack(cur)}
-            value={settings.pricePerPack}
+            value={form.pricePerPack}
             display={priceText}
             min={1}
             max={40}
             step={0.5}
-            onChange={(v) => saveSettings({ ...settings, pricePerPack: v })}
+            onChange={(v) => commitSettings({ ...form, pricePerPack: v })}
             onPressValue={() =>
               pad.current?.present({
                 title: s.pricePerPack(cur),
-                initial: settings.pricePerPack,
+                initial: form.pricePerPack,
                 decimal: true,
                 prefix: `${cur} `,
-                onSubmit: (v) => saveSettings({ ...settings, pricePerPack: v }),
+                onSubmit: (v) => commitSettings({ ...form, pricePerPack: v }, true),
               })
             }
           />
@@ -164,7 +227,7 @@ export default function SettingsScreen() {
                 return (
                   <Pressable
                     key={c}
-                    onPress={() => saveSettings({ ...settings, currencySymbol: c })}
+                    onPress={() => commitSettings({ ...form, currencySymbol: c }, true)}
                     style={[styles.curSeg, { backgroundColor: sel ? colors.accent : colors.surfaceHigh }]}
                   >
                     <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontFamily: fonts.bold }}>{c}</Text>
@@ -175,22 +238,27 @@ export default function SettingsScreen() {
           </View>
         </Group>
 
-        {/* Language — chips */}
+        {/* Language — dropdown */}
         <Group title={s.language}>
-          <View style={styles.chipRow}>
-            {langs.map((l) => {
-              const sel = locale === l.key;
-              return (
+          <Pressable style={styles.row} onPress={() => setLangOpen((v) => !v)}>
+            <Text style={[styles.rowLabel, { flex: 1 }]}>{currentLangLabel}</Text>
+            <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={colors.textDim} />
+          </Pressable>
+          {langOpen &&
+            otherLangs.map((l) => (
+              <View key={l.key}>
+                <Divider />
                 <Pressable
-                  key={l.key}
-                  style={[styles.langChip, sel && styles.langChipSel]}
-                  onPress={() => !sel && confirmLang(l)}
+                  style={styles.row}
+                  onPress={() => {
+                    setLangOpen(false);
+                    confirmLang(l);
+                  }}
                 >
-                  <Text style={[styles.langChipText, sel && styles.langChipTextSel]}>{l.label}</Text>
+                  <Text style={[styles.rowLabel, { flex: 1 }]}>{l.label}</Text>
                 </Pressable>
-              );
-            })}
-          </View>
+              </View>
+            ))}
         </Group>
 
         {dataMode === "supabase" ? (
@@ -328,19 +396,6 @@ const styles = StyleSheet.create({
 
   segmentRow: { flexDirection: "row", gap: spacing.sm },
   curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
-
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  langChip: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 8,
-    borderRadius: radius.pill,
-    backgroundColor: colors.fill,
-    borderWidth: 1,
-    borderColor: colors.line,
-  },
-  langChipSel: { backgroundColor: colors.accentSoft, borderColor: colors.accentBorderStrong },
-  langChipText: { color: colors.textSecondary, fontSize: 13, fontFamily: fonts.medium },
-  langChipTextSel: { color: colors.accentText },
 
   signOut: {
     flexDirection: "row",
