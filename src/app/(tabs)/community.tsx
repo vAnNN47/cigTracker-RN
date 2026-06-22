@@ -8,6 +8,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { TabHeader } from "@/components/TabHeader";
 import { useToast } from "@/components/Toast";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
@@ -33,6 +34,7 @@ export default function CommunityScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
+      <TabHeader />
       <ScrollView
         style={{ flex: 1, backgroundColor: green.bg }}
         contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: 22, paddingBottom: spacing.xxl }}

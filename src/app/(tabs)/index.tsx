@@ -18,6 +18,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
+import { TabHeader } from "@/components/TabHeader";
 import { useToast } from "@/components/Toast";
 import { currentLimit, currentStreak, isLogEditable, logicalDay, logicalToday, logsForDay } from "@/domain/logic";
 import { formatTime } from "@/i18n/format";
@@ -25,7 +26,6 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { useDrawerStore } from "@/store/useDrawerStore";
 import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
 const HOUR = 60 * 60 * 1000;
@@ -45,7 +45,6 @@ export default function TodayScreen() {
   const addRef = useRef<AddSmokeSheetRef>(null);
   const purchaseRef = useRef<AddPurchaseSheetRef>(null);
   const detailRef = useRef<LogDetailSheetRef>(null);
-  const showDrawer = useDrawerStore((st) => st.show);
 
   const dsh = settings.dayStartHour;
   const todayKey = logicalToday(dsh);
@@ -115,16 +114,7 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
-      {/* Thin top bar: burger (start) + app title + avatar (end) */}
-      <View style={styles.topBar}>
-        <Pressable onPress={() => showDrawer("main")} hitSlop={8} style={styles.topIcon}>
-          <MaterialIcons name="menu" size={26} color={green.green} />
-        </Pressable>
-        <Text style={styles.topTitle}>{s.appTitle}</Text>
-        <Pressable onPress={() => showDrawer("account")} hitSlop={8} style={styles.topIcon}>
-          <MaterialIcons name="account-circle" size={28} color={green.green} />
-        </Pressable>
-      </View>
+      <TabHeader title={s.appTitle} />
 
       <Animated.ScrollView
         style={{ backgroundColor: green.bg }}
@@ -260,16 +250,6 @@ function RefreshSpinner({ onRefresh, tint }: { onRefresh: () => void | Promise<v
 
 const useStyles = makeUseStyles((green) =>
   StyleSheet.create({
-    topBar: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 22,
-      paddingTop: spacing.xs,
-      paddingBottom: spacing.xs,
-    },
-    topIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
-    topTitle: { flex: 1, color: green.text, fontSize: 16, fontFamily: fonts.semibold, textAlign: "center" },
     brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
     impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
     momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },
@@ -352,7 +332,10 @@ const useStyles = makeUseStyles((green) =>
       alignItems: "center",
       justifyContent: "center",
       gap: 6,
-      backgroundColor: green.bg,
+      // The savings card is bright-green in BOTH themes, so its buttons need a
+      // fixed light fill — using green.bg made them dark-on-dark (invisible) in
+      // dark mode.
+      backgroundColor: "#FFFFFF",
       borderRadius: 17,
       paddingVertical: 11,
     },

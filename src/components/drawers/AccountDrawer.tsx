@@ -1,10 +1,11 @@
 /**
- * Account drawer — full-screen, opens from the LEFT (the avatar is on the left).
- * Account status + Notifications / About / Feedback / Privacy. Sub-screens
- * (Language, FAQ, Privacy policy, Terms) live INSIDE the drawer as nested panels
- * that slide in from the left, so their back button returns to the drawer (not
- * the app). Feedback opens mail; Rate / Troubleshooting / Privacy settings are
- * stubbed.
+ * Account drawer — full-screen, opens from the reading END edge (the avatar sits
+ * on the end of the top bar): left in Hebrew (RTL), right in English (LTR).
+ * Account status + Settings + Notifications / About / Feedback / Privacy.
+ * Sub-screens (Language, Theme, FAQ, Privacy policy, Terms) live INSIDE the
+ * drawer as nested panels that slide in from the SAME end edge, so their back
+ * button returns to the drawer (not the app). Feedback opens mail; Rate /
+ * Troubleshooting / Privacy settings are stubbed.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
@@ -25,7 +26,7 @@ const FEEDBACK_EMAIL = "leetbeck@gmail.com";
 const LOREM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.";
 
-type Sub = "none" | "language" | "faq" | "privacy" | "terms";
+type Sub = "none" | "language" | "theme" | "faq" | "privacy" | "terms";
 
 export function AccountDrawer() {
   const s = useStrings();
@@ -66,14 +67,16 @@ export function AccountDrawer() {
   const subTitle =
     shownSub === "language"
       ? s.language
-      : shownSub === "faq"
-        ? s.faq
-        : shownSub === "privacy"
-          ? s.privacyPolicy
-          : s.termsOfService;
+      : shownSub === "theme"
+        ? s.appearance
+        : shownSub === "faq"
+          ? s.faq
+          : shownSub === "privacy"
+            ? s.privacyPolicy
+            : s.termsOfService;
 
   return (
-    <SlideDrawer open={open} forceSide="left" widthPct={1} onClose={hide}>
+    <SlideDrawer open={open} side="end" widthPct={1} onClose={hide}>
       <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
         <View style={styles.header}>
           <Pressable onPress={hide} hitSlop={8} style={styles.iconBtn}>
@@ -124,6 +127,7 @@ export function AccountDrawer() {
 
           <Section title={s.about}>
             <Row icon="info-outline" label={s.version} value={version} />
+            <Row icon="palette" label={s.appearance} onPress={() => openSub("theme")} />
             <Row icon="language" label={s.language} onPress={() => openSub("language")} />
             <Row icon="help-outline" label={s.faq} onPress={() => openSub("faq")} />
             <Row
@@ -157,7 +161,7 @@ export function AccountDrawer() {
 
       {/* Sub-screen: slides in (and out) from the LEFT over the list; back returns
           to the drawer. Always mounted + open-toggled so the close animates. */}
-      <SlideDrawer open={sub !== "none"} forceSide="left" widthPct={1} onClose={() => setSub("none")}>
+      <SlideDrawer open={sub !== "none"} side="end" widthPct={1} onClose={() => setSub("none")}>
         <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
           <View style={styles.header}>
             <Pressable onPress={() => setSub("none")} hitSlop={8} style={styles.iconBtn}>
@@ -168,6 +172,8 @@ export function AccountDrawer() {
           </View>
           {shownSub === "language" ? (
             <LanguageList onDone={() => setSub("none")} />
+          ) : shownSub === "theme" ? (
+            <ThemeList onDone={() => setSub("none")} />
           ) : (
             <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}>
               <Text style={styles.doc}>{LOREM}</Text>
@@ -221,6 +227,44 @@ function LanguageList({ onDone }: { onDone: () => void }) {
             <Text style={styles.soon}>{s.comingSoon}</Text>
           </Pressable>
         ))}
+      </View>
+    </ScrollView>
+  );
+}
+
+function ThemeList({ onDone }: { onDone: () => void }) {
+  const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
+  const themeMode = useAppStore((st) => st.themeMode);
+  const setThemeMode = useAppStore((st) => st.setThemeMode);
+  const opts: { key: "device" | "light" | "dark"; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
+    { key: "device", label: s.themeDevice, icon: "smartphone" },
+    { key: "light", label: s.themeLight, icon: "light-mode" },
+    { key: "dark", label: s.themeDark, icon: "dark-mode" },
+  ];
+  return (
+    <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
+      <View style={styles.sectionBody}>
+        {opts.map((o) => {
+          const selected = themeMode === o.key;
+          return (
+            <Pressable
+              key={o.key}
+              style={styles.langRow}
+              onPress={() => {
+                setThemeMode(o.key);
+                onDone();
+              }}
+            >
+              <View style={styles.themeLeft}>
+                <MaterialIcons name={o.icon} size={20} color={selected ? green.green : green.textDim} />
+                <Text style={[styles.langLabel, selected && styles.langLabelSel]}>{o.label}</Text>
+              </View>
+              {selected ? <MaterialIcons name="check" size={20} color={green.green} /> : null}
+            </Pressable>
+          );
+        })}
       </View>
     </ScrollView>
   );
@@ -336,6 +380,7 @@ const useStyles = makeUseStyles((green) =>
   },
   langLabel: { color: green.text, fontSize: 16, fontFamily: fonts.semibold, textAlign: textStart },
   langLabelSel: { color: green.green, fontFamily: fonts.bold },
+  themeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   langLabelMuted: { color: green.textDim },
   soon: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
 

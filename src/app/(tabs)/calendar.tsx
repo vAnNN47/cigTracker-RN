@@ -15,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
 import { Ring } from "@/components/Ring";
+import { TabHeader } from "@/components/TabHeader";
 import { isSameDay, keyOf } from "@/domain/day";
 import {
   countForDay,
@@ -162,6 +163,7 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
+      <TabHeader />
       <ScrollView
         style={{ flex: 1, backgroundColor: green.bg }}
         contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}

@@ -11,6 +11,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { LineChart } from "@/components/LineChart";
+import { TabHeader } from "@/components/TabHeader";
 import { addDays } from "@/domain/day";
 import {
     countBetween,
@@ -75,6 +76,7 @@ export default function ProgressScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
+      <TabHeader />
       <ScrollView
         style={{ flex: 1, backgroundColor: green.bg }}
         contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: 22, paddingBottom: spacing.xxl }}

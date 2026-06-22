@@ -9,7 +9,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname } from "expo-router";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SlideDrawer } from "@/components/SlideDrawer";
@@ -90,9 +90,14 @@ export function MainDrawer() {
     setSub({ tab, link: l });
   };
 
+  // Burger sits on the reading START edge, so the drawer opens from the start:
+  // right in Hebrew (RTL), left in English (LTR). Its sub-screen slides from the
+  // same edge.
+  const backIcon = I18nManager.isRTL ? "arrow-forward" : "arrow-back";
+
   return (
     <>
-      <SlideDrawer open={open} forceSide="right" widthPct={0.76} onClose={hide}>
+      <SlideDrawer open={open} side="start" widthPct={0.76} onClose={hide}>
         <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
           <Text style={styles.title}>{s.menu}</Text>
           <Text style={styles.sectionTitle}>{cfg.title}</Text>
@@ -102,12 +107,13 @@ export function MainDrawer() {
         </SafeAreaView>
       </SlideDrawer>
 
-      {/* Dummy sub-screen — opens over the current tab; back returns to the tab. */}
-      <Modal visible={activeLink !== null} animationType="slide" onRequestClose={() => setSub(null)}>
+      {/* Dummy sub-screen — slides from the same (start) side as the drawer; back
+          returns to the tab, reopen the drawer to get back here. */}
+      <SlideDrawer open={activeLink !== null} side="start" widthPct={1} onClose={() => setSub(null)}>
         <SafeAreaView style={[styles.safe, styles.subSafe]} edges={["top", "bottom"]}>
           <View style={styles.subHeader}>
             <Pressable onPress={() => setSub(null)} hitSlop={10} style={styles.backBtn}>
-              <MaterialIcons name="arrow-back" size={24} color={green.text} />
+              <MaterialIcons name={backIcon} size={24} color={green.text} />
             </Pressable>
             <Text style={styles.subTitle}>{activeLink?.label}</Text>
             <View style={styles.backBtn} />
@@ -121,7 +127,7 @@ export function MainDrawer() {
             <Text style={styles.subText}>{DUMMY_BODY}</Text>
           </ScrollView>
         </SafeAreaView>
-      </Modal>
+      </SlideDrawer>
     </>
   );
 }
