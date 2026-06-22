@@ -35,6 +35,13 @@ export function AccountDrawer() {
 
   const [email, setEmail] = useState<string | null>(null);
   const [sub, setSub] = useState<Sub>("none");
+  // The sub view keeps rendering through the slide-OUT (sub flips to "none" to
+  // animate closed, but the panel content stays until it's fully gone).
+  const [shownSub, setShownSub] = useState<Exclude<Sub, "none">>("language");
+  const openSub = (v: Exclude<Sub, "none">) => {
+    setShownSub(v);
+    setSub(v);
+  };
   const signedIn = dataMode === "supabase";
 
   useEffect(() => {
@@ -53,7 +60,13 @@ export function AccountDrawer() {
   const stub = (title: string) => Alert.alert(title, s.comingSoon);
 
   const subTitle =
-    sub === "language" ? s.language : sub === "faq" ? s.faq : sub === "privacy" ? s.privacyPolicy : s.termsOfService;
+    shownSub === "language"
+      ? s.language
+      : shownSub === "faq"
+        ? s.faq
+        : shownSub === "privacy"
+          ? s.privacyPolicy
+          : s.termsOfService;
 
   return (
     <SlideDrawer open={open} forceSide="left" widthPct={1} onClose={hide}>
@@ -95,8 +108,8 @@ export function AccountDrawer() {
 
           <Section title={s.about}>
             <Row icon="info-outline" label={s.version} value={version} />
-            <Row icon="language" label={s.language} onPress={() => setSub("language")} />
-            <Row icon="help-outline" label={s.faq} onPress={() => setSub("faq")} />
+            <Row icon="language" label={s.language} onPress={() => openSub("language")} />
+            <Row icon="help-outline" label={s.faq} onPress={() => openSub("faq")} />
             <Row
               icon="ios-share"
               label={s.shareApp}
@@ -120,33 +133,32 @@ export function AccountDrawer() {
 
           <Section title={s.privacy}>
             <Row icon="security" label={s.privacySettings} onPress={() => stub(s.privacySettings)} />
-            <Row icon="privacy-tip" label={s.privacyPolicy} onPress={() => setSub("privacy")} />
-            <Row icon="description" label={s.termsOfService} onPress={() => setSub("terms")} />
+            <Row icon="privacy-tip" label={s.privacyPolicy} onPress={() => openSub("privacy")} />
+            <Row icon="description" label={s.termsOfService} onPress={() => openSub("terms")} />
           </Section>
         </ScrollView>
       </SafeAreaView>
 
-      {/* Sub-screen: slides in from the LEFT over the list; back returns to the drawer. */}
-      {sub !== "none" && (
-        <SlideDrawer open forceSide="left" widthPct={1} onClose={() => setSub("none")}>
-          <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-            <View style={styles.header}>
-              <Pressable onPress={() => setSub("none")} hitSlop={8} style={styles.iconBtn}>
-                <MaterialIcons name={backIcon} size={26} color={green.text} />
-              </Pressable>
-              <Text style={styles.headerTitle}>{subTitle}</Text>
-              <View style={styles.iconBtn} />
-            </View>
-            {sub === "language" ? (
-              <LanguageList onDone={() => setSub("none")} />
-            ) : (
-              <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}>
-                <Text style={styles.doc}>{LOREM}</Text>
-              </ScrollView>
-            )}
-          </SafeAreaView>
-        </SlideDrawer>
-      )}
+      {/* Sub-screen: slides in (and out) from the LEFT over the list; back returns
+          to the drawer. Always mounted + open-toggled so the close animates. */}
+      <SlideDrawer open={sub !== "none"} forceSide="left" widthPct={1} onClose={() => setSub("none")}>
+        <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+          <View style={styles.header}>
+            <Pressable onPress={() => setSub("none")} hitSlop={8} style={styles.iconBtn}>
+              <MaterialIcons name={backIcon} size={26} color={green.text} />
+            </Pressable>
+            <Text style={styles.headerTitle}>{subTitle}</Text>
+            <View style={styles.iconBtn} />
+          </View>
+          {shownSub === "language" ? (
+            <LanguageList onDone={() => setSub("none")} />
+          ) : (
+            <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}>
+              <Text style={styles.doc}>{LOREM}</Text>
+            </ScrollView>
+          )}
+        </SafeAreaView>
+      </SlideDrawer>
     </SlideDrawer>
   );
 }

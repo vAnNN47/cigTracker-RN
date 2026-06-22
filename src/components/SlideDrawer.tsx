@@ -22,6 +22,10 @@ export function SlideDrawer({ open, side = "start", forceSide, widthPct = 0.78, 
   const panelW = Math.round(screenW * widthPct);
   const physicalSide: "left" | "right" =
     forceSide ?? (side === "start" ? (I18nManager.isRTL ? "right" : "left") : I18nManager.isRTL ? "left" : "right");
+  // RN auto-swaps the `left`/`right` style props in RTL, so to actually pin the
+  // panel to `physicalSide` we choose the key that lands there AFTER the swap.
+  // (transform translateX is NOT swapped, so the slide offset stays physical.)
+  const pinLeft = (physicalSide === "left") !== I18nManager.isRTL;
   const hidden = physicalSide === "left" ? -panelW : panelW;
 
   const tx = useRef(new Animated.Value(hidden)).current;
@@ -56,7 +60,7 @@ export function SlideDrawer({ open, side = "start", forceSide, widthPct = 0.78, 
       <Animated.View
         style={[
           styles.panel,
-          physicalSide === "left" ? { left: 0 } : { right: 0 },
+          pinLeft ? { left: 0 } : { right: 0 },
           { width: panelW, transform: [{ translateX: tx }] },
         ]}
       >
