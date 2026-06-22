@@ -116,10 +116,6 @@ function Gate() {
         <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
         <Stack.Screen name="purchases" />
         <Stack.Screen name="settings" />
-        <Stack.Screen name="language" />
-        <Stack.Screen name="faq" />
-        <Stack.Screen name="privacy" />
-        <Stack.Screen name="terms" />
       </Stack>
       {overlay && <View style={[StyleSheet.absoluteFill, styles.overlay]}>{overlay}</View>}
       {/* Slide-in drawers render above everything (incl. the tab bar). */}
