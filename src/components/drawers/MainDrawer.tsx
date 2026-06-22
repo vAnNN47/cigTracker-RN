@@ -21,7 +21,7 @@ export function MainDrawer() {
   const hide = useDrawerStore((st) => st.hide);
 
   return (
-    <SlideDrawer open={open} side="start" widthPct={0.76} onClose={hide}>
+    <SlideDrawer open={open} forceSide="right" widthPct={0.76} onClose={hide}>
       <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
         <Text style={styles.title}>{s.menu}</Text>
         <Row

@@ -14,7 +14,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { colors } from "@/theme";
+import { green } from "@/theme";
 
 export function SplashView() {
   const opacity = useSharedValue(0);
@@ -38,19 +38,19 @@ export function SplashView() {
   return (
     <View style={styles.center}>
       <Animated.View style={[styles.logo, style]}>
-        <MaterialIcons name="insights" size={64} color={colors.accent} />
+        <MaterialIcons name="insights" size={64} color={green.green} />
       </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: colors.bg, alignItems: "center", justifyContent: "center" },
+  center: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
   logo: {
     width: 120,
     height: 120,
     borderRadius: 28,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: green.cardSoft,
     alignItems: "center",
     justifyContent: "center",
   },

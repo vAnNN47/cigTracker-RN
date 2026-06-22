@@ -11,7 +11,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useStrings } from "@/i18n/useStrings";
 import { signInWithGoogle } from "@/lib/googleAuth";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
+
+const BAD = "#C0392B";
 
 export function LoginView() {
   const s = useStrings();
@@ -39,7 +41,7 @@ export function LoginView() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.box}>
         <View style={styles.logo}>
-          <MaterialIcons name="insights" size={36} color={colors.accent} />
+          <MaterialIcons name="insights" size={36} color={green.green} />
         </View>
         <Text style={styles.title}>{s.appName}</Text>
         <Text style={styles.tagline}>{s.loginTagline}</Text>
@@ -50,10 +52,10 @@ export function LoginView() {
           disabled={busy}
         >
           {busy ? (
-            <ActivityIndicator color={colors.onAccent} />
+            <ActivityIndicator color={green.onGreen} />
           ) : (
             <>
-              <MaterialIcons name="login" size={20} color={colors.onAccent} />
+              <MaterialIcons name="login" size={20} color={green.onGreen} />
               <Text style={styles.btnText}>{s.continueWithGoogle}</Text>
             </>
           )}
@@ -66,30 +68,30 @@ export function LoginView() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg, alignItems: "center", justifyContent: "center" },
+  safe: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
   box: { width: "100%", maxWidth: 360, padding: spacing.xxl, alignItems: "center" },
   logo: {
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: green.cardSoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xxl },
-  tagline: { color: colors.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
+  title: { color: green.green, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xxl },
+  tagline: { color: green.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
   btn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    backgroundColor: colors.accent,
+    backgroundColor: green.green,
     borderRadius: radius.button,
     paddingVertical: 14,
     alignSelf: "stretch",
     marginTop: spacing.xxl + spacing.md,
   },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: colors.onAccent, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-  err: { color: colors.bad, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
+  btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
+  err: { color: BAD, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
 });

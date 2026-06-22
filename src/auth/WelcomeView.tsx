@@ -17,7 +17,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useStrings } from "@/i18n/useStrings";
 import { signInWithGoogle } from "@/lib/googleAuth";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
+
+const BAD = "#C0392B";
 
 export function WelcomeView() {
   const s = useStrings();
@@ -49,17 +51,17 @@ export function WelcomeView() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.box}>
         <View style={styles.logo}>
-          <MaterialIcons name="insights" size={36} color={colors.accent} />
+          <MaterialIcons name="insights" size={36} color={green.green} />
         </View>
         <Text style={styles.title}>{s.welcomeHeadline}</Text>
         <Text style={styles.blurb}>{s.welcomeBlurb}</Text>
 
         <Pressable style={[styles.primaryBtn, busy && styles.disabled]} onPress={signIn} disabled={busy}>
           {busy ? (
-            <ActivityIndicator color={colors.onAccent} />
+            <ActivityIndicator color={green.onGreen} />
           ) : (
             <>
-              <MaterialIcons name="login" size={20} color={colors.onAccent} />
+              <MaterialIcons name="login" size={20} color={green.onGreen} />
               <Text style={styles.primaryText}>{s.continueWithGoogle}</Text>
             </>
           )}
@@ -73,7 +75,7 @@ export function WelcomeView() {
         </View>
 
         <Pressable style={[styles.outlineBtn, busy && styles.disabled]} onPress={goLocal} disabled={busy}>
-          <MaterialIcons name="smartphone" size={18} color={colors.text} />
+          <MaterialIcons name="smartphone" size={18} color={green.text} />
           <Text style={styles.outlineText}>{s.continueLocally}</Text>
         </Pressable>
         <Text style={styles.note}>{s.localModeNote}</Text>
@@ -85,50 +87,50 @@ export function WelcomeView() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg, alignItems: "center", justifyContent: "center" },
+  safe: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
   box: { width: "100%", maxWidth: 380, padding: spacing.xxl, alignItems: "center" },
   logo: {
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: green.cardSoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: "center" },
-  blurb: { color: colors.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm, lineHeight: 20 },
+  title: { color: green.green, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: "center" },
+  blurb: { color: green.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm, lineHeight: 20 },
 
   primaryBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    backgroundColor: colors.accent,
+    backgroundColor: green.green,
     borderRadius: radius.button,
     paddingVertical: 14,
     alignSelf: "stretch",
     marginTop: spacing.xxl,
   },
-  primaryText: { color: colors.onAccent, fontFamily: fonts.bold, fontSize: type.body.fontSize },
+  primaryText: { color: green.onGreen, fontFamily: fonts.bold, fontSize: type.body.fontSize },
   outlineBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.card,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: green.border,
     borderRadius: radius.button,
     paddingVertical: 14,
     alignSelf: "stretch",
   },
-  outlineText: { color: colors.text, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
+  outlineText: { color: green.text, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
   disabled: { opacity: 0.6 },
-  note: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
+  note: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
 
   dividerRow: { flexDirection: "row", alignItems: "center", alignSelf: "stretch", gap: spacing.md, marginVertical: spacing.xl },
-  line: { flex: 1, height: 1, backgroundColor: colors.line },
-  or: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
+  line: { flex: 1, height: 1, backgroundColor: green.border },
+  or: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
 
-  err: { color: colors.bad, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
+  err: { color: BAD, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
 });

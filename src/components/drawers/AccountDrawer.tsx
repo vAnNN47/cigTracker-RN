@@ -8,7 +8,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, I18nManager, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SlideDrawer } from "@/components/SlideDrawer";
@@ -46,12 +46,12 @@ export function AccountDrawer() {
   const stub = (title: string) => Alert.alert(title, s.comingSoon);
 
   return (
-    <SlideDrawer open={open} side="end" widthPct={1} onClose={hide}>
+    <SlideDrawer open={open} forceSide="right" widthPct={1} onClose={hide}>
       <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={hide} hitSlop={8} style={styles.closeBtn}>
-            <MaterialIcons name="close" size={24} color={green.text} />
+            <MaterialIcons name={I18nManager.isRTL ? "chevron-right" : "chevron-left"} size={26} color={green.text} />
           </Pressable>
           <Text style={styles.headerTitle}>{s.account}</Text>
           <View style={styles.closeBtn} />
@@ -88,7 +88,7 @@ export function AccountDrawer() {
           {/* About */}
           <Section title={s.about}>
             <Row icon="info-outline" label={s.version} value={version} />
-            <Row icon="language" label={s.language} onPress={() => go("/settings")} />
+            <Row icon="language" label={s.language} onPress={() => go("/language")} />
             <Row icon="help-outline" label={s.faq} onPress={() => go("/faq")} />
             <Row
               icon="ios-share"
@@ -104,7 +104,7 @@ export function AccountDrawer() {
               label={s.sendFeedback}
               onPress={() =>
                 Linking.openURL(`mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("Cig Tracker feedback")}`).catch(
-                  () => stub(s.sendFeedback),
+                  () => {},
                 )
               }
             />

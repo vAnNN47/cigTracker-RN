@@ -6,6 +6,7 @@
  * switcher (Device / English / עברית).
  */
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,6 +25,8 @@ const BAD = "#C0392B";
 
 export default function SettingsScreen() {
   const s = useStrings();
+  const router = useRouter();
+  const backIcon = I18nManager.isRTL ? "chevron-right" : "chevron-left";
   const { limits, settings, locale } = useAppStore();
   const dataMode = useAppStore((st) => st.dataMode);
   const setDataMode = useAppStore((st) => st.setDataMode);
@@ -118,12 +121,17 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
+      <View style={styles.topBar}>
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+          <MaterialIcons name={backIcon} size={26} color={green.text} />
+        </Pressable>
+        <Text style={styles.topTitle}>{s.settings}</Text>
+      </View>
       <ScrollView
-        contentContainerStyle={{ paddingTop: spacing.md, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
         alwaysBounceVertical
         overScrollMode="always"
       >
-        <Text style={styles.title}>{s.settings}</Text>
 
         {/* Reduction plan banner */}
         <Text style={styles.groupTitle}>{s.reductionPlan}</Text>
@@ -359,6 +367,9 @@ function Divider() {
 }
 
 const styles = StyleSheet.create({
+  topBar: { flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  backBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+  topTitle: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
   title: { color: green.text, fontSize: 22, fontFamily: fonts.bold, marginBottom: spacing.xl, textAlign: textStart },
   groupTitle: {
     color: green.textDim,

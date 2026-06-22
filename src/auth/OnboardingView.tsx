@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 export function OnboardingView({ onDone }: { onDone: () => void }) {
@@ -40,7 +40,7 @@ export function OnboardingView({ onDone }: { onDone: () => void }) {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.logo}>
-          <MaterialIcons name="insights" size={32} color={colors.accent} />
+          <MaterialIcons name="insights" size={32} color={green.green} />
         </View>
         <Text style={styles.title}>{s.welcomeTitle}</Text>
         <Text style={styles.intro}>{s.onboardingIntro}</Text>
@@ -61,18 +61,18 @@ export function OnboardingView({ onDone }: { onDone: () => void }) {
         />
 
         <Pressable style={[styles.btn, saving && styles.btnDisabled]} onPress={finish} disabled={saving}>
-          {saving ? <ActivityIndicator color={colors.onAccent} /> : <Text style={styles.btnText}>{s.startTracking}</Text>}
+          {saving ? <ActivityIndicator color={green.onGreen} /> : <Text style={styles.btnText}>{s.startTracking}</Text>}
         </Pressable>
       </ScrollView>
 
       <NumberPad
         ref={pad}
-        surface={colors.surface}
-        surfaceHigh={colors.surfaceHigh}
-        text={colors.text}
-        textDim={colors.textDim}
-        accent={colors.accent}
-        onAccent={colors.onAccent}
+        surface={green.card}
+        surfaceHigh={green.cardSoft}
+        text={green.text}
+        textDim={green.textDim}
+        accent={green.green}
+        onAccent={green.onGreen}
         cornerRadius={radius.sheet}
         cancelLabel={s.cancel}
         saveLabel={s.save}
@@ -87,43 +87,43 @@ function PickRow({ label, value, onPress }: { label: string; value: number; onPr
       <Text style={styles.pickLabel}>{label}</Text>
       <Pressable style={styles.pickBox} onPress={onPress}>
         <Text style={styles.pickValue}>{value}</Text>
-        <MaterialIcons name="edit" size={18} color={colors.textDim} />
+        <MaterialIcons name="edit" size={18} color={green.textDim} />
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1, backgroundColor: green.bg },
   content: { flexGrow: 1, justifyContent: "center", padding: spacing.xxl, maxWidth: 420, alignSelf: "center", width: "100%" },
   logo: {
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: colors.accentSoft,
+    backgroundColor: green.cardSoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: textStart },
-  intro: { color: colors.textDim, fontFamily: fonts.regular, marginTop: spacing.sm, textAlign: textStart },
-  pickLabel: { color: colors.text, fontFamily: fonts.semibold, marginBottom: spacing.sm, textAlign: textStart },
+  title: { color: green.green, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: textStart },
+  intro: { color: green.textDim, fontFamily: fonts.regular, marginTop: spacing.sm, textAlign: textStart },
+  pickLabel: { color: green.text, fontFamily: fonts.semibold, marginBottom: spacing.sm, textAlign: textStart },
   pickBox: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.cardSoft,
     borderRadius: radius.input,
     paddingHorizontal: 18,
     paddingVertical: 16,
   },
-  pickValue: { color: colors.text, fontSize: 20, fontFamily: fonts.monoSemibold },
+  pickValue: { color: green.text, fontSize: 20, fontFamily: fonts.monoSemibold },
   btn: {
-    backgroundColor: colors.accent,
+    backgroundColor: green.green,
     borderRadius: radius.button,
     paddingVertical: 14,
     alignItems: "center",
     marginTop: spacing.xxl,
   },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: colors.onAccent, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
+  btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
 });

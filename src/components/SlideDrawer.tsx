@@ -11,16 +11,17 @@ import { green } from "@/theme";
 interface SlideDrawerProps {
   open: boolean;
   side?: "start" | "end";
+  forceSide?: "left" | "right"; // override the RTL-derived side
   widthPct?: number; // 0..1 of the screen width
   onClose: () => void;
   children: ReactNode;
 }
 
-export function SlideDrawer({ open, side = "start", widthPct = 0.78, onClose, children }: SlideDrawerProps) {
+export function SlideDrawer({ open, side = "start", forceSide, widthPct = 0.78, onClose, children }: SlideDrawerProps) {
   const screenW = Dimensions.get("window").width;
   const panelW = Math.round(screenW * widthPct);
   const physicalSide: "left" | "right" =
-    side === "start" ? (I18nManager.isRTL ? "right" : "left") : I18nManager.isRTL ? "left" : "right";
+    forceSide ?? (side === "start" ? (I18nManager.isRTL ? "right" : "left") : I18nManager.isRTL ? "left" : "right");
   const hidden = physicalSide === "left" ? -panelW : panelW;
 
   const tx = useRef(new Animated.Value(hidden)).current;
