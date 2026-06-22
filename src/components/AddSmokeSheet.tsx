@@ -67,17 +67,12 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
       },
     }));
 
-    const clampToday = (picked: Date) => {
-      const now = new Date();
-      const d = new Date();
-      d.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
-      return d.getTime() > now.getTime() ? now : d;
-    };
-
     const save = async () => {
       setSaving(true);
       try {
-        const log = await addSmoke({ tag, comment: comment.trim(), diary: diary.trim(), smokedAt });
+        // Let the user pick any hour/minute freely; only prevent a future time here.
+        const when = smokedAt.getTime() > Date.now() ? new Date() : smokedAt;
+        const log = await addSmoke({ tag, comment: comment.trim(), diary: diary.trim(), smokedAt: when });
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         sheetRef.current?.dismiss();
         onLogged(log);
@@ -144,7 +139,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
                       display="compact"
                       accentColor={green.green}
                       themeVariant="light"
-                      onValueChange={(_e, d) => setSmokedAt(clampToday(d))}
+                      onValueChange={(_e, d) => setSmokedAt(d)}
                       style={styles.timePicker}
                     />
                   </View>
@@ -163,7 +158,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
                   display="default"
                   accentColor={green.green}
                   onValueChange={(_e, d) => {
-                    setSmokedAt(clampToday(d));
+                    setSmokedAt(d);
                     setShowPicker(false);
                   }}
                   onDismiss={() => setShowPicker(false)}

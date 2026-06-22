@@ -1,17 +1,15 @@
 /**
- * Today — "v2" light/green redesign (design handoff). Calm, navigable, 2000s-ish:
- * centered header, a soft filled hero circle (count / allowance), a streak pill,
- * a bright-green weekly-savings card with quick actions, a recent-log card
- * (last 6 hours, up to 5, a dot marks entries that carry a note), a motivational
- * quote card, and a floating green "Log cigarette" button.
- *
- * Uses the new `green` palette but keeps our fonts + the existing bottom-sheet
- * logic. Other screens migrate to this look later.
+ * Today — "v2" light/green. Header + sub-headers scroll with the page (so the
+ * pull-to-refresh spinner opens its own space above them). The hero circle is
+ * the primary action: it gently pulses and, when tapped, opens the log sheet.
+ * The ring shows count-up (smoked / allowance) or count-down (remaining first)
+ * per the Settings "count down" toggle. Below: streak pill, weekly-savings card,
+ * recent-log card (last 6h, up to 5; dot marks notes), and a momentum quote.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
@@ -48,6 +46,24 @@ export default function TodayScreen() {
   const streak = currentStreak(logs, limits, settings);
   const left = Math.max(0, limit - count);
 
+  // Hero ring counts up (smoked) or down (remaining) per the setting.
+  const heroCount = settings.countDown ? `${left}/${limit}` : `${count}/${limit}`;
+  const heroLabel = settings.countDown ? s.remainingTodayShort : s.smokedTodayShort;
+  const heroSub = settings.countDown ? s.smokedTodayN(count) : s.leftTodayN(left);
+
+  // Gentle pulse so the circle reads as tappable.
+  const pulse = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.03, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+
   // Weekly savings (matches the "חיסכון שבועי" card).
   const cur = settings.currencySymbol;
   const money = (n: number) => `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
@@ -69,7 +85,6 @@ export default function TodayScreen() {
     return dayLogs.findIndex((l) => l.id === log.id) + 1;
   };
 
-  // Stable per-day quote from the ready list.
   const quote = s.quotes[now.getDate() % s.quotes.length];
 
   const onLogged = (log: SmokeLog) => {
@@ -78,24 +93,22 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
-      {/* Fixed header — kept out of the scroll so the pull-to-refresh spinner
-          appears below it (in its own space) instead of over the title. */}
-      <View style={styles.fixedHeader}>
+      <RefreshScroll onRefresh={refresh}>
+        {/* Header (scrolls with the page) */}
         <Text style={styles.brand}>{s.reduceTitle}</Text>
         <Text style={styles.impact}>{s.todayImpact}</Text>
         <Text style={styles.momentum}>{s.keepMomentum}</Text>
-      </View>
 
-      <RefreshScroll onRefresh={refresh}>
-        {/* Hero circle */}
+        {/* Hero circle — tap to log */}
         <View style={styles.heroWrap}>
-          <View style={styles.hero}>
-            <Text style={styles.heroCount}>
-              {count}/{limit}
-            </Text>
-            <Text style={styles.heroLabel}>{s.smokedTodayShort}</Text>
-            <Text style={styles.heroLeft}>{s.leftTodayN(left)}</Text>
-          </View>
+          <Pressable onPress={() => addRef.current?.present()}>
+            <Animated.View style={[styles.hero, { transform: [{ scale: pulse }] }]}>
+              <Text style={styles.heroCount}>{heroCount}</Text>
+              <Text style={styles.heroLabel}>{heroLabel}</Text>
+              <Text style={styles.heroLeft}>{heroSub}</Text>
+            </Animated.View>
+          </Pressable>
+          <Text style={styles.tapHint}>{s.tapToLog}</Text>
         </View>
 
         {/* Streak pill */}
@@ -168,13 +181,6 @@ export default function TodayScreen() {
         </View>
       </RefreshScroll>
 
-      {/* Floating log button — text first, icon second so the icon sits on the
-          left in the RTL (Hebrew) layout. */}
-      <Pressable style={styles.logBtn} onPress={() => addRef.current?.present()}>
-        <Text style={styles.logBtnText}>{s.logCigarette}</Text>
-        <MaterialIcons name="smoking-rooms" size={20} color={green.onGreen} />
-      </Pressable>
-
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
       <AddPurchaseSheet ref={purchaseRef} />
       <LogDetailSheet ref={detailRef} />
@@ -195,7 +201,7 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
   return (
     <ScrollView
       style={{ backgroundColor: green.bg }}
-      contentContainerStyle={{ paddingTop: spacing.lg, paddingHorizontal: 22, paddingBottom: 96 }}
+      contentContainerStyle={{ paddingTop: spacing.lg, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
       alwaysBounceVertical
       refreshControl={
         <RefreshControl
@@ -212,7 +218,6 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
 }
 
 const styles = StyleSheet.create({
-  fixedHeader: { paddingHorizontal: 22, paddingTop: spacing.sm, paddingBottom: spacing.md, backgroundColor: green.bg },
   brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
   impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
   momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },
@@ -236,6 +241,7 @@ const styles = StyleSheet.create({
   heroCount: { color: green.green, fontSize: 44, fontFamily: fonts.monoSemibold },
   heroLabel: { color: green.green, fontSize: 14, fontFamily: fonts.medium, marginTop: 4 },
   heroLeft: { color: green.green, fontSize: 14, fontFamily: fonts.semibold, marginTop: 2 },
+  tapHint: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.md },
 
   streakWrap: { alignItems: "center", marginTop: spacing.lg },
   streakPill: {
@@ -317,24 +323,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
-  logBtn: {
-    position: "absolute",
-    left: 22,
-    right: 22,
-    bottom: spacing.lg,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    backgroundColor: green.green,
-    borderRadius: 28,
-    paddingVertical: 16,
-    shadowColor: green.green,
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
-  },
-  logBtnText: { color: green.onGreen, fontSize: 16, fontFamily: fonts.bold },
 });

@@ -48,6 +48,7 @@ export interface AppSettings {
   pricePerPack: number;
   baselinePerDay: number; // cigs/day before the app (for savings)
   dayStartHour: number; // 0–23; logs before this hour count to previous day
+  countDown: boolean; // Today ring counts remaining allowance down instead of up
 }
 
 // Fixed by product definition (matches AppSettings in Dart).
@@ -60,6 +61,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   pricePerPack: 35,
   baselinePerDay: 20,
   dayStartHour: 4,
+  countDown: false,
 };
 
 /** Per-cigarette price, used to value savings. */

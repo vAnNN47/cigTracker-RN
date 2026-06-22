@@ -7,7 +7,7 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { currentLimit } from "@/domain/logic";
@@ -192,6 +192,19 @@ export default function SettingsScreen() {
               })
             }
           />
+          <Divider />
+          <View style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowLabel}>{s.countDown}</Text>
+              <Text style={styles.rowHint}>{s.countDownHint}</Text>
+            </View>
+            <Switch
+              value={form.countDown}
+              onValueChange={(v) => commitSettings({ ...form, countDown: v }, true)}
+              trackColor={{ true: green.greenBright, false: green.border }}
+              thumbColor={green.card}
+            />
+          </View>
         </Group>
 
         {/* Pricing */}

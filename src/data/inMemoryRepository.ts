@@ -71,7 +71,7 @@ export class InMemoryRepository implements Repository {
       { id: randomUUID(), unit: "pack", quantity: 3, price: 24, boughtAt: addDays(t, -7) },
     );
 
-    this.settings = { currencySymbol: "₪", pricePerPack: 35, baselinePerDay: 20, dayStartHour: 4 };
+    this.settings = { currencySymbol: "₪", pricePerPack: 35, baselinePerDay: 20, dayStartHour: 4, countDown: false };
   }
 
   async getLogs(): Promise<SmokeLog[]> {
