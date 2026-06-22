@@ -11,12 +11,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useStrings } from "@/i18n/useStrings";
 import { signInWithGoogle } from "@/lib/googleAuth";
-import { fonts, green, radius, spacing, type } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
+
+import { LegalFooter } from "./LegalFooter";
 
 const BAD = "#C0392B";
 
 export function LoginView() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -62,12 +66,15 @@ export function LoginView() {
         </Pressable>
 
         {err ? <Text style={styles.err}>{err}</Text> : null}
+
+        <LegalFooter />
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
   box: { width: "100%", maxWidth: 360, padding: spacing.xxl, alignItems: "center" },
   logo: {
@@ -94,4 +101,5 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.6 },
   btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
   err: { color: BAD, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
-});
+  }),
+);

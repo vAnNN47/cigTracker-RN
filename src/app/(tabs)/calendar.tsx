@@ -29,7 +29,7 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { LocationTag } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, radius, spacing } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
 import { MonthPager } from "../../../packages/month-pager";
 
 // Per-cigarette location icon (Home / Work / Car / Social).
@@ -65,6 +65,8 @@ function buildWeeks(monthFirst: Date): (Date | null)[][] {
 
 export default function HistoryScreen() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const router = useRouter();
   const { logs, limits, purchases, settings } = useAppStore();
   const dsh = settings.dayStartHour;
@@ -131,7 +133,9 @@ export default function HistoryScreen() {
                   status === "over" && styles.dayOver,
                   status === "none" && styles.dayNone,
                   isTodayCell && styles.dayToday,
-                  sel && !isTodayCell && styles.daySelected,
+                  // Selection always wins over the today-ring, so the cell the
+                  // user actually picked is the one that reads as active.
+                  sel && styles.daySelected,
                 ]}
               >
                 <Text
@@ -247,6 +251,8 @@ export default function HistoryScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.rowTitleLine}>
+                  {/* Diary indicator: green dot = has a journal note, gray = none */}
+                  <View style={[styles.diaryDot, !log.diary && styles.diaryDotMuted]} />
                   <Text style={styles.rowTitle}>{s.cigNumber(count - i)}</Text>
                   {!!log.diary && (
                     <View style={styles.diaryBadge}>
@@ -300,7 +306,8 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   title: { color: green.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
 
   monthHeader: {
@@ -337,8 +344,9 @@ const styles = StyleSheet.create({
   dayUnder: { backgroundColor: UNDER_BG, borderColor: UNDER_BORDER },
   dayOver: { backgroundColor: OVER_BG, borderColor: OVER_BORDER },
   dayNone: { backgroundColor: green.cardSoft, borderColor: green.border },
-  dayToday: { borderColor: green.green, borderWidth: 2 },
-  daySelected: { borderColor: green.greenBright },
+  dayToday: { borderColor: green.green, borderWidth: 1.5 },
+  // Selected day reads as the active one: bright ring + faint accent wash.
+  daySelected: { borderColor: green.greenBright, borderWidth: 2, backgroundColor: green.cardSoft },
   dayNum: { fontSize: 11, fontFamily: fonts.mono, color: green.text },
   dayNumUnder: { color: green.green },
   dayNumOver: { color: OVER_TEXT },
@@ -393,6 +401,8 @@ const styles = StyleSheet.create({
   },
   rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: green.cardSoft, alignItems: "center", justifyContent: "center" },
   rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  diaryDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: green.dot },
+  diaryDotMuted: { backgroundColor: green.border },
   rowTitle: { color: green.text, fontFamily: fonts.semibold, fontSize: 14 },
   diaryBadge: {
     width: 20,
@@ -404,4 +414,5 @@ const styles = StyleSheet.create({
   },
   rowSub: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   price: { color: green.text, fontFamily: fonts.monoMedium, fontSize: 15 },
-});
+  }),
+);

@@ -35,9 +35,11 @@ import { WelcomeView } from "@/auth/WelcomeView";
 import { AccountDrawer } from "@/components/drawers/AccountDrawer";
 import { MainDrawer } from "@/components/drawers/MainDrawer";
 import { ToastProvider } from "@/components/Toast";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { USE_SUPABASE } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/useAppStore";
+import { useColors } from "@/theme";
 import { PortalHost } from "../../packages/keyboard-sheet";
 
 SplashScreen.preventAutoHideAsync();
@@ -109,8 +111,10 @@ function Gate() {
   else if (limits.length === 0 && !onboardDone)
     overlay = <OnboardingView onDone={() => setOnboardDone(true)} />;
 
+  const c = useColors();
+
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, { backgroundColor: c.bg }]}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
@@ -136,9 +140,11 @@ export default function RootLayout() {
     JetBrainsMono_600SemiBold,
   });
 
-  // Align layout direction (LTR/RTL) with the saved language before the UI shows.
+  // Align layout direction (LTR/RTL) with the saved language before the UI shows,
+  // and restore the saved theme mode (device / light / dark).
   useEffect(() => {
     useAppStore.getState().hydrateLocale();
+    useAppStore.getState().hydrateThemeMode();
   }, []);
 
   // Hold the native splash until fonts are ready (keeps the first paint correct).
@@ -149,7 +155,7 @@ export default function RootLayout() {
       <KeyboardProvider>
         <SafeAreaProvider>
           <ToastProvider>
-            <StatusBar style="dark" />
+            <ThemedStatusBar />
             <Gate />
             <PortalHost />
           </ToastProvider>
@@ -157,6 +163,14 @@ export default function RootLayout() {
       </KeyboardProvider>
     </GestureHandlerRootView>
   );
+}
+
+// Light icons on the dark theme, dark icons on the light theme.
+function ThemedStatusBar() {
+  const mode = useAppStore((s) => s.themeMode);
+  const scheme = useColorScheme();
+  const isDark = mode === "dark" || (mode === "device" && scheme === "dark");
+  return <StatusBar style={isDark ? "light" : "dark"} />;
 }
 
 const styles = StyleSheet.create({

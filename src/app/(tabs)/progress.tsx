@@ -25,7 +25,7 @@ import {
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, spacing } from "@/theme";
+import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
 const BAD = "#C0392B";
 const HIST_SOFT = "rgba(46,204,113,0.3)";
@@ -38,6 +38,8 @@ const RANGES: { key: string; value: number | null }[] = [
 
 export default function ProgressScreen() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const { logs, limits, purchases, settings } = useAppStore();
   const dsh = settings.dayStartHour;
   const cur = settings.currencySymbol;
@@ -217,6 +219,7 @@ function Metric({
   trailing?: ReactNode;
   divider?: boolean;
 }) {
+  const styles = useStyles();
   return (
     <View style={[styles.metricCell, divider && styles.metricCellDivider]}>
       <View style={styles.metricTop}>
@@ -237,6 +240,7 @@ function Metric({
 }
 
 function Section({ title, sub, children }: { title: string; sub?: string; children: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.section}>
       <Text style={styles.eyebrow}>{title}</Text>
@@ -247,6 +251,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
 }
 
 function Legend({ color, label }: { color: string; label: string }) {
+  const styles = useStyles();
   return (
     <View style={styles.legendItem}>
       <View style={[styles.dot, { backgroundColor: color }]} />
@@ -255,7 +260,8 @@ function Legend({ color, label }: { color: string; label: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   title: { color: green.text, fontSize: 22, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
 
   rangeRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
@@ -305,4 +311,5 @@ const styles = StyleSheet.create({
     borderTopColor: green.border,
   },
   spendText: { color: green.textDim, flex: 1, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
-});
+  }),
+);

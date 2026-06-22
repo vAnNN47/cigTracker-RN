@@ -123,8 +123,8 @@ export const NumberPad = forwardRef<NumberPadRef, NumberPadProps>(function Numbe
           )}
         </View>
         <View style={styles.actions}>
-          <Pressable onPress={() => setOpts(null)} hitSlop={10}>
-            <Text style={[styles.cancel, { color: textDim }]}>{cancelLabel}</Text>
+          <Pressable style={[styles.cancel, { backgroundColor: surfaceHigh }]} onPress={() => setOpts(null)}>
+            <Text style={[styles.cancelText, { color: textDim }]}>{cancelLabel}</Text>
           </Pressable>
           <Pressable style={[styles.save, { backgroundColor: accent }]} onPress={submit}>
             <Text style={[styles.saveText, { color: onAccent }]}>{saveLabel}</Text>
@@ -144,8 +144,10 @@ const styles = StyleSheet.create({
   cell: { width: "31%", height: 54, marginBottom: 10 },
   key: { borderRadius: 14, alignItems: "center", justifyContent: "center" },
   keyText: { fontSize: 22, fontWeight: "600" },
-  actions: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 4 },
-  cancel: { fontSize: 16, paddingVertical: 8, paddingHorizontal: 8 },
-  save: { borderRadius: 14, paddingVertical: 12, paddingHorizontal: 28 },
+  // Two balanced buttons with breathing room (no longer pinned to the edges).
+  actions: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 },
+  cancel: { flex: 1, alignItems: "center", justifyContent: "center", borderRadius: 16, paddingVertical: 14 },
+  cancelText: { fontSize: 16, fontWeight: "600" },
+  save: { flex: 1, alignItems: "center", justifyContent: "center", borderRadius: 16, paddingVertical: 14 },
   saveText: { fontSize: 16, fontWeight: "600" },
 });

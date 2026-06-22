@@ -8,7 +8,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
-import { fonts, green, radius, spacing } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing } from "@/theme";
 
 interface ToastOptions {
   message: string;
@@ -30,6 +30,7 @@ export function useToast(): ToastContextValue {
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   const [toast, setToast] = useState<ToastOptions | null>(null);
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(12)).current;
@@ -85,24 +86,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { position: "absolute", left: spacing.lg, right: spacing.lg },
-  toast: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: radius.input,
-    paddingVertical: spacing.md,
-    paddingLeft: spacing.lg,
-    paddingRight: spacing.sm,
-    shadowColor: "#1B2A4A",
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-  message: { flex: 1, color: green.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
-  action: { color: green.green, fontFamily: fonts.bold, padding: spacing.sm },
-});
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
+    wrap: { position: "absolute", left: spacing.lg, right: spacing.lg },
+    toast: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: green.card,
+      borderWidth: 1,
+      borderColor: green.border,
+      borderRadius: radius.input,
+      paddingVertical: spacing.md,
+      paddingLeft: spacing.lg,
+      paddingRight: spacing.sm,
+      shadowColor: "#1B2A4A",
+      shadowOpacity: 0.18,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 8,
+    },
+    message: { flex: 1, color: green.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
+    action: { color: green.green, fontFamily: fonts.bold, padding: spacing.sm },
+  }),
+);

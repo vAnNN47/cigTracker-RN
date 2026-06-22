@@ -7,15 +7,16 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { randomUUID } from "expo-crypto";
+import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useToast } from "@/components/Toast";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { cigsInPurchase, PACKS_PER_CARTON, PackUnit, Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, radius, spacing, type } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../packages/keyboard-sheet";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
@@ -30,6 +31,8 @@ export interface AddPurchaseSheetRef {
 export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
   function AddPurchaseSheet(_props, ref) {
     const s = useStrings();
+    const green = useColors();
+    const styles = useStyles();
     const toast = useToast();
     const addPurchase = useAppStore((st) => st.addPurchase);
     const editPurchase = useAppStore((st) => st.editPurchase);
@@ -77,14 +80,20 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
 
     const save = async () => {
       setSaving(true);
-      if (editing) {
-        await editPurchase(editing.id, { unit, quantity, price });
-      } else {
-        await addPurchase({ id: randomUUID(), unit, quantity, price, boughtAt: new Date() });
+      try {
+        if (editing) {
+          await editPurchase(editing.id, { unit, quantity, price });
+        } else {
+          await addPurchase({ id: randomUUID(), unit, quantity, price, boughtAt: new Date() });
+        }
+        // Match the add-cigarette flow: success haptic, dismiss, then toast.
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        sheetRef.current?.dismiss();
+        toast.show({ message: s.savedToast });
+      } catch (e) {
+        Alert.alert(`${s.couldNotSave}: ${e}`);
+        setSaving(false);
       }
-      setSaving(false);
-      sheetRef.current?.dismiss();
-      toast.show({ message: s.savedToast });
     };
 
     const remove = () => {
@@ -179,7 +188,7 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
           <Text style={styles.hint}>{s.cigsInThis(cigs)}</Text>
 
           <Pressable style={[styles.button, saving && styles.buttonDisabled]} onPress={save} disabled={saving}>
-            <Text style={styles.buttonText}>{saving ? "…" : s.save}</Text>
+            {saving ? <ActivityIndicator color={green.onGreen} /> : <Text style={styles.buttonText}>{s.save}</Text>}
           </Pressable>
         </View>
 
@@ -201,6 +210,7 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
 );
 
 function EditRow({ label, value, onPress }: { label: string; value: string; onPress: () => void }) {
+  const styles = useStyles();
   return (
     <Pressable onPress={onPress} style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -209,7 +219,8 @@ function EditRow({ label, value, onPress }: { label: string; value: string; onPr
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   card: {
     padding: spacing.md,
     gap: spacing.sm,
@@ -248,4 +259,5 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: green.onGreen, fontFamily: fonts.bold, fontSize: type.body.fontSize },
-});
+  }),
+);

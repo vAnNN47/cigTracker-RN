@@ -11,11 +11,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, radius, spacing, type } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 export function OnboardingView({ onDone }: { onDone: () => void }) {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const settings = useAppStore((st) => st.settings);
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLimit = useAppStore((st) => st.setLimit);
@@ -82,6 +84,8 @@ export function OnboardingView({ onDone }: { onDone: () => void }) {
 }
 
 function PickRow({ label, value, onPress }: { label: string; value: number; onPress: () => void }) {
+  const green = useColors();
+  const styles = useStyles();
   return (
     <View style={{ marginTop: spacing.lg }}>
       <Text style={styles.pickLabel}>{label}</Text>
@@ -93,7 +97,8 @@ function PickRow({ label, value, onPress }: { label: string; value: number; onPr
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: green.bg },
   content: { flexGrow: 1, justifyContent: "center", padding: spacing.xxl, maxWidth: 420, alignSelf: "center", width: "100%" },
   logo: {
@@ -126,4 +131,5 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.6 },
   btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-});
+  }),
+);

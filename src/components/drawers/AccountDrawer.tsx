@@ -8,17 +8,18 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
 import { Alert, I18nManager, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SlideDrawer } from "@/components/SlideDrawer";
-import { textStart } from "@/i18n/rtl";
+import { resolveLang, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/useAppStore";
 import { useDrawerStore } from "@/store/useDrawerStore";
-import { fonts, green, spacing } from "@/theme";
+import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
 const FEEDBACK_EMAIL = "leetbeck@gmail.com";
 const LOREM =
@@ -28,6 +29,9 @@ type Sub = "none" | "language" | "faq" | "privacy" | "terms";
 
 export function AccountDrawer() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
+  const router = useRouter();
   const open = useDrawerStore((st) => st.open) === "account";
   const hide = useDrawerStore((st) => st.hide);
   const dataMode = useAppStore((st) => st.dataMode);
@@ -102,6 +106,18 @@ export function AccountDrawer() {
             )}
           </View>
 
+          {/* Settings — moved here from the main drawer (task 6) */}
+          <View style={styles.settingsCard}>
+            <Row
+              icon="settings"
+              label={s.settings}
+              onPress={() => {
+                hide();
+                router.push("/settings");
+              }}
+            />
+          </View>
+
           <Section title={s.notifications}>
             <Row icon="notifications-none" label={s.notifications} value={s.statusOff} />
           </Section>
@@ -165,49 +181,53 @@ export function AccountDrawer() {
 
 function LanguageList({ onDone }: { onDone: () => void }) {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const locale = useAppStore((st) => st.locale);
   const setLocale = useAppStore((st) => st.setLocale);
-  const langs: { key: "device" | "en" | "he" | "ru" | "ar" | "es"; label: string; ready: boolean }[] = [
-    { key: "device", label: s.device, ready: true },
-    { key: "en", label: s.english, ready: true },
-    { key: "he", label: s.hebrew, ready: true },
-    { key: "ru", label: s.russian, ready: false },
-    { key: "ar", label: s.arabic, ready: false },
-    { key: "es", label: s.spanish, ready: false },
+
+  // No "Device" entry — the chosen (effective) language floats to the top,
+  // highlighted; coming-soon languages stay disabled below (task 19).
+  const effective = locale === "device" ? resolveLang("device") : locale;
+  const ready: { key: "en" | "he"; label: string }[] = [
+    { key: "en", label: s.english },
+    { key: "he", label: s.hebrew },
   ];
+  const orderedReady = [...ready].sort((a, b) => (a.key === effective ? -1 : b.key === effective ? 1 : 0));
+  const soon: { label: string }[] = [{ label: s.russian }, { label: s.arabic }, { label: s.spanish }];
+
   return (
     <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
       <View style={styles.sectionBody}>
-        {langs.map((l) => {
-          const selected = l.ready && locale === l.key;
+        {orderedReady.map((l) => {
+          const selected = effective === l.key;
           return (
             <Pressable
               key={l.key}
               style={styles.langRow}
               onPress={() => {
-                if (!l.ready) {
-                  Alert.alert(s.language, s.comingSoon);
-                  return;
-                }
-                setLocale(l.key as "device" | "en" | "he");
+                setLocale(l.key);
                 onDone();
               }}
             >
-              <Text style={[styles.langLabel, !l.ready && styles.langLabelMuted]}>{l.label}</Text>
-              {selected ? (
-                <MaterialIcons name="check" size={20} color={green.green} />
-              ) : !l.ready ? (
-                <Text style={styles.soon}>{s.comingSoon}</Text>
-              ) : null}
+              <Text style={[styles.langLabel, selected && styles.langLabelSel]}>{l.label}</Text>
+              {selected ? <MaterialIcons name="check" size={20} color={green.green} /> : null}
             </Pressable>
           );
         })}
+        {soon.map((l) => (
+          <Pressable key={l.label} style={styles.langRow} onPress={() => Alert.alert(s.language, s.comingSoon)}>
+            <Text style={[styles.langLabel, styles.langLabelMuted]}>{l.label}</Text>
+            <Text style={styles.soon}>{s.comingSoon}</Text>
+          </Pressable>
+        ))}
       </View>
     </ScrollView>
   );
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -227,6 +247,8 @@ function Row({
   value?: string;
   onPress?: () => void;
 }) {
+  const green = useColors();
+  const styles = useStyles();
   return (
     <Pressable style={styles.row} onPress={onPress} disabled={!onPress}>
       <View style={styles.rowIcon}>
@@ -239,7 +261,8 @@ function Row({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   safe: { flex: 1, backgroundColor: green.bg, paddingHorizontal: spacing.lg },
   header: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.sm },
   iconBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
@@ -262,6 +285,14 @@ const styles = StyleSheet.create({
   signInBtn: { backgroundColor: green.green, borderRadius: 14, paddingHorizontal: spacing.lg, paddingVertical: 8 },
   signInText: { color: green.onGreen, fontSize: 13, fontFamily: fonts.bold },
 
+  settingsCard: {
+    backgroundColor: green.card,
+    borderWidth: 1,
+    borderColor: green.border,
+    borderRadius: 14,
+    overflow: "hidden",
+    marginTop: spacing.lg,
+  },
   section: { marginTop: spacing.xl },
   sectionTitle: {
     color: green.textDim,
@@ -304,8 +335,10 @@ const styles = StyleSheet.create({
     borderBottomColor: green.border,
   },
   langLabel: { color: green.text, fontSize: 16, fontFamily: fonts.semibold, textAlign: textStart },
+  langLabelSel: { color: green.green, fontFamily: fonts.bold },
   langLabelMuted: { color: green.textDim },
   soon: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
 
   doc: { color: green.textSecondary, fontSize: 15, fontFamily: fonts.regular, lineHeight: 24, textAlign: textStart, paddingTop: spacing.sm },
-});
+  }),
+);

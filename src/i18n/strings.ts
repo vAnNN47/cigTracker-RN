@@ -38,6 +38,32 @@ export function makeStrings(he: boolean) {
     thisMonth: he ? "החודש" : "this month",
 
     appTitle: he ? "מעקב סיגריות" : "Cig Tracker",
+    // Community tab
+    communityIntro: he ? "אתם לא לבד במסע הזה." : "You're not alone in this.",
+    communityShareTitle: he ? "שתפו את ההתקדמות שלכם" : "Share your progress",
+    communityShareSub: he ? "ספרו לקהילה איך הולך לכם היום." : "Tell the community how today is going.",
+    communityShareBtn: he ? "כתיבת פוסט" : "Write a post",
+    communityTopics: he ? "נושאים" : "Topics",
+    communityFeed: he ? "פיד הקהילה" : "Community feed",
+    topicMilestones: he ? "אבני דרך" : "Milestones",
+    topicCravings: he ? "התמודדות עם דחף" : "Cravings",
+    topicSavings: he ? "חיסכון" : "Savings",
+    topicSupport: he ? "תמיכה" : "Support",
+    likesN: (n: number) => (he ? `${n} לייקים` : `${n} likes`),
+    repliesN: (n: number) => (he ? `${n} תגובות` : `${n} replies`),
+    communityPosts: he
+      ? [
+          { name: "מאיה", time: "לפני שעתיים", text: "שבוע שלם מתחת למכסה! החשק עדיין מגיע אבל אני נושמת ועובר.", likes: 42, replies: 8 },
+          { name: "דני", time: "לפני 5 שעות", text: "חסכתי 320 ₪ החודש. במקום זה קניתי נעלי ריצה 🏃", likes: 67, replies: 15 },
+          { name: "נועה", time: "אתמול", text: "הטיפ שעזר לי הכי הרבה: לשתות מים בכל פעם שמתחשק. מה עובד לכם?", likes: 31, replies: 23 },
+          { name: "אלכס", time: "לפני יומיים", text: "יום 30 בלי לעבור את המכסה. הריאות מודות לי 💚", likes: 88, replies: 12 },
+        ]
+      : [
+          { name: "Maya", time: "2h ago", text: "A full week under my limit! The cravings still come but I breathe and they pass.", likes: 42, replies: 8 },
+          { name: "Danny", time: "5h ago", text: "Saved $90 this month. Bought running shoes instead 🏃", likes: 67, replies: 15 },
+          { name: "Noa", time: "yesterday", text: "The tip that helped me most: drink water whenever a craving hits. What works for you?", likes: 31, replies: 23 },
+          { name: "Alex", time: "2 days ago", text: "Day 30 without going over my limit. My lungs are thanking me 💚", likes: 88, replies: 12 },
+        ],
     // Drawers
     menu: he ? "תפריט" : "Menu",
     community: he ? "קהילה" : "Community",
@@ -168,6 +194,9 @@ export function makeStrings(he: boolean) {
       ? "היומן מתעד איך הרגשת באותו רגע. ברגע שהיום עובר, ההרגשה מתעמעמת והזיכרון משכתב אותה — לכן הרשומות ננעלות בסוף היום כדי לשמור עליהן כנות. אפשר לכתוב ולערוך רק את רשומות היום."
       : "Your diary captures how you felt in the moment. Once a day passes, that feeling fades and memory reshapes it — so entries lock at the end of the day to keep them honest. You can only write or edit today's entries.",
     gotIt: he ? "הבנתי" : "Got it",
+    readAll: he ? "קרא הכל" : "Read all",
+    showLess: he ? "הצג פחות" : "Show less",
+    copyText: he ? "העתק טקסט" : "Copy text",
 
     // Calendar
     pastLocked: he
@@ -199,6 +228,11 @@ export function makeStrings(he: boolean) {
     // Settings
     language: he ? "שפה" : "Language",
     device: he ? "מכשיר" : "Device",
+    appearance: he ? "מראה" : "Appearance",
+    theme: he ? "ערכת נושא" : "Theme",
+    themeDevice: he ? "מכשיר" : "Device",
+    themeLight: he ? "בהיר" : "Light",
+    themeDark: he ? "כהה" : "Dark",
     english: "English",
     hebrew: "עברית",
     russian: "Русский",
@@ -243,6 +277,10 @@ export function makeStrings(he: boolean) {
       : "Track your smoking and bring it down, gradually.",
     continueWithGoogle: he ? "המשך עם Google" : "Continue with Google",
     signingIn: he ? "מתחבר…" : "Signing in…",
+    agreePrefix: he ? "בהרשמה אתה מסכים ל" : "By signing up you agree to our",
+    agreeAnd: he ? "ול" : "and",
+    chooseLanguage: he ? "בחר שפה" : "Choose language",
+    close: he ? "סגור" : "Close",
 
     // Welcome / choose data mode
     welcomeHeadline: he ? "ברוך הבא למעקב סיגריות" : "Welcome to Cig Tracker",

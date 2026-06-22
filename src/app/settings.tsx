@@ -12,12 +12,12 @@ import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Switch, Text, Vi
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { currentLimit } from "@/domain/logic";
-import { textStart } from "@/i18n/rtl";
+import { resolveLang, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { signOut } from "@/lib/googleAuth";
 import { AppSettings } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, radius, spacing, type } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 const COMMIT_MS = 400;
@@ -25,6 +25,8 @@ const BAD = "#C0392B";
 
 export default function SettingsScreen() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const router = useRouter();
   const backIcon = I18nManager.isRTL ? "chevron-right" : "chevron-left";
   const { limits, settings, locale } = useAppStore();
@@ -33,6 +35,8 @@ export default function SettingsScreen() {
   const setLimit = useAppStore((st) => st.setLimit);
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLocale = useAppStore((st) => st.setLocale);
+  const themeMode = useAppStore((st) => st.themeMode);
+  const setThemeMode = useAppStore((st) => st.setThemeMode);
   const pad = useRef<NumberPadRef>(null);
 
   // Local drafts — the UI reads these so steps are instant; persistence is debounced.
@@ -88,23 +92,31 @@ export default function SettingsScreen() {
   const priceText = `${cur}${Number.isInteger(form.pricePerPack) ? form.pricePerPack.toFixed(0) : form.pricePerPack.toFixed(2)}`;
   const planArrow = I18nManager.isRTL ? "arrow-back" : "arrow-forward";
 
-  const langs: { key: "device" | "en" | "he"; label: string }[] = [
-    { key: "device", label: s.device },
+  // No "Device" option — language follows the device until the user explicitly
+  // picks one; the chosen (effective) language is shown on top, highlighted.
+  const langs: { key: "en" | "he"; label: string }[] = [
     { key: "en", label: s.english },
     { key: "he", label: s.hebrew },
   ];
-  const currentLangLabel = langs.find((l) => l.key === locale)?.label ?? s.device;
-  const otherLangs = langs.filter((l) => l.key !== locale);
+  const effectiveLang = locale === "device" ? resolveLang("device") : locale;
+  const currentLangLabel = langs.find((l) => l.key === effectiveLang)?.label ?? s.english;
+  const otherLangs = langs.filter((l) => l.key !== effectiveLang);
 
-  const confirmLang = (l: { key: "device" | "en" | "he"; label: string }) =>
+  const confirmLang = (l: { key: "en" | "he"; label: string }) =>
     Alert.alert(
       s.language,
-      `${locale === "he" ? "האם אתה בטוח שברצונך לשנות שפה ל-" : "Are you sure you want to change the language to "}${l.label}?`,
+      `${s.he ? "האם אתה בטוח שברצונך לשנות שפה ל-" : "Are you sure you want to change the language to "}${l.label}?`,
       [
         { text: s.cancel, style: "cancel" },
-        { text: locale === "he" ? "כן" : "Yes", onPress: () => setLocale(l.key) },
+        { text: s.he ? "כן" : "Yes", onPress: () => setLocale(l.key) },
       ],
     );
+
+  const themeOptions: { key: "device" | "light" | "dark"; label: string }[] = [
+    { key: "device", label: s.themeDevice },
+    { key: "light", label: s.themeLight },
+    { key: "dark", label: s.themeDark },
+  ];
 
   const confirmSignOut = () =>
     Alert.alert(s.signOutTitle, s.signOutBody, [
@@ -255,10 +267,32 @@ export default function SettingsScreen() {
           </View>
         </Group>
 
-        {/* Language — dropdown */}
+        {/* Appearance — light / dark / device theme (task: dark theme) */}
+        <Group title={s.appearance}>
+          <Text style={[styles.rowLabel, { marginBottom: spacing.sm }]}>{s.theme}</Text>
+          <View style={styles.themeRow}>
+            {themeOptions.map((o) => {
+              const sel = themeMode === o.key;
+              return (
+                <Pressable
+                  key={o.key}
+                  onPress={() => setThemeMode(o.key)}
+                  style={[styles.themeSeg, { backgroundColor: sel ? green.green : green.cardSoft }]}
+                >
+                  <Text style={{ color: sel ? green.onGreen : green.textDim, fontFamily: fonts.semibold, fontSize: 13 }}>
+                    {o.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </Group>
+
+        {/* Language — dropdown; selected sits on top, highlighted */}
         <Group title={s.language}>
           <Pressable style={styles.row} onPress={() => setLangOpen((v) => !v)}>
-            <Text style={[styles.rowLabel, { flex: 1 }]}>{currentLangLabel}</Text>
+            <Text style={[styles.langCurrent, { flex: 1 }]}>{currentLangLabel}</Text>
+            <MaterialIcons name="check" size={18} color={green.green} />
             <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={green.textDim} />
           </Pressable>
           {langOpen &&
@@ -311,6 +345,7 @@ export default function SettingsScreen() {
 }
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={{ marginBottom: spacing.lg }}>
       <Text style={styles.groupTitle}>{title}</Text>
@@ -340,6 +375,8 @@ function StepperRow({
   onChange: (v: number) => void;
   onPressValue: () => void;
 }) {
+  const green = useColors();
+  const styles = useStyles();
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100));
   return (
     <View style={styles.row}>
@@ -363,10 +400,12 @@ function StepperRow({
 }
 
 function Divider() {
+  const styles = useStyles();
   return <View style={styles.divider} />;
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   topBar: { flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   backBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
   topTitle: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
@@ -417,6 +456,10 @@ const styles = StyleSheet.create({
   segmentRow: { flexDirection: "row", gap: spacing.sm },
   curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
 
+  themeRow: { flexDirection: "row", gap: spacing.sm, paddingBottom: spacing.sm },
+  themeSeg: { flex: 1, alignItems: "center", paddingVertical: 12, borderRadius: radius.chip },
+  langCurrent: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold, textAlign: textStart },
+
   signOut: {
     flexDirection: "row",
     alignItems: "center",
@@ -437,4 +480,5 @@ const styles = StyleSheet.create({
     borderTopColor: green.border,
   },
   switchText: { color: green.green, fontFamily: fonts.bold, fontSize: 15 },
-});
+  }),
+);

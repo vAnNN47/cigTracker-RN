@@ -8,7 +8,7 @@ import { Tabs } from "expo-router";
 import { Pressable } from "react-native";
 
 import { useStrings } from "@/i18n/useStrings";
-import { fonts, green } from "@/theme";
+import { fonts, useColors } from "@/theme";
 
 // Small, contained press feedback (the default Android ripple fills the whole
 // tab slot — this keeps it a subtle circle behind the icon).
@@ -24,12 +24,15 @@ function TabButton(props: any) {
 
 export default function TabsLayout() {
   const s = useStrings();
+  const green = useColors();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: green.green,
+        // Active = vivid bright green so it clearly stands out from the muted
+        // inactive tint (the old deep-green active read too close to inactive).
+        tabBarActiveTintColor: green.greenBright,
         tabBarInactiveTintColor: green.textDim,
         tabBarLabelStyle: { fontSize: 10, fontFamily: fonts.medium },
         tabBarStyle: {
@@ -54,6 +57,13 @@ export default function TabsLayout() {
         options={{
           title: s.diaryTab,
           tabBarIcon: ({ color }) => <MaterialIcons name="list" color={color} size={21} />,
+        }}
+      />
+      <Tabs.Screen
+        name="community"
+        options={{
+          title: s.community,
+          tabBarIcon: ({ color }) => <MaterialIcons name="forum" color={color} size={21} />,
         }}
       />
       <Tabs.Screen

@@ -8,7 +8,14 @@
  *
  * Usage:
  *   import { colors, fonts, radius, spacing } from "@/theme";
+ *
+ * Dark theme: screens read their palette through `useColors()` (light `green`
+ * or `dark`, resolved from the persisted theme mode + device scheme) and build
+ * their StyleSheet via `makeUseStyles((green) => ...)`, so a single import
+ * swap turns any screen theme-reactive without renaming every `green.x` ref.
  */
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useAppStore } from "@/store/useAppStore";
 
 export const colors = {
   // Surfaces
@@ -79,6 +86,34 @@ export const green = {
   ringStroke: "#C9DCF3",
 } as const;
 
+/**
+ * Dark counterpart of the `green` palette — identical keys, so any screen that
+ * reads its colors through `useColors()` flips cleanly. Tuned to the same calm
+ * mint-green character: vivid accent on deep, faintly-green near-black surfaces.
+ */
+export const dark = {
+  bg: "#0E1411", // app surface
+  card: "#161D18", // raised cards
+  cardSoft: "#1C2620", // soft cards (quote, pills, buttons-in-card)
+  border: "rgba(173,200,180,0.16)", // hairline card border
+
+  text: "#EAF1EC", // primary
+  textSecondary: "#BCC8BF",
+  textDim: "#7C887F", // muted
+
+  green: "#46D17F", // accent — titles, numbers, icons, primary button
+  greenBright: "#2ECC71", // bright green — savings card, active tab
+  greenDeep: "#062B1A", // text/icon on bright green
+  onGreen: "#04231A", // text on the (light) accent button
+  dot: "#4AE183", // recent-entry dot
+
+  ring: "#15241C", // hero circle fill
+  ringStroke: "#284536",
+} as const;
+
+/** A theme palette — light (`green`) and `dark` share this shape. */
+export type Palette = { [K in keyof typeof green]: string };
+
 /** Font families (loaded via @expo-google-fonts in the root layout). */
 export const fonts = {
   regular: "HankenGrotesk_400Regular",
@@ -124,3 +159,41 @@ export const theme = { colors, fonts, radius, spacing, type } as const;
 
 export type AppColors = typeof colors;
 export type Theme = typeof theme;
+
+export type ThemeMode = "device" | "light" | "dark";
+
+/**
+ * The active palette for the current theme mode. "device" follows the OS color
+ * scheme; "light"/"dark" force it. Re-resolves (and re-renders consumers) when
+ * the mode or the device scheme changes.
+ */
+export function useIsDark(): boolean {
+  const mode = useAppStore((s) => s.themeMode);
+  const scheme = useColorScheme();
+  return mode === "dark" || (mode === "device" && scheme === "dark");
+}
+
+export function useColors(): Palette {
+  return (useIsDark() ? dark : green) as Palette;
+}
+
+/**
+ * Build a theme-reactive StyleSheet hook. The factory runs at most once per
+ * palette (cached by the stable palette object), so calling the returned hook
+ * from many components is cheap.
+ *
+ *   const useStyles = makeUseStyles((green) => StyleSheet.create({ ... }));
+ *   function Screen() { const styles = useStyles(); ... }
+ */
+export function makeUseStyles<T>(factory: (c: Palette) => T): () => T {
+  const cache = new WeakMap<Palette, T>();
+  return function useStyles(): T {
+    const c = useColors();
+    let built = cache.get(c);
+    if (!built) {
+      built = factory(c);
+      cache.set(c, built);
+    }
+    return built;
+  };
+}

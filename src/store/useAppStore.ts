@@ -19,6 +19,7 @@ import { AppSettings, DailyLimit, DEFAULT_SETTINGS, LocationTag, Purchase, Smoke
 
 const LOCALE_KEY = "cigtracker.locale";
 const MODE_KEY = "cigtracker.dataMode";
+const THEME_KEY = "cigtracker.themeMode";
 
 interface AppStore {
   // raw state
@@ -30,12 +31,15 @@ interface AppStore {
   purchases: Purchase[];
   settings: AppSettings;
   locale: "device" | "en" | "he"; // UI language override (RTL handling: Step 7)
+  themeMode: "device" | "light" | "dark"; // dark-theme override (persisted on-device)
 
   // actions
   setDataMode: (mode: DataMode | null) => Promise<void>;
   hydrateDataMode: () => Promise<void>;
   setLocale: (locale: "device" | "en" | "he") => void;
   hydrateLocale: () => Promise<void>;
+  setThemeMode: (mode: "device" | "light" | "dark") => void;
+  hydrateThemeMode: () => Promise<void>;
   load: () => Promise<void>;
   refresh: () => Promise<void>;
   addSmoke: (args: { tag: LocationTag; comment?: string; diary?: string; smokedAt?: Date }) => Promise<SmokeLog>;
@@ -63,6 +67,7 @@ export const useAppStore = create<AppStore>()((set, get) => ({
   purchases: [],
   settings: { ...DEFAULT_SETTINGS },
   locale: "device",
+  themeMode: "device",
 
   // Choose (or clear) the data backend. Persists the choice and swaps the repo.
   // Pass null to "forget" the choice and return to the welcome screen.
@@ -97,6 +102,22 @@ export const useAppStore = create<AppStore>()((set, get) => ({
     const locale = saved ?? "device";
     if (saved) set({ locale });
     if (applyDirection(locale)) reloadForDirection();
+  },
+
+  // Pick the theme (device / light / dark). Persisted; takes effect immediately.
+  setThemeMode: (themeMode) => {
+    set({ themeMode });
+    AsyncStorage.setItem(THEME_KEY, themeMode).catch(() => {});
+  },
+
+  // Read the saved theme mode on boot.
+  hydrateThemeMode: async () => {
+    const saved = (await AsyncStorage.getItem(THEME_KEY)) as
+      | "device"
+      | "light"
+      | "dark"
+      | null;
+    if (saved) set({ themeMode: saved });
   },
 
   load: async () => {

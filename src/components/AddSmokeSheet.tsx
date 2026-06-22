@@ -19,7 +19,7 @@ import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { DEFAULT_TAG, LocationTag, SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, radius, spacing, type } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, type, useColors, useIsDark } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../packages/keyboard-sheet";
 
@@ -36,6 +36,9 @@ type TagDef = { key: LocationTag; label: string; icon: keyof typeof MaterialIcon
 export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
   function AddSmokeSheet({ onLogged }, ref) {
     const s = useStrings();
+    const green = useColors();
+    const styles = useStyles();
+    const isDark = useIsDark();
     const addSmoke = useAppStore((st) => st.addSmoke);
     const sheetRef = useRef<KeyboardSheetRef>(null);
 
@@ -138,7 +141,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
                       value={smokedAt}
                       display="compact"
                       accentColor={green.green}
-                      themeVariant="light"
+                      themeVariant={isDark ? "dark" : "light"}
                       onValueChange={(_e, d) => setSmokedAt(d)}
                       style={styles.timePicker}
                     />
@@ -195,7 +198,8 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
   },
 );
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   card: { padding: spacing.md, gap: spacing.sm },
   title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.xs },
   label: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.semibold, textAlign: textStart },
@@ -280,4 +284,5 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-});
+  }),
+);

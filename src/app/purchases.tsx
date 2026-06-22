@@ -16,7 +16,7 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, green, radius, spacing } from "@/theme";
+import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
 
 interface DayGroup {
   key: string;
@@ -27,6 +27,8 @@ interface DayGroup {
 
 export default function PurchasesScreen() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const router = useRouter();
   const { purchases, settings } = useAppStore();
   const purchaseRef = useRef<AddPurchaseSheetRef>(null);
@@ -110,7 +112,8 @@ export default function PurchasesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -164,4 +167,5 @@ const styles = StyleSheet.create({
   rowTitle: { color: green.text, fontFamily: fonts.semibold, fontSize: 15, textAlign: textStart },
   rowSub: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   price: { color: green.text, fontFamily: fonts.monoMedium, fontSize: 15 },
-});
+  }),
+);

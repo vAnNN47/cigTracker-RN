@@ -1,16 +1,19 @@
 /**
- * Today — "v2" light/green. Header + sub-headers scroll with the page (so the
- * pull-to-refresh spinner opens its own space above them). The hero circle is
- * the primary action: it gently pulses and, when tapped, opens the log sheet.
- * The ring shows count-up (smoked / allowance) or count-down (remaining first)
- * per the Settings "count down" toggle. Below: streak pill, weekly-savings card,
- * recent-log card (last 6h, up to 5; dot marks notes), and a momentum quote.
+ * Today — "v2" light/dark themed. Header + sub-headers scroll with the page (so
+ * the pull-to-refresh spinner opens its own space above them). The hero circle
+ * is the primary action: it gently pulses, carries a "+" badge so it clearly
+ * reads as "add a cigarette", and opens the log sheet when tapped. The ring
+ * shows count-up (smoked / allowance) or count-down (remaining first) per the
+ * Settings "count down" toggle. When the hero scrolls out of view a floating "+"
+ * button fades in so logging is always one tap away. Below: streak pill,
+ * weekly-savings card, recent-log card (last 6h, up to 5; dot marks notes), and
+ * a momentum quote.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
 import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
@@ -23,14 +26,17 @@ import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { useDrawerStore } from "@/store/useDrawerStore";
-import { fonts, green, spacing } from "@/theme";
+import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
 const HOUR = 60 * 60 * 1000;
 
 export default function TodayScreen() {
   const s = useStrings();
+  const green = useColors();
+  const styles = useStyles();
   const toast = useToast();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const { logs, limits, purchases, settings } = useAppStore();
   const deleteLog = useAppStore((st) => st.deleteLog);
@@ -66,6 +72,20 @@ export default function TodayScreen() {
     return () => loop.stop();
   }, [pulse]);
 
+  // Floating add button: fades in once the hero circle has scrolled away, so the
+  // user never has to scroll back up to log (task: pinned add button).
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [fabShown, setFabShown] = useState(false);
+  useEffect(() => {
+    const id = scrollY.addListener(({ value }) => {
+      const v = value > 300;
+      setFabShown((prev) => (prev === v ? prev : v));
+    });
+    return () => scrollY.removeListener(id);
+  }, [scrollY]);
+  const fabOpacity = scrollY.interpolate({ inputRange: [240, 320], outputRange: [0, 1], extrapolate: "clamp" });
+  const fabScale = scrollY.interpolate({ inputRange: [240, 320], outputRange: [0.8, 1], extrapolate: "clamp" });
+
   // Weekly savings (matches the "חיסכון שבועי" card).
   const cur = settings.currencySymbol;
   const money = (n: number) => `${cur}${Number.isInteger(n) ? n.toFixed(0) : n.toFixed(2)}`;
@@ -95,32 +115,46 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
-      {/* Thin top bar: burger (start) + avatar (end) */}
+      {/* Thin top bar: burger (start) + app title + avatar (end) */}
       <View style={styles.topBar}>
         <Pressable onPress={() => showDrawer("main")} hitSlop={8} style={styles.topIcon}>
           <MaterialIcons name="menu" size={26} color={green.green} />
         </Pressable>
+        <Text style={styles.topTitle}>{s.appTitle}</Text>
         <Pressable onPress={() => showDrawer("account")} hitSlop={8} style={styles.topIcon}>
           <MaterialIcons name="account-circle" size={28} color={green.green} />
         </Pressable>
       </View>
 
-      <RefreshScroll onRefresh={refresh}>
+      <Animated.ScrollView
+        style={{ backgroundColor: green.bg }}
+        contentContainerStyle={{ paddingTop: spacing.lg, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
+        alwaysBounceVertical
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        refreshControl={<RefreshSpinner onRefresh={refresh} tint={green.green} />}
+      >
         {/* Header (scrolls with the page) */}
         <Text style={styles.brand}>{s.reduceTitle}</Text>
         <Text style={styles.impact}>{s.todayImpact}</Text>
         <Text style={styles.momentum}>{s.keepMomentum}</Text>
 
-        {/* Hero circle — tap to log */}
+        {/* Hero circle — tap to log (the "+" badge signals it adds a cigarette) */}
         <View style={styles.heroWrap}>
-          <Pressable onPress={() => addRef.current?.present()}>
+          <Pressable onPress={() => addRef.current?.present()} accessibilityLabel={s.addCigarette}>
             <Animated.View style={[styles.hero, { transform: [{ scale: pulse }] }]}>
               <Text style={styles.heroCount}>{heroCount}</Text>
               <Text style={styles.heroLabel}>{heroLabel}</Text>
               <Text style={styles.heroLeft}>{heroSub}</Text>
             </Animated.View>
+            <View style={styles.heroPlus}>
+              <MaterialIcons name="add" size={26} color={green.onGreen} />
+            </View>
           </Pressable>
-          <Text style={styles.tapHint}>{s.tapToLog}</Text>
+          <View style={styles.tapHintRow}>
+            <MaterialIcons name="touch-app" size={14} color={green.textDim} />
+            <Text style={styles.tapHint}>{s.tapToLog}</Text>
+          </View>
         </View>
 
         {/* Streak pill */}
@@ -191,7 +225,17 @@ export default function TodayScreen() {
             <MaterialIcons name="lightbulb-outline" size={20} color={green.green} />
           </View>
         </View>
-      </RefreshScroll>
+      </Animated.ScrollView>
+
+      {/* Floating add button (appears when the hero is scrolled away) */}
+      <Animated.View
+        pointerEvents={fabShown ? "box-none" : "none"}
+        style={[styles.fabWrap, { bottom: insets.bottom + 76, opacity: fabOpacity, transform: [{ scale: fabScale }] }]}
+      >
+        <Pressable style={styles.fab} onPress={() => addRef.current?.present()} accessibilityLabel={s.addCigarette}>
+          <MaterialIcons name="add" size={28} color={green.onGreen} />
+        </Pressable>
+      </Animated.View>
 
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
       <AddPurchaseSheet ref={purchaseRef} />
@@ -200,7 +244,8 @@ export default function TodayScreen() {
   );
 }
 
-function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onRefresh: () => void | Promise<void> }) {
+// Pull-to-refresh control (kept separate so the spinner owns its own state).
+function RefreshSpinner({ onRefresh, tint }: { onRefresh: () => void | Promise<void>; tint: string }) {
   const [refreshing, setRefreshing] = useState(false);
   const handle = async () => {
     setRefreshing(true);
@@ -210,138 +255,161 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
       setRefreshing(false);
     }
   };
-  return (
-    <ScrollView
-      style={{ backgroundColor: green.bg }}
-      contentContainerStyle={{ paddingTop: spacing.lg, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
-      alwaysBounceVertical
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handle}
-          tintColor={green.green}
-          colors={[green.green]}
-        />
-      }
-    >
-      {children}
-    </ScrollView>
-  );
+  return <RefreshControl refreshing={refreshing} onRefresh={handle} tintColor={tint} colors={[tint]} />;
 }
 
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 22,
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.xs,
-  },
-  topIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
-  brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
-  impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
-  momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
+    topBar: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 22,
+      paddingTop: spacing.xs,
+      paddingBottom: spacing.xs,
+    },
+    topIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+    topTitle: { flex: 1, color: green.text, fontSize: 16, fontFamily: fonts.semibold, textAlign: "center" },
+    brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
+    impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
+    momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },
 
-  heroWrap: { alignItems: "center", marginTop: spacing.xl },
-  hero: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: green.ring,
-    borderWidth: 1,
-    borderColor: green.ringStroke,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#1B2A4A",
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  heroCount: { color: green.green, fontSize: 44, fontFamily: fonts.monoSemibold },
-  heroLabel: { color: green.green, fontSize: 14, fontFamily: fonts.medium, marginTop: 4 },
-  heroLeft: { color: green.green, fontSize: 14, fontFamily: fonts.semibold, marginTop: 2 },
-  tapHint: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.md },
+    heroWrap: { alignItems: "center", marginTop: spacing.xl },
+    hero: {
+      width: 220,
+      height: 220,
+      borderRadius: 110,
+      backgroundColor: green.ring,
+      borderWidth: 1,
+      borderColor: green.ringStroke,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#1B2A4A",
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 3,
+    },
+    heroCount: { color: green.green, fontSize: 44, fontFamily: fonts.monoSemibold },
+    heroLabel: { color: green.green, fontSize: 14, fontFamily: fonts.medium, marginTop: 4 },
+    heroLeft: { color: green.green, fontSize: 14, fontFamily: fonts.semibold, marginTop: 2 },
+    // "+" badge pinned to the bottom of the ring so the circle clearly reads as
+    // the add-a-cigarette action.
+    heroPlus: {
+      position: "absolute",
+      bottom: -6,
+      alignSelf: "center",
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: green.green,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 3,
+      borderColor: green.bg,
+      shadowColor: "#1B2A4A",
+      shadowOpacity: 0.18,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 4,
+    },
+    tapHintRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: spacing.lg },
+    tapHint: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
 
-  streakWrap: { alignItems: "center", marginTop: spacing.lg },
-  streakPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: green.cardSoft,
-    borderRadius: 999,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  streakText: { color: green.green, fontSize: 13, fontFamily: fonts.semibold },
+    streakWrap: { alignItems: "center", marginTop: spacing.lg },
+    streakPill: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: green.cardSoft,
+      borderRadius: 999,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+    streakText: { color: green.green, fontSize: 13, fontFamily: fonts.semibold },
 
-  saveCard: {
-    backgroundColor: green.greenBright,
-    borderRadius: 24,
-    padding: spacing.xl,
-    marginTop: spacing.xl,
-  },
-  saveTop: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  saveIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "rgba(0,80,39,0.12)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveLabel: { color: green.greenDeep, fontSize: 14, fontFamily: fonts.semibold, textAlign: textStart },
-  saveValue: { color: green.greenDeep, fontSize: 32, fontFamily: fonts.bold, marginTop: spacing.sm, textAlign: textStart },
-  saveActions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
-  saveBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: green.bg,
-    borderRadius: 17,
-    paddingVertical: 11,
-  },
-  saveBtnText: { color: green.greenDeep, fontSize: 13, fontFamily: fonts.bold },
+    saveCard: {
+      backgroundColor: green.greenBright,
+      borderRadius: 24,
+      padding: spacing.xl,
+      marginTop: spacing.xl,
+    },
+    saveTop: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+    saveIcon: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: "rgba(0,80,39,0.12)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    saveLabel: { color: green.greenDeep, fontSize: 14, fontFamily: fonts.semibold, textAlign: textStart },
+    saveValue: { color: green.greenDeep, fontSize: 32, fontFamily: fonts.bold, marginTop: spacing.sm, textAlign: textStart },
+    saveActions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
+    saveBtn: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      backgroundColor: green.bg,
+      borderRadius: 17,
+      paddingVertical: 11,
+    },
+    saveBtnText: { color: green.greenDeep, fontSize: 13, fontFamily: fonts.bold },
 
-  card: {
-    backgroundColor: green.card,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: green.border,
-    padding: spacing.lg,
-    marginTop: spacing.lg,
-  },
-  cardTitle: { color: green.text, fontSize: 16, fontFamily: fonts.bold, marginBottom: spacing.sm, textAlign: textStart },
-  empty: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
-  recentRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingVertical: 12 },
-  recentDivider: { borderTopWidth: 1, borderTopColor: green.border },
-  recentDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: green.dot },
-  recentDotMuted: { backgroundColor: green.border },
-  recentTime: { color: green.text, fontSize: 15, fontFamily: fonts.monoMedium },
-  recentNote: { flex: 1, color: green.green, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
+    card: {
+      backgroundColor: green.card,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: green.border,
+      padding: spacing.lg,
+      marginTop: spacing.lg,
+    },
+    cardTitle: { color: green.text, fontSize: 16, fontFamily: fonts.bold, marginBottom: spacing.sm, textAlign: textStart },
+    empty: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
+    recentRow: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingVertical: 12 },
+    recentDivider: { borderTopWidth: 1, borderTopColor: green.border },
+    recentDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: green.dot },
+    recentDotMuted: { backgroundColor: green.border },
+    recentTime: { color: green.text, fontSize: 15, fontFamily: fonts.monoMedium },
+    recentNote: { flex: 1, color: green.green, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
 
-  quoteCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    backgroundColor: green.cardSoft,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: green.border,
-    padding: spacing.lg,
-    marginTop: spacing.lg,
-  },
-  quoteTitle: { color: green.text, fontSize: 15, fontFamily: fonts.bold, textAlign: textStart },
-  quoteText: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
-  quoteIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: green.bg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+    quoteCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      backgroundColor: green.cardSoft,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: green.border,
+      padding: spacing.lg,
+      marginTop: spacing.lg,
+    },
+    quoteTitle: { color: green.text, fontSize: 15, fontFamily: fonts.bold, textAlign: textStart },
+    quoteText: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
+    quoteIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: green.bg,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    fabWrap: { position: "absolute", end: 22 },
+    fab: {
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      backgroundColor: green.green,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#1B2A4A",
+      shadowOpacity: 0.25,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
+  }),
+);

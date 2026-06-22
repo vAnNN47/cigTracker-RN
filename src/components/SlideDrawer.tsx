@@ -6,7 +6,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, I18nManager, Pressable, StyleSheet, View } from "react-native";
 
-import { green } from "@/theme";
+import { makeUseStyles } from "@/theme";
 
 interface SlideDrawerProps {
   open: boolean;
@@ -18,6 +18,7 @@ interface SlideDrawerProps {
 }
 
 export function SlideDrawer({ open, side = "start", forceSide, widthPct = 0.78, onClose, children }: SlideDrawerProps) {
+  const styles = useStyles();
   const screenW = Dimensions.get("window").width;
   const panelW = Math.round(screenW * widthPct);
   const physicalSide: "left" | "right" =
@@ -70,17 +71,19 @@ export function SlideDrawer({ open, side = "start", forceSide, widthPct = 0.78, 
   );
 }
 
-const styles = StyleSheet.create({
-  scrim: { backgroundColor: "rgba(9,29,46,0.45)" },
-  panel: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    backgroundColor: green.bg,
-    shadowColor: "#1B2A4A",
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 16,
-  },
-});
+const useStyles = makeUseStyles((green) =>
+  StyleSheet.create({
+    scrim: { backgroundColor: "rgba(9,29,46,0.45)" },
+    panel: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      backgroundColor: green.bg,
+      shadowColor: "#1B2A4A",
+      shadowOpacity: 0.2,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 0 },
+      elevation: 16,
+    },
+  }),
+);
