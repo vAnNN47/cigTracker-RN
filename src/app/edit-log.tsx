@@ -16,7 +16,7 @@ import { formatTime } from "@/i18n/format";
 import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
 
 export default function EditLogModal() {
   const s = useStrings();
@@ -33,20 +33,13 @@ export default function EditLogModal() {
   const [showPicker, setShowPicker] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Keep the picked time on the entry's own day, never in the future.
-  const clampToLogDay = (picked: Date) => {
-    const base = log?.smokedAt ?? new Date();
-    const d = new Date(base);
-    d.setHours(picked.getHours(), picked.getMinutes(), 0, 0);
-    const now = new Date();
-    return d.getTime() > now.getTime() ? now : d;
-  };
-
   const close = () => router.back();
   const save = async () => {
     if (!log) return close();
     setSaving(true);
-    await editLog(log.id, { comment: comment.trim(), diary: diary.trim(), smokedAt });
+    // Pick any time freely; only prevent a future time at save.
+    const when = smokedAt.getTime() > Date.now() ? new Date() : smokedAt;
+    await editLog(log.id, { comment: comment.trim(), diary: diary.trim(), smokedAt: when });
     close();
   };
 
@@ -58,7 +51,7 @@ export default function EditLogModal() {
         </Pressable>
         <Text style={styles.title}>{s.editEntry}</Text>
         <Pressable onPress={save} hitSlop={8} disabled={saving}>
-          {saving ? <ActivityIndicator color={colors.accent} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
+          {saving ? <ActivityIndicator color={green.green} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
         </Pressable>
       </View>
 
@@ -71,7 +64,7 @@ export default function EditLogModal() {
           {log && (
             <View style={styles.timeRow}>
               <View style={styles.timeLeft}>
-                <MaterialIcons name="schedule" size={16} color={colors.textDim} />
+                <MaterialIcons name="schedule" size={16} color={green.textDim} />
                 <Text style={styles.timeLabel}>{s.timeLabel}</Text>
               </View>
               {Platform.OS === "ios" ? (
@@ -80,16 +73,16 @@ export default function EditLogModal() {
                     mode="time"
                     value={smokedAt}
                     display="compact"
-                    accentColor={colors.accent}
-                    themeVariant="dark"
-                    onValueChange={(_e, d) => setSmokedAt(clampToLogDay(d))}
+                    accentColor={green.green}
+                    themeVariant="light"
+                    onValueChange={(_e, d) => setSmokedAt(d)}
                     style={styles.timePicker}
                   />
                 </View>
               ) : (
                 <Pressable style={styles.timeEditBtn} onPress={() => setShowPicker(true)}>
                   <Text style={styles.timeValue}>{formatTime(smokedAt)}</Text>
-                  <MaterialIcons name="edit" size={14} color={colors.accent} />
+                  <MaterialIcons name="edit" size={14} color={green.green} />
                 </Pressable>
               )}
             </View>
@@ -100,9 +93,9 @@ export default function EditLogModal() {
               value={smokedAt}
               is24Hour
               display="default"
-              accentColor={colors.accent}
+              accentColor={green.green}
               onValueChange={(_e, d) => {
-                setSmokedAt(clampToLogDay(d));
+                setSmokedAt(d);
                 setShowPicker(false);
               }}
               onDismiss={() => setShowPicker(false)}
@@ -114,7 +107,7 @@ export default function EditLogModal() {
             <TextInput
               style={[styles.input, inputAlign]}
               placeholder={s.commentHint}
-              placeholderTextColor={colors.textDim}
+              placeholderTextColor={green.textDim}
               value={comment}
               onChangeText={setComment}
             />
@@ -125,7 +118,7 @@ export default function EditLogModal() {
             <TextInput
               style={[styles.input, styles.diary, inputAlign]}
               placeholder={s.diaryHint}
-              placeholderTextColor={colors.textDim}
+              placeholderTextColor={green.textDim}
               value={diary}
               onChangeText={setDiary}
               multiline
@@ -139,7 +132,7 @@ export default function EditLogModal() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
+  safe: { flex: 1, backgroundColor: green.bg },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -147,14 +140,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    borderBottomColor: green.border,
   },
-  cancel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
-  title: { color: colors.text, fontSize: 17, fontFamily: fonts.bold },
-  saveBtn: { color: colors.accent, fontSize: type.body.fontSize, fontFamily: fonts.bold },
+  cancel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  title: { color: green.text, fontSize: 17, fontFamily: fonts.bold },
+  saveBtn: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold },
   body: { padding: spacing.md },
   form: {
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.card,
+    borderWidth: 1,
+    borderColor: green.border,
     borderRadius: radius.card,
     padding: spacing.md,
     gap: spacing.sm,
@@ -163,7 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surface,
+    backgroundColor: green.cardSoft,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -171,21 +166,21 @@ const styles = StyleSheet.create({
   timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   // Fixed box that clips the native picker so it can't bleed past the row edge.
   timePickerWrap: { width: 112, height: 36, overflow: "hidden", justifyContent: "center" },
-  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
-  timeValue: { color: colors.text, fontFamily: fonts.monoMedium },
+  timeLabel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular },
+  timeValue: { color: green.text, fontFamily: fonts.monoMedium },
   timeEditBtn: { flexDirection: "row", alignItems: "center", gap: 6 },
   // Explicit width so the native SwiftUI picker host doesn't overflow the row.
   timePicker: { width: 112, height: 36 },
   fieldBlock: { gap: spacing.xs },
-  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
+  fieldLabel: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
   input: {
-    backgroundColor: colors.surface,
+    backgroundColor: green.card,
     borderRadius: radius.input,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: green.border,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    color: colors.text,
+    color: green.text,
     fontSize: type.body.fontSize,
     fontFamily: fonts.regular,
     textAlign: textStart,

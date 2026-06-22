@@ -8,7 +8,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
-import { colors, fonts, radius, spacing } from "@/theme";
+import { fonts, green, radius, spacing } from "@/theme";
 
 interface ToastOptions {
   message: string;
@@ -90,17 +90,19 @@ const styles = StyleSheet.create({
   toast: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.card,
+    borderWidth: 1,
+    borderColor: green.border,
     borderRadius: radius.input,
     paddingVertical: spacing.md,
     paddingLeft: spacing.lg,
     paddingRight: spacing.sm,
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
+    shadowColor: "#1B2A4A",
+    shadowOpacity: 0.18,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
-  message: { flex: 1, color: colors.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
-  action: { color: colors.accent, fontFamily: fonts.bold, padding: spacing.sm },
+  message: { flex: 1, color: green.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
+  action: { color: green.green, fontFamily: fonts.bold, padding: spacing.sm },
 });

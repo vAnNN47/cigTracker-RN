@@ -38,6 +38,30 @@ export function makeStrings(he: boolean) {
     thisMonth: he ? "החודש" : "this month",
 
     appTitle: he ? "מעקב סיגריות" : "Cig Tracker",
+    // Drawers
+    menu: he ? "תפריט" : "Menu",
+    community: he ? "קהילה" : "Community",
+    signedIn: he ? "מחובר" : "Signed in",
+    notSignedIn: he ? "לא מחובר" : "Not signed in",
+    guest: he ? "אורח" : "Guest",
+    notifications: he ? "התראות" : "Notifications",
+    statusOn: he ? "פעיל" : "Enabled",
+    statusOff: he ? "כבוי" : "Disabled",
+    about: he ? "אודות" : "About",
+    version: he ? "גרסה" : "Version",
+    faq: he ? "שאלות נפוצות" : "FAQ",
+    shareApp: he ? "שתף את האפליקציה" : "Share this app",
+    feedback: he ? "משוב" : "Feedback",
+    sendFeedback: he ? "שלח לנו משוב" : "Send us feedback",
+    rateApp: he ? "דרג את האפליקציה" : "Rate this app",
+    troubleshooting: he ? "פתרון בעיות" : "Troubleshooting",
+    privacy: he ? "פרטיות" : "Privacy",
+    privacySettings: he ? "הגדרות פרטיות" : "Privacy settings",
+    privacyPolicy: he ? "מדיניות פרטיות" : "Privacy policy",
+    termsOfService: he ? "תנאי שימוש" : "Terms of service",
+    shareMessage: he
+      ? "אני מפחית עישון עם Cig Tracker 🚭"
+      : "I'm cutting down on smoking with Cig Tracker 🚭",
     // v2 light Today
     reduceTitle: he ? "הפחתת סיגריות" : "Reduce cigarettes",
     todayImpact: he ? "ההשפעה של היום" : "Today's impact",

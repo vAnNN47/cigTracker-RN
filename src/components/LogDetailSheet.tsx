@@ -16,7 +16,7 @@ import { formatTime } from "@/i18n/format";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../packages/keyboard-sheet";
 
@@ -55,8 +55,8 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
       <KeyboardSheet
         ref={sheetRef}
         dismissMode="swipe"
-        backgroundColor={colors.surface}
-        handleColor={colors.line}
+        backgroundColor={green.bg}
+        handleColor={green.border}
         cornerRadius={radius.sheet}
       >
         <View style={styles.card}>
@@ -67,14 +67,14 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
             </View>
             {editable && (
               <Pressable style={styles.pencil} onPress={openEdit} hitSlop={8}>
-                <MaterialIcons name="edit" size={18} color={colors.accent} />
+                <MaterialIcons name="edit" size={18} color={green.green} />
               </Pressable>
             )}
           </View>
 
           <View style={styles.timeRow}>
             <View style={styles.timeLeft}>
-              <MaterialIcons name="schedule" size={16} color={colors.textDim} />
+              <MaterialIcons name="schedule" size={16} color={green.textDim} />
               <Text style={styles.timeLabel}>{s.timeLabel}</Text>
             </View>
             <Text style={styles.timeValue}>{time}</Text>
@@ -94,7 +94,7 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
 
           {!editable && (
             <View style={styles.lockRow}>
-              <MaterialIcons name="lock-outline" size={15} color={colors.textDim} />
+              <MaterialIcons name="lock-outline" size={15} color={green.textDim} />
               <Text style={styles.lockText}>{s.pastLocked}</Text>
               <Pressable onPress={() => Alert.alert(s.whyLockTitle, s.whyLockBody)} hitSlop={8}>
                 <Text style={styles.info}>ⓘ</Text>
@@ -113,13 +113,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   header: { flexDirection: "row", alignItems: "center" },
-  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
-  time: { color: colors.textDim, fontSize: 14, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
+  time: { color: green.textDim, fontSize: 14, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
   pencil: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.accentTint,
+    backgroundColor: green.cardSoft,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -127,29 +127,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.cardSoft,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  timeLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
-  timeValue: { color: colors.text, fontFamily: fonts.monoMedium },
+  timeLabel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
+  timeValue: { color: green.text, fontFamily: fonts.monoMedium },
   fieldCard: {
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.cardSoft,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  fieldLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginBottom: spacing.xs, textAlign: textStart },
+  fieldLabel: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginBottom: spacing.xs, textAlign: textStart },
   readonly: {
-    color: colors.text,
+    color: green.text,
     fontSize: type.body.fontSize,
     fontFamily: fonts.regular,
     textAlign: textStart,
   },
   readonlyDiary: { minHeight: 64 },
   lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.xs },
-  lockText: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, flex: 1, textAlign: textStart },
-  info: { color: colors.textDim, fontSize: 16, fontFamily: fonts.regular },
+  lockText: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, flex: 1, textAlign: textStart },
+  info: { color: green.textDim, fontSize: 16, fontFamily: fonts.regular },
 });

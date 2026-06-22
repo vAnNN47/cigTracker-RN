@@ -15,10 +15,12 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { cigsInPurchase, PACKS_PER_CARTON, PackUnit, Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../packages/keyboard-sheet";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
+
+const BAD = "#C0392B";
 
 export interface AddPurchaseSheetRef {
   // Pass an existing purchase to edit it; omit to add a new one.
@@ -105,8 +107,8 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
       <KeyboardSheet
         ref={sheetRef}
         dismissMode="swipe"
-        backgroundColor={colors.surface}
-        handleColor={colors.line}
+        backgroundColor={green.bg}
+        handleColor={green.border}
         cornerRadius={radius.sheet}
       >
         <View style={styles.card}>
@@ -114,7 +116,7 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
             <Text style={styles.title}>{editing ? s.editPurchase : s.addPurchase}</Text>
             {editing && (
               <Pressable onPress={remove} hitSlop={8} style={styles.deleteBtn}>
-                <MaterialIcons name="delete-outline" size={22} color={colors.bad} />
+                <MaterialIcons name="delete-outline" size={22} color={BAD} />
               </Pressable>
             )}
           </View>
@@ -132,7 +134,7 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
                   }}
                   style={[styles.segBtn, sel && styles.segBtnSel]}
                 >
-                  <Text style={[styles.segText, sel && { color: colors.onAccent }]}>
+                  <Text style={[styles.segText, sel && { color: green.onGreen }]}>
                     {u === "carton" ? s.carton : s.pack}
                   </Text>
                 </Pressable>
@@ -183,12 +185,12 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
 
         <NumberPad
           ref={pad}
-          surface={colors.surface}
-          surfaceHigh={colors.surfaceHigh}
-          text={colors.text}
-          textDim={colors.textDim}
-          accent={colors.accent}
-          onAccent={colors.onAccent}
+          surface={green.card}
+          surfaceHigh={green.cardSoft}
+          text={green.text}
+          textDim={green.textDim}
+          accent={green.green}
+          onAccent={green.onGreen}
           cornerRadius={radius.sheet}
           cancelLabel={s.cancel}
           saveLabel={s.save}
@@ -213,37 +215,37 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
+  title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
   deleteBtn: { padding: 2 },
   segment: {
     flexDirection: "row",
     gap: spacing.sm,
-    backgroundColor: colors.fill,
+    backgroundColor: green.cardSoft,
     borderRadius: radius.chip,
     padding: 4,
   },
   segBtn: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: radius.chip - 2 },
-  segBtnSel: { backgroundColor: colors.accent },
-  segText: { color: colors.textDim, fontFamily: fonts.bold },
+  segBtnSel: { backgroundColor: green.green },
+  segText: { color: green.textDim, fontFamily: fonts.bold },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.cardSoft,
     borderRadius: radius.input,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  rowLabel: { color: colors.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
-  rowValue: { color: colors.text, fontSize: 18, fontFamily: fonts.monoMedium },
-  hint: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginLeft: spacing.xs, textAlign: textStart },
+  rowLabel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
+  rowValue: { color: green.text, fontSize: 18, fontFamily: fonts.monoMedium },
+  hint: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginLeft: spacing.xs, textAlign: textStart },
   button: {
     marginTop: spacing.xs,
-    backgroundColor: colors.accent,
+    backgroundColor: green.green,
     borderRadius: radius.button,
     paddingVertical: 12,
     alignItems: "center",
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: colors.onAccent, fontFamily: fonts.bold, fontSize: type.body.fontSize },
+  buttonText: { color: green.onGreen, fontFamily: fonts.bold, fontSize: type.body.fontSize },
 });

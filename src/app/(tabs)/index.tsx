@@ -22,6 +22,7 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
+import { useDrawerStore } from "@/store/useDrawerStore";
 import { fonts, green, spacing } from "@/theme";
 
 const HOUR = 60 * 60 * 1000;
@@ -38,6 +39,7 @@ export default function TodayScreen() {
   const addRef = useRef<AddSmokeSheetRef>(null);
   const purchaseRef = useRef<AddPurchaseSheetRef>(null);
   const detailRef = useRef<LogDetailSheetRef>(null);
+  const showDrawer = useDrawerStore((st) => st.show);
 
   const dsh = settings.dayStartHour;
   const todayKey = logicalToday(dsh);
@@ -93,6 +95,16 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
+      {/* Thin top bar: burger (start) + avatar (end) */}
+      <View style={styles.topBar}>
+        <Pressable onPress={() => showDrawer("main")} hitSlop={8} style={styles.topIcon}>
+          <MaterialIcons name="menu" size={26} color={green.green} />
+        </Pressable>
+        <Pressable onPress={() => showDrawer("account")} hitSlop={8} style={styles.topIcon}>
+          <MaterialIcons name="account-circle" size={28} color={green.green} />
+        </Pressable>
+      </View>
+
       <RefreshScroll onRefresh={refresh}>
         {/* Header (scrolls with the page) */}
         <Text style={styles.brand}>{s.reduceTitle}</Text>
@@ -218,6 +230,15 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
 }
 
 const styles = StyleSheet.create({
+  topBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 22,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs,
+  },
+  topIcon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
   impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
   momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },

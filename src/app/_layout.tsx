@@ -32,6 +32,8 @@ import { LoginView } from "@/auth/LoginView";
 import { OnboardingView } from "@/auth/OnboardingView";
 import { SplashView } from "@/auth/SplashView";
 import { WelcomeView } from "@/auth/WelcomeView";
+import { AccountDrawer } from "@/components/drawers/AccountDrawer";
+import { MainDrawer } from "@/components/drawers/MainDrawer";
 import { ToastProvider } from "@/components/Toast";
 import { USE_SUPABASE } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
@@ -113,8 +115,15 @@ function Gate() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
         <Stack.Screen name="purchases" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="faq" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="terms" />
       </Stack>
       {overlay && <View style={[StyleSheet.absoluteFill, styles.overlay]}>{overlay}</View>}
+      {/* Slide-in drawers render above everything (incl. the tab bar). */}
+      <MainDrawer />
+      <AccountDrawer />
     </View>
   );
 }

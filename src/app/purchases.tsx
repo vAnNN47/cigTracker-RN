@@ -16,7 +16,7 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing } from "@/theme";
+import { fonts, green, radius, spacing } from "@/theme";
 
 interface DayGroup {
   key: string;
@@ -54,10 +54,10 @@ export default function PurchasesScreen() {
   }, [purchases]);
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
-          <MaterialIcons name={backIcon} size={26} color={colors.text} />
+          <MaterialIcons name={backIcon} size={26} color={green.text} />
         </Pressable>
         <Text style={styles.title}>{s.purchaseHistory}</Text>
       </View>
@@ -87,7 +87,7 @@ export default function PurchasesScreen() {
                       <MaterialIcons
                         name={p.unit === "carton" ? "inventory-2" : "receipt-long"}
                         size={18}
-                        color={colors.textDim}
+                        color={green.textDim}
                       />
                     </View>
                     <View style={{ flex: 1 }}>
@@ -97,7 +97,7 @@ export default function PurchasesScreen() {
                       <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
                     </View>
                     <Text style={styles.price}>{money(p.price)}</Text>
-                    <MaterialIcons name="edit" size={14} color={colors.textDim} style={{ marginStart: spacing.sm }} />
+                    <MaterialIcons name="edit" size={14} color={green.textDim} style={{ marginStart: spacing.sm }} />
                   </Pressable>
                 ))}
               </View>
@@ -119,21 +119,21 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   backBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
-  title: { color: colors.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
-  empty: { color: colors.textDim, fontFamily: fonts.regular, paddingVertical: spacing.xxl, textAlign: "center" },
+  title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
+  empty: { color: green.textDim, fontFamily: fonts.regular, paddingVertical: spacing.xxl, textAlign: "center" },
 
   totalCard: {
-    backgroundColor: colors.surfaceHigh,
+    backgroundColor: green.card,
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: green.border,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },
-  totalLabel: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
-  totalValue: { color: colors.text, fontSize: 28, fontFamily: fonts.monoSemibold, marginTop: 2, textAlign: textStart },
+  totalLabel: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
+  totalValue: { color: green.text, fontSize: 28, fontFamily: fonts.monoSemibold, marginTop: 2, textAlign: textStart },
 
   group: { marginBottom: spacing.lg },
   groupHead: {
@@ -142,26 +142,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: spacing.xs,
   },
-  groupDate: { color: colors.text, fontSize: 15, fontFamily: fonts.bold, textAlign: textStart },
-  groupTotal: { color: colors.textDim, fontSize: 14, fontFamily: fonts.monoMedium },
+  groupDate: { color: green.text, fontSize: 15, fontFamily: fonts.bold, textAlign: textStart },
+  groupTotal: { color: green.textDim, fontSize: 14, fontFamily: fonts.monoMedium },
 
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    borderBottomColor: green.border,
     paddingVertical: spacing.md,
   },
   rowIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: colors.fill,
+    backgroundColor: green.cardSoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  rowTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 15, textAlign: textStart },
-  rowSub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  price: { color: colors.text, fontFamily: fonts.monoMedium, fontSize: 15 },
+  rowTitle: { color: green.text, fontFamily: fonts.semibold, fontSize: 15, textAlign: textStart },
+  rowSub: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  price: { color: green.text, fontFamily: fonts.monoMedium, fontSize: 15 },
 });

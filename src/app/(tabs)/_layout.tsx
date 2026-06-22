@@ -63,13 +63,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <MaterialIcons name="bar-chart" color={color} size={21} />,
         }}
       />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: s.settings,
-          tabBarIcon: ({ color }) => <MaterialIcons name="settings" color={color} size={21} />,
-        }}
-      />
     </Tabs>
   );
 }

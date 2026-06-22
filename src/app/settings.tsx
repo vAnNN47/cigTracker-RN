@@ -17,7 +17,7 @@ import { signOut } from "@/lib/googleAuth";
 import { AppSettings } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { fonts, green, radius, spacing, type } from "@/theme";
-import { NumberPad, NumberPadRef } from "../../../packages/number-pad";
+import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 const COMMIT_MS = 400;
 const BAD = "#C0392B";
