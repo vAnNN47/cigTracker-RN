@@ -9,11 +9,11 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
-import { useRouter } from "expo-router";
 import { ReactNode, useEffect, useState } from "react";
 import { Alert, I18nManager, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { SettingsView } from "@/app/settings";
 import { SlideDrawer } from "@/components/SlideDrawer";
 import { resolveLang, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
@@ -26,13 +26,12 @@ const FEEDBACK_EMAIL = "leetbeck@gmail.com";
 const LOREM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nSed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.";
 
-type Sub = "none" | "language" | "theme" | "faq" | "privacy" | "terms";
+type Sub = "none" | "language" | "theme" | "settings" | "faq" | "privacy" | "terms";
 
 export function AccountDrawer() {
   const s = useStrings();
   const green = useColors();
   const styles = useStyles();
-  const router = useRouter();
   const open = useDrawerStore((st) => st.open) === "account";
   const hide = useDrawerStore((st) => st.hide);
   const dataMode = useAppStore((st) => st.dataMode);
@@ -109,16 +108,10 @@ export function AccountDrawer() {
             )}
           </View>
 
-          {/* Settings — moved here from the main drawer (task 6) */}
+          {/* Settings — opens as a panel from the drawer's own edge, so it
+              slides from the same side as the drawer in both languages. */}
           <View style={styles.settingsCard}>
-            <Row
-              icon="settings"
-              label={s.settings}
-              onPress={() => {
-                hide();
-                router.push("/settings");
-              }}
-            />
+            <Row icon="settings" label={s.settings} onPress={() => openSub("settings")} />
           </View>
 
           <Section title={s.notifications}>
@@ -159,27 +152,33 @@ export function AccountDrawer() {
         </ScrollView>
       </SafeAreaView>
 
-      {/* Sub-screen: slides in (and out) from the LEFT over the list; back returns
-          to the drawer. Always mounted + open-toggled so the close animates. */}
+      {/* Sub-screen: slides in (and out) from the drawer's own end edge over the
+          list; back returns to the drawer. Always mounted + open-toggled so the
+          close animates. Settings renders its own header, so it skips the
+          generic wrapper. */}
       <SlideDrawer open={sub !== "none"} side="end" widthPct={1} onClose={() => setSub("none")}>
-        <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-          <View style={styles.header}>
-            <Pressable onPress={() => setSub("none")} hitSlop={8} style={styles.iconBtn}>
-              <MaterialIcons name={backIcon} size={26} color={green.text} />
-            </Pressable>
-            <Text style={styles.headerTitle}>{subTitle}</Text>
-            <View style={styles.iconBtn} />
-          </View>
-          {shownSub === "language" ? (
-            <LanguageList onDone={() => setSub("none")} />
-          ) : shownSub === "theme" ? (
-            <ThemeList onDone={() => setSub("none")} />
-          ) : (
-            <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}>
-              <Text style={styles.doc}>{LOREM}</Text>
-            </ScrollView>
-          )}
-        </SafeAreaView>
+        {shownSub === "settings" ? (
+          <SettingsView onClose={() => setSub("none")} />
+        ) : (
+          <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+            <View style={styles.header}>
+              <Pressable onPress={() => setSub("none")} hitSlop={8} style={styles.iconBtn}>
+                <MaterialIcons name={backIcon} size={26} color={green.text} />
+              </Pressable>
+              <Text style={styles.headerTitle}>{subTitle}</Text>
+              <View style={styles.iconBtn} />
+            </View>
+            {shownSub === "language" ? (
+              <LanguageList onDone={() => setSub("none")} />
+            ) : shownSub === "theme" ? (
+              <ThemeList onDone={() => setSub("none")} />
+            ) : (
+              <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}>
+                <Text style={styles.doc}>{LOREM}</Text>
+              </ScrollView>
+            )}
+          </SafeAreaView>
+        )}
       </SlideDrawer>
     </SlideDrawer>
   );

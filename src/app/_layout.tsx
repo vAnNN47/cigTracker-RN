@@ -23,7 +23,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { I18nManager, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -112,18 +112,14 @@ function Gate() {
     overlay = <OnboardingView onDone={() => setOnboardDone(true)} />;
 
   const c = useColors();
-  // Pushed screens (Settings, Purchases) slide from the reading END edge so they
-  // match the side the account drawer opens from: right in English (LTR), left
-  // in Hebrew (RTL).
-  const pushAnim = I18nManager.isRTL ? ("slide_from_left" as const) : ("slide_from_right" as const);
 
   return (
     <View style={[styles.fill, { backgroundColor: c.bg }]}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
-        <Stack.Screen name="purchases" options={{ animation: pushAnim }} />
-        <Stack.Screen name="settings" options={{ animation: pushAnim }} />
+        <Stack.Screen name="purchases" />
+        <Stack.Screen name="settings" />
       </Stack>
       {overlay && <View style={[StyleSheet.absoluteFill, styles.overlay]}>{overlay}</View>}
       {/* Slide-in drawers render above everything (incl. the tab bar). */}

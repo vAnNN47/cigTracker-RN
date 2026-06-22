@@ -23,11 +23,16 @@ import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 const COMMIT_MS = 400;
 const BAD = "#C0392B";
 
-export default function SettingsScreen() {
+/**
+ * Settings body. Rendered both as the /settings route AND as a panel inside the
+ * account drawer, so it takes an `onClose` instead of calling router.back —
+ * that lets it slide from the drawer's own edge (deterministically the right
+ * side per language) rather than relying on the native-stack push direction.
+ */
+export function SettingsView({ onClose }: { onClose: () => void }) {
   const s = useStrings();
   const green = useColors();
   const styles = useStyles();
-  const router = useRouter();
   const backIcon = I18nManager.isRTL ? "chevron-right" : "chevron-left";
   const { limits, settings, locale } = useAppStore();
   const dataMode = useAppStore((st) => st.dataMode);
@@ -35,8 +40,6 @@ export default function SettingsScreen() {
   const setLimit = useAppStore((st) => st.setLimit);
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLocale = useAppStore((st) => st.setLocale);
-  const themeMode = useAppStore((st) => st.themeMode);
-  const setThemeMode = useAppStore((st) => st.setThemeMode);
   const pad = useRef<NumberPadRef>(null);
 
   // Local drafts — the UI reads these so steps are instant; persistence is debounced.
@@ -112,12 +115,6 @@ export default function SettingsScreen() {
       ],
     );
 
-  const themeOptions: { key: "device" | "light" | "dark"; label: string }[] = [
-    { key: "device", label: s.themeDevice },
-    { key: "light", label: s.themeLight },
-    { key: "dark", label: s.themeDark },
-  ];
-
   const confirmSignOut = () =>
     Alert.alert(s.signOutTitle, s.signOutBody, [
       { text: s.cancel, style: "cancel" },
@@ -134,7 +131,7 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backBtn}>
+        <Pressable onPress={onClose} hitSlop={10} style={styles.backBtn}>
           <MaterialIcons name={backIcon} size={26} color={green.text} />
         </Pressable>
         <Text style={styles.topTitle}>{s.settings}</Text>
@@ -264,27 +261,6 @@ export default function SettingsScreen() {
                 );
               })}
             </View>
-          </View>
-        </Group>
-
-        {/* Appearance — light / dark / device theme (task: dark theme) */}
-        <Group title={s.appearance}>
-          <Text style={[styles.rowLabel, { marginBottom: spacing.sm }]}>{s.theme}</Text>
-          <View style={styles.themeRow}>
-            {themeOptions.map((o) => {
-              const sel = themeMode === o.key;
-              return (
-                <Pressable
-                  key={o.key}
-                  onPress={() => setThemeMode(o.key)}
-                  style={[styles.themeSeg, { backgroundColor: sel ? green.green : green.cardSoft }]}
-                >
-                  <Text style={{ color: sel ? green.onGreen : green.textDim, fontFamily: fonts.semibold, fontSize: 13 }}>
-                    {o.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
           </View>
         </Group>
 
@@ -456,8 +432,6 @@ const useStyles = makeUseStyles((green) =>
   segmentRow: { flexDirection: "row", gap: spacing.sm },
   curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
 
-  themeRow: { flexDirection: "row", gap: spacing.sm, paddingBottom: spacing.sm },
-  themeSeg: { flex: 1, alignItems: "center", paddingVertical: 12, borderRadius: radius.chip },
   langCurrent: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold, textAlign: textStart },
 
   signOut: {
@@ -482,3 +456,9 @@ const useStyles = makeUseStyles((green) =>
   switchText: { color: green.green, fontFamily: fonts.bold, fontSize: 15 },
   }),
 );
+
+/** /settings route — kept so deep links still work; closes by popping. */
+export default function SettingsScreen() {
+  const router = useRouter();
+  return <SettingsView onClose={() => router.back()} />;
+}
