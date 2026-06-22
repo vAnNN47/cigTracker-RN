@@ -149,7 +149,7 @@ export default function RootLayout() {
       <KeyboardProvider>
         <SafeAreaProvider>
           <ToastProvider>
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
             <Gate />
             <PortalHost />
           </ToastProvider>
