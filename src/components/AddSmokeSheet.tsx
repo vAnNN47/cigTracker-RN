@@ -53,7 +53,6 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
       { key: "car", label: s.tagCar, icon: "directions-car" },
       { key: "social", label: s.tagSocial, icon: "groups" },
     ];
-    const feelings = [s.feelStressed, s.feelBored, s.feelCraving, s.feelSocial, s.feelAfterMeal, s.feelHabit];
 
     useImperativeHandle(ref, () => ({
       present: () => {
@@ -117,22 +116,8 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
             })}
           </View>
 
-          {/* 2. How did it feel? */}
+          {/* 2. How did it feel? — free text, the user types it themselves. */}
           <Text style={styles.label}>{s.howDidItFeel}</Text>
-          <View style={styles.chipWrap}>
-            {feelings.map((f) => {
-              const sel = comment.trim() === f;
-              return (
-                <Pressable
-                  key={f}
-                  style={[styles.feelChip, sel && styles.feelChipSel]}
-                  onPress={() => setComment(sel ? "" : f)}
-                >
-                  <Text style={[styles.feelChipText, sel && styles.feelChipTextSel]}>{f}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
           <SheetTextInput
             style={[styles.input, inputAlign]}
             placeholder={s.feelingHint}

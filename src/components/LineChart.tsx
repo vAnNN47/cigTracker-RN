@@ -28,6 +28,9 @@ interface LineChartProps {
   /** Format Y-axis tick labels. */
   formatY?: (v: number) => string;
   yTicks?: number;
+  /** Gridline + axis-label colors (default to the dark theme). */
+  gridColor?: string;
+  labelColor?: string;
 }
 
 type Pt = { x: number; y: number };
@@ -67,6 +70,8 @@ export function LineChart({
   xLabels,
   formatY = (v) => String(Math.round(v)),
   yTicks = 4,
+  gridColor = colors.line,
+  labelColor = colors.textDim,
 }: LineChartProps) {
   const [w, setW] = useState(0);
   const onLayout = (e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width);
@@ -105,7 +110,7 @@ export function LineChart({
                 y1={gy}
                 x2={w - padR}
                 y2={gy}
-                stroke={colors.line}
+                stroke={gridColor}
                 strokeWidth={1}
               />
             );
@@ -119,7 +124,7 @@ export function LineChart({
                 x={padL - 6}
                 y={gy + 3}
                 fontSize={9}
-                fill={colors.textDim}
+                fill={labelColor}
                 textAnchor="end"
               >
                 {formatY(val)}
@@ -172,7 +177,7 @@ export function LineChart({
                 x={x(i)}
                 y={height - 4}
                 fontSize={9}
-                fill={colors.textDim}
+                fill={labelColor}
                 textAnchor="middle"
               >
                 {xLabels[i]}

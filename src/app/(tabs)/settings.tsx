@@ -1,14 +1,9 @@
 /**
- * Settings — "haze" handoff: a reduction-plan banner (Old habit → Today's limit,
- * big mono numbers) and −/+ stepper rows for the plan + pricing. The stepper
- * value is also tappable to open the in-app number pad.
- *
- * Stepper writes are DEBOUNCED: each tap updates local draft state instantly
- * (snappy UI) and the actual persist (AsyncStorage / Supabase) fires only after
- * a short idle — otherwise every tap awaited a disk write or a network round
- * trip, which made the buttons lag. Pending writes flush on unmount.
- *
- * Language is a real switcher (Device / English / עברית) shown as a dropdown.
+ * Settings — v2 light/green theme. Reduction-plan banner (Old habit → Today's
+ * limit) + −/+ stepper rows (value also opens the in-app number pad). Stepper
+ * writes are DEBOUNCED (instant draft state, persist after a short idle) so the
+ * buttons don't lag; pending writes flush on unmount. Language is a dropdown
+ * switcher (Device / English / עברית).
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { ReactNode, useEffect, useRef, useState } from "react";
@@ -21,10 +16,11 @@ import { useStrings } from "@/i18n/useStrings";
 import { signOut } from "@/lib/googleAuth";
 import { AppSettings } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing, type } from "@/theme";
+import { fonts, green, radius, spacing, type } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../../packages/number-pad";
 
 const COMMIT_MS = 400;
+const BAD = "#C0392B";
 
 export default function SettingsScreen() {
   const s = useStrings();
@@ -121,7 +117,7 @@ export default function SettingsScreen() {
     ]);
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <ScrollView
         contentContainerStyle={{ paddingTop: spacing.md, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
         alwaysBounceVertical
@@ -136,7 +132,7 @@ export default function SettingsScreen() {
             <Text style={styles.planLabel}>{s.oldHabit}</Text>
             <Text style={styles.planValueDim}>{form.baselinePerDay}</Text>
           </View>
-          <MaterialIcons name={planArrow} size={22} color={colors.accent} />
+          <MaterialIcons name={planArrow} size={22} color={green.green} />
           <View style={styles.planSide}>
             <Text style={styles.planLabel}>{s.todaysLimitShort}</Text>
             <Text style={styles.planValue}>{limitDraft}</Text>
@@ -228,9 +224,9 @@ export default function SettingsScreen() {
                   <Pressable
                     key={c}
                     onPress={() => commitSettings({ ...form, currencySymbol: c }, true)}
-                    style={[styles.curSeg, { backgroundColor: sel ? colors.accent : colors.surfaceHigh }]}
+                    style={[styles.curSeg, { backgroundColor: sel ? green.green : green.cardSoft }]}
                   >
-                    <Text style={{ color: sel ? colors.onAccent : colors.textDim, fontFamily: fonts.bold }}>{c}</Text>
+                    <Text style={{ color: sel ? green.onGreen : green.textDim, fontFamily: fonts.bold }}>{c}</Text>
                   </Pressable>
                 );
               })}
@@ -242,7 +238,7 @@ export default function SettingsScreen() {
         <Group title={s.language}>
           <Pressable style={styles.row} onPress={() => setLangOpen((v) => !v)}>
             <Text style={[styles.rowLabel, { flex: 1 }]}>{currentLangLabel}</Text>
-            <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={colors.textDim} />
+            <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={green.textDim} />
           </Pressable>
           {langOpen &&
             otherLangs.map((l) => (
@@ -263,14 +259,14 @@ export default function SettingsScreen() {
 
         {dataMode === "supabase" ? (
           <Pressable style={styles.signOut} onPress={confirmSignOut}>
-            <MaterialIcons name="logout" size={18} color={colors.bad} />
+            <MaterialIcons name="logout" size={18} color={BAD} />
             <Text style={styles.signOutText}>{s.signOut}</Text>
           </Pressable>
         ) : (
           <Group title={s.account}>
             <Text style={styles.localNote}>{s.localDataNote}</Text>
             <Pressable style={styles.switchBtn} onPress={() => setDataMode(null)}>
-              <MaterialIcons name="login" size={18} color={colors.accent} />
+              <MaterialIcons name="login" size={18} color={green.green} />
               <Text style={styles.switchText}>{s.signInToAccount}</Text>
             </Pressable>
           </Group>
@@ -279,12 +275,12 @@ export default function SettingsScreen() {
 
       <NumberPad
         ref={pad}
-        surface={colors.surface}
-        surfaceHigh={colors.surfaceHigh}
-        text={colors.text}
-        textDim={colors.textDim}
-        accent={colors.accent}
-        onAccent={colors.onAccent}
+        surface={green.card}
+        surfaceHigh={green.cardSoft}
+        text={green.text}
+        textDim={green.textDim}
+        accent={green.green}
+        onAccent={green.onGreen}
         cornerRadius={radius.sheet}
         cancelLabel={s.cancel}
         saveLabel={s.save}
@@ -332,13 +328,13 @@ function StepperRow({
       </View>
       <View style={styles.stepper}>
         <Pressable style={styles.stepBtn} onPress={() => onChange(clamp(value - step))} hitSlop={6}>
-          <MaterialIcons name="remove" size={18} color={colors.text} />
+          <MaterialIcons name="remove" size={18} color={green.text} />
         </Pressable>
         <Pressable onPress={onPressValue} hitSlop={6}>
           <Text style={styles.stepValue}>{display}</Text>
         </Pressable>
         <Pressable style={styles.stepBtn} onPress={() => onChange(clamp(value + step))} hitSlop={6}>
-          <MaterialIcons name="add" size={18} color={colors.text} />
+          <MaterialIcons name="add" size={18} color={green.text} />
         </Pressable>
       </View>
     </View>
@@ -350,9 +346,9 @@ function Divider() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 22, fontFamily: fonts.bold, marginBottom: spacing.xl, textAlign: textStart },
+  title: { color: green.text, fontSize: 22, fontFamily: fonts.bold, marginBottom: spacing.xl, textAlign: textStart },
   groupTitle: {
-    color: colors.textDim,
+    color: green.textDim,
     fontSize: 12,
     fontFamily: fonts.medium,
     textTransform: "uppercase",
@@ -370,17 +366,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: colors.line,
+    borderColor: green.border,
   },
   planSide: { alignItems: "center", flex: 1 },
-  planLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginBottom: 4 },
-  planValue: { color: colors.accent, fontSize: 26, fontFamily: fonts.monoMedium },
-  planValueDim: { color: colors.textDim, fontSize: 26, fontFamily: fonts.monoMedium },
+  planLabel: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, marginBottom: 4 },
+  planValue: { color: green.green, fontSize: 26, fontFamily: fonts.monoMedium },
+  planValueDim: { color: green.textDim, fontSize: 26, fontFamily: fonts.monoMedium },
 
   row: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md },
-  rowLabel: { color: colors.text, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
-  rowHint: { color: colors.textFaint, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  divider: { height: 1, backgroundColor: colors.line },
+  rowLabel: { color: green.text, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
+  rowHint: { color: green.textDim, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  divider: { height: 1, backgroundColor: green.border },
 
   stepper: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   stepBtn: {
@@ -388,11 +384,11 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: green.border,
     alignItems: "center",
     justifyContent: "center",
   },
-  stepValue: { color: colors.text, fontSize: 16, fontFamily: fonts.monoMedium, minWidth: 44, textAlign: "center" },
+  stepValue: { color: green.text, fontSize: 16, fontFamily: fonts.monoMedium, minWidth: 44, textAlign: "center" },
 
   segmentRow: { flexDirection: "row", gap: spacing.sm },
   curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
@@ -404,17 +400,17 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: green.border,
   },
-  signOutText: { color: colors.bad, fontFamily: fonts.semibold },
-  localNote: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
+  signOutText: { color: BAD, fontFamily: fonts.semibold },
+  localNote: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
   switchBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: green.border,
   },
-  switchText: { color: colors.accent, fontFamily: fonts.bold, fontSize: 15 },
+  switchText: { color: green.green, fontFamily: fonts.bold, fontSize: 15 },
 });

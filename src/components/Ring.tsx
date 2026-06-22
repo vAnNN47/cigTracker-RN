@@ -12,10 +12,11 @@ interface RingProps {
   strokeWidth?: number;
   pct: number; // 0..1
   color: string;
+  track?: string; // track color (defaults to the dark-theme track)
   children?: React.ReactNode; // centered content (the count)
 }
 
-export function Ring({ size = 84, strokeWidth = 8, pct, color, children }: RingProps) {
+export function Ring({ size = 84, strokeWidth = 8, pct, color, track = colors.track, children }: RingProps) {
   const r = (size - strokeWidth) / 2;
   const c = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(1, pct));
@@ -25,7 +26,7 @@ export function Ring({ size = 84, strokeWidth = 8, pct, color, children }: RingP
     <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
       <Svg width={size} height={size} style={{ position: "absolute" }}>
         {/* track */}
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.track} strokeWidth={strokeWidth} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={track} strokeWidth={strokeWidth} fill="none" />
         {/* progress — start at 12 o'clock, go clockwise */}
         <Circle
           cx={size / 2}

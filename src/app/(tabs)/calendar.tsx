@@ -1,10 +1,9 @@
 /**
- * History — color-coded calendar (design handoff). Each day cell shows that
- * day's count, tinted by status: under/at allowance = periwinkle, over = red, no
- * logs = faint. A weekday header tops the grid; a month tally (days under / days
- * over / month total) sits below. Tapping a day opens its detail underneath —
- * that day's cigarettes (editable only on today) + purchases — which we keep on
- * top of the handoff's browse view so logs stay reachable for editing.
+ * History — color-coded calendar (v2 light/green theme). Each day cell shows that
+ * day's count, tinted by status: under/at allowance = green, over = red, no logs
+ * = faint. A weekday header tops the grid. Tapping a day opens its detail below —
+ * that day's cigarettes (editable only on today, with a location icon) + that
+ * day's purchases.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -30,10 +29,10 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { LocationTag } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, radius, spacing } from "@/theme";
+import { fonts, green, radius, spacing } from "@/theme";
 import { MonthPager } from "../../../packages/month-pager";
 
-// Per-cigarette location icon (design handoff: Home / Work / Car / Social).
+// Per-cigarette location icon (Home / Work / Car / Social).
 const TAG_ICON: Record<LocationTag, keyof typeof MaterialIcons.glyphMap> = {
   home: "home",
   work: "work-outline",
@@ -41,9 +40,12 @@ const TAG_ICON: Record<LocationTag, keyof typeof MaterialIcons.glyphMap> = {
   social: "groups",
 };
 
-// Status tints not in the token set (the under-tints reuse the accent tokens).
-const OVER_BG = "rgba(224,138,138,0.16)";
-const OVER_BORDER = "rgba(224,138,138,0.35)";
+// Day-cell status tints (light theme).
+const UNDER_BG = "rgba(46,204,113,0.15)";
+const UNDER_BORDER = "rgba(46,204,113,0.4)";
+const OVER_TEXT = "#C0392B";
+const OVER_BG = "rgba(192,57,43,0.12)";
+const OVER_BORDER = "rgba(192,57,43,0.35)";
 
 // Calendar grid for a month, padded to a fixed 6 weeks (42 cells) so every month
 // is the same height — keeps the swipe between months smooth.
@@ -83,7 +85,7 @@ export default function HistoryScreen() {
   const limit = limitForDay(limits, selected, settings);
   const within = count <= limit;
   const pct = limit === 0 ? 1 : Math.min(1, count / limit);
-  const ringColor = within ? colors.ring : colors.bad;
+  const ringColor = within ? green.green : OVER_TEXT;
   const spent = spentForDay(purchases, selected, dsh);
   const isToday = isSameDay(selected, today);
 
@@ -99,25 +101,6 @@ export default function HistoryScreen() {
   const weekdays = Array.from({ length: 7 }, (_, i) =>
     new Intl.DateTimeFormat(s.localeCode, { weekday: "narrow" }).format(new Date(2023, 0, 1 + i)),
   );
-
-  // Month tally over elapsed days of the focused month.
-  let daysUnder = 0;
-  let daysOver = 0;
-  let monthTotal = 0;
-  {
-    const y = focused.getFullYear();
-    const m = focused.getMonth();
-    const dim = new Date(y, m + 1, 0).getDate();
-    for (let d = 1; d <= dim; d++) {
-      const day = new Date(y, m, d);
-      if (keyOf(day) > today) break;
-      const c = countForDay(logs, day, dsh);
-      const lim = limitForDay(limits, day, settings);
-      monthTotal += c;
-      if (c > lim) daysOver += 1;
-      else daysUnder += 1;
-    }
-  }
 
   // One month's grid; reused by MonthPager for prev / current / next.
   const renderMonth = (monthFirst: Date) =>
@@ -174,9 +157,9 @@ export default function HistoryScreen() {
     ));
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <ScrollView
-        style={{ flex: 1, backgroundColor: colors.bg }}
+        style={{ flex: 1, backgroundColor: green.bg }}
         contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
         alwaysBounceVertical
         overScrollMode="always"
@@ -190,7 +173,7 @@ export default function HistoryScreen() {
             hitSlop={8}
             style={styles.navBtn}
           >
-            <MaterialIcons name={prevArrow} size={20} color={colors.textDim} />
+            <MaterialIcons name={prevArrow} size={20} color={green.textDim} />
           </Pressable>
           <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
           <Pressable
@@ -199,7 +182,7 @@ export default function HistoryScreen() {
             disabled={atCurrentMonth}
             style={styles.navBtn}
           >
-            <MaterialIcons name={nextArrow} size={20} color={atCurrentMonth ? colors.line : colors.textDim} />
+            <MaterialIcons name={nextArrow} size={20} color={atCurrentMonth ? green.border : green.textDim} />
           </Pressable>
         </View>
 
@@ -224,22 +207,6 @@ export default function HistoryScreen() {
           isRTL={isRTL}
         />
 
-        {/* Month tally */}
-        <View style={styles.tally}>
-          <View style={styles.tallyCell}>
-            <Text style={[styles.tallyVal, { color: colors.accent }]}>{daysUnder}</Text>
-            <Text style={styles.tallyLabel}>{s.daysUnder}</Text>
-          </View>
-          <View style={[styles.tallyCell, styles.tallyDivider]}>
-            <Text style={[styles.tallyVal, { color: colors.overText }]}>{daysOver}</Text>
-            <Text style={styles.tallyLabel}>{s.daysOver}</Text>
-          </View>
-          <View style={[styles.tallyCell, styles.tallyDivider]}>
-            <Text style={styles.tallyVal}>{monthTotal}</Text>
-            <Text style={styles.tallyLabel}>{s.monthTotal}</Text>
-          </View>
-        </View>
-
         {/* Day summary */}
         <View style={styles.summary}>
           <View style={{ flex: 1 }}>
@@ -248,18 +215,18 @@ export default function HistoryScreen() {
               {count} / {limit} {s.cigarettesSection.toLowerCase()}
             </Text>
           </View>
-          <Ring size={56} strokeWidth={5} pct={pct} color={ringColor}>
+          <Ring size={56} strokeWidth={5} pct={pct} color={ringColor} track={green.border}>
             <Text style={styles.ringPct}>{Math.round(pct * 100)}%</Text>
           </Ring>
         </View>
         <View style={styles.pillRow}>
           <View style={styles.pill}>
-            <MaterialIcons name="attach-money" size={14} color={colors.textDim} />
+            <MaterialIcons name="attach-money" size={14} color={green.textDim} />
             <Text style={styles.pillLabel}>{s.spentLabel}</Text>
             <Text style={styles.pillValue}>{money(spent)}</Text>
           </View>
           <View style={styles.pill}>
-            <MaterialIcons name="smoking-rooms" size={14} color={colors.textDim} />
+            <MaterialIcons name="smoking-rooms" size={14} color={green.textDim} />
             <Text style={styles.pillValue}>{s.loggedN(count)}</Text>
           </View>
         </View>
@@ -276,14 +243,14 @@ export default function HistoryScreen() {
               onPress={() => detailRef.current?.present({ log, number: count - i, editable: isToday })}
             >
               <View style={styles.rowIcon}>
-                <MaterialIcons name={TAG_ICON[log.tag]} size={18} color={colors.textDim} />
+                <MaterialIcons name={TAG_ICON[log.tag]} size={18} color={green.textDim} />
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.rowTitleLine}>
                   <Text style={styles.rowTitle}>{s.cigNumber(count - i)}</Text>
                   {!!log.diary && (
                     <View style={styles.diaryBadge}>
-                      <MaterialIcons name="menu-book" size={11} color={colors.accent} />
+                      <MaterialIcons name="menu-book" size={11} color={green.green} />
                     </View>
                   )}
                 </View>
@@ -291,7 +258,7 @@ export default function HistoryScreen() {
                   {[formatTime(log.smokedAt), log.comment].filter(Boolean).join("  ·  ")}
                 </Text>
               </View>
-              <MaterialIcons name={isToday ? "edit" : "chevron-right"} size={isToday ? 14 : 20} color={colors.textDim} />
+              <MaterialIcons name={isToday ? "edit" : "chevron-right"} size={isToday ? 14 : 20} color={green.textDim} />
             </Pressable>
           ))
         )}
@@ -302,7 +269,7 @@ export default function HistoryScreen() {
           {purchases.length > 0 && (
             <Pressable style={styles.viewAll} onPress={() => router.push("/purchases")} hitSlop={8}>
               <Text style={styles.viewAllText}>{s.viewAll}</Text>
-              <MaterialIcons name={nextArrow} size={16} color={colors.accent} />
+              <MaterialIcons name={nextArrow} size={16} color={green.green} />
             </Pressable>
           )}
         </View>
@@ -312,7 +279,7 @@ export default function HistoryScreen() {
           selPurchases.map((p) => (
             <Pressable key={p.id} style={styles.row} onPress={() => purchaseRef.current?.present(p)}>
               <View style={styles.rowIcon}>
-                <MaterialIcons name={p.unit === "carton" ? "inventory-2" : "receipt-long"} size={18} color={colors.textDim} />
+                <MaterialIcons name={p.unit === "carton" ? "inventory-2" : "receipt-long"} size={18} color={green.textDim} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.rowTitle}>
@@ -321,7 +288,7 @@ export default function HistoryScreen() {
                 <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
               </View>
               <Text style={styles.price}>{money(p.price)}</Text>
-              <MaterialIcons name="edit" size={14} color={colors.textDim} style={{ marginStart: spacing.sm }} />
+              <MaterialIcons name="edit" size={14} color={green.textDim} style={{ marginStart: spacing.sm }} />
             </Pressable>
           ))
         )}
@@ -334,7 +301,7 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
+  title: { color: green.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
 
   monthHeader: {
     flexDirection: "row",
@@ -342,19 +309,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: spacing.sm,
   },
-  monthGridTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.semibold },
+  monthGridTitle: { color: green.text, fontSize: 15, fontFamily: fonts.semibold },
   navBtn: {
     width: 32,
     height: 32,
     borderRadius: 9,
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: green.border,
     alignItems: "center",
     justifyContent: "center",
   },
 
   weekdayRow: { flexDirection: "row", marginBottom: spacing.xs },
-  weekday: { flex: 1, textAlign: "center", color: colors.textFaint, fontSize: 10, fontFamily: fonts.medium },
+  weekday: { flex: 1, textAlign: "center", color: green.textDim, fontSize: 10, fontFamily: fonts.medium },
 
   weekRow: { flexDirection: "row" },
   cell: { flex: 1, aspectRatio: 1, padding: 3 },
@@ -367,30 +334,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 1,
   },
-  dayUnder: { backgroundColor: colors.accentTint, borderColor: colors.accentBorder },
+  dayUnder: { backgroundColor: UNDER_BG, borderColor: UNDER_BORDER },
   dayOver: { backgroundColor: OVER_BG, borderColor: OVER_BORDER },
-  dayNone: { backgroundColor: colors.fill, borderColor: colors.line },
-  dayToday: { borderColor: colors.accent, borderWidth: 2 },
-  daySelected: { borderColor: colors.accentText },
-  dayNum: { fontSize: 11, fontFamily: fonts.mono, color: colors.text },
-  dayNumUnder: { color: colors.accentText },
-  dayNumOver: { color: colors.overText },
-  dayNumFaint: { color: colors.textFaint },
+  dayNone: { backgroundColor: green.cardSoft, borderColor: green.border },
+  dayToday: { borderColor: green.green, borderWidth: 2 },
+  daySelected: { borderColor: green.greenBright },
+  dayNum: { fontSize: 11, fontFamily: fonts.mono, color: green.text },
+  dayNumUnder: { color: green.green },
+  dayNumOver: { color: OVER_TEXT },
+  dayNumFaint: { color: green.textDim },
   dayCount: { fontSize: 13, fontFamily: fonts.semibold },
-  dayCountUnder: { color: colors.accentText },
-  dayCountOver: { color: colors.overText },
-
-  tally: {
-    flexDirection: "row",
-    marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.line,
-  },
-  tallyCell: { flex: 1, paddingHorizontal: spacing.sm },
-  tallyDivider: { borderLeftWidth: 1, borderLeftColor: colors.line },
-  tallyVal: { color: colors.text, fontSize: 21, fontFamily: fonts.monoMedium, textAlign: textStart },
-  tallyLabel: { color: colors.textDim, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  dayCountUnder: { color: green.green },
+  dayCountOver: { color: OVER_TEXT },
 
   summary: {
     flexDirection: "row",
@@ -398,18 +353,18 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     marginTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: green.border,
   },
-  sumDate: { color: colors.text, fontSize: 18, fontFamily: fonts.bold, textAlign: textStart },
+  sumDate: { color: green.text, fontSize: 18, fontFamily: fonts.bold, textAlign: textStart },
   sumCount: { fontSize: 15, fontFamily: fonts.semibold, marginTop: spacing.xs, textAlign: textStart },
-  ringPct: { color: colors.text, fontSize: 13, fontFamily: fonts.monoMedium },
+  ringPct: { color: green.text, fontSize: 13, fontFamily: fonts.monoMedium },
   pillRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.sm },
   pill: { flex: 1, flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: spacing.xs },
-  pillLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
-  pillValue: { color: colors.text, fontSize: 14, fontFamily: fonts.bold },
+  pillLabel: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
+  pillValue: { color: green.text, fontSize: 14, fontFamily: fonts.bold },
 
   section: {
-    color: colors.textDim,
+    color: green.textDim,
     fontSize: 12,
     textTransform: "uppercase",
     letterSpacing: 1.2,
@@ -426,27 +381,27 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   viewAll: { flexDirection: "row", alignItems: "center", gap: 2 },
-  viewAllText: { color: colors.accent, fontSize: 13, fontFamily: fonts.bold },
-  empty: { color: colors.textDim, fontFamily: fonts.regular, paddingVertical: spacing.md, textAlign: textStart },
+  viewAllText: { color: green.green, fontSize: 13, fontFamily: fonts.bold },
+  empty: { color: green.textDim, fontFamily: fonts.regular, paddingVertical: spacing.md, textAlign: textStart },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.line,
+    borderBottomColor: green.border,
     paddingVertical: spacing.md,
   },
-  rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
+  rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: green.cardSoft, alignItems: "center", justifyContent: "center" },
   rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  rowTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14 },
+  rowTitle: { color: green.text, fontFamily: fonts.semibold, fontSize: 14 },
   diaryBadge: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: colors.accentTint,
+    backgroundColor: UNDER_BG,
     alignItems: "center",
     justifyContent: "center",
   },
-  rowSub: { color: colors.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  price: { color: colors.text, fontFamily: fonts.monoMedium, fontSize: 15 },
+  rowSub: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
+  price: { color: green.text, fontFamily: fonts.monoMedium, fontSize: 15 },
 });

@@ -1,9 +1,9 @@
 /**
- * Progress — redesigned to the "haze" clean style (matching Today): no colored
- * bento tiles, just hairline-separated metric cells and sections sitting on the
- * app surface, mono numbers, and uppercase eyebrow section labels. The
- * react-native-svg charts are kept exactly as-is — they render on a transparent
- * background, so they blend straight into the clean layout.
+ * Progress — v2 light/green theme. Hairline-separated metric cells, mono numbers,
+ * uppercase eyebrow section labels, and the react-native-svg charts (now told to
+ * draw light gridlines/labels). The week-over-week delta only shows when there
+ * was a tracked previous week, so it never claims "more than last week" against a
+ * week that simply had no data.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { ReactNode, useState } from "react";
@@ -25,7 +25,10 @@ import {
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { colors, fonts, spacing } from "@/theme";
+import { fonts, green, spacing } from "@/theme";
+
+const BAD = "#C0392B";
+const HIST_SOFT = "rgba(46,204,113,0.3)";
 
 const RANGES: { key: string; value: number | null }[] = [
   { key: "7d", value: 7 },
@@ -52,8 +55,10 @@ export default function ProgressScreen() {
   const today = logicalToday(dsh);
   const weekNow = countBetween(logs, addDays(today, -6), today, dsh);
   const weekPrev = countBetween(logs, addDays(today, -13), addDays(today, -7), dsh);
+  // Only compare when the previous week actually had tracked data.
+  const showDelta = weekPrev > 0;
   const delta = weekNow - weekPrev;
-  const deltaColor = delta < 0 ? colors.good : delta > 0 ? colors.bad : colors.textDim;
+  const deltaColor = delta < 0 ? green.green : delta > 0 ? BAD : green.textDim;
   const deltaText = delta < 0 ? s.fewerThanLast(-delta) : delta > 0 ? s.moreThanLast(delta) : s.sameAsLast;
   const deltaIcon = delta < 0 ? "trending-down" : delta > 0 ? "trending-up" : "trending-flat";
 
@@ -67,9 +72,9 @@ export default function ProgressScreen() {
   const peakLabel = `${String(peakHour).padStart(2, "0")}:00`;
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: colors.bg }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <ScrollView
-        style={{ flex: 1, backgroundColor: colors.bg }}
+        style={{ flex: 1, backgroundColor: green.bg }}
         contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
         alwaysBounceVertical
         overScrollMode="always"
@@ -98,19 +103,19 @@ export default function ProgressScreen() {
             <Metric
               value={`${withinDays}`}
               valueSuffix={` / ${stats.length}`}
-              valueColor={colors.good}
+              valueColor={green.green}
               label={s.onTargetDays}
               divider
             />
           </View>
           <View style={[styles.metricRow, styles.metricRowDivider]}>
-            <Metric value={`${cur}${totalSaved.toFixed(0)}`} valueColor={colors.accent} label={s.saved} />
+            <Metric value={`${cur}${totalSaved.toFixed(0)}`} valueColor={green.green} label={s.saved} />
             <Metric
               value={`${weekNow}`}
               label={s.thisWeek}
-              trailing={<MaterialIcons name={deltaIcon} size={18} color={deltaColor} />}
-              caption={deltaText}
-              captionColor={deltaColor}
+              trailing={showDelta ? <MaterialIcons name={deltaIcon} size={18} color={deltaColor} /> : undefined}
+              caption={showDelta ? deltaText : undefined}
+              captionColor={showDelta ? deltaColor : undefined}
               divider
             />
           </View>
@@ -121,19 +126,21 @@ export default function ProgressScreen() {
           <View style={styles.chartWrap}>
             <LineChart
               series={[
-                { points: stats.map((st) => st.count), color: colors.accent, fill: true },
-                { points: stats.map((st) => st.limit), color: colors.textDim, dashed: true },
+                { points: stats.map((st) => st.count), color: green.green, fill: true },
+                { points: stats.map((st) => st.limit), color: green.textDim, dashed: true },
               ]}
               overMask={stats.map((st) => st.count > st.limit)}
-              overColor={colors.bad}
+              overColor={BAD}
               xLabels={stats.map((st) => `${st.day.getDate()}/${st.day.getMonth() + 1}`)}
               formatY={(v) => String(Math.round(v))}
+              gridColor={green.border}
+              labelColor={green.textDim}
             />
           </View>
           <View style={styles.legend}>
-            <Legend color={colors.accent} label={s.smoked} />
-            <Legend color={colors.textDim} label={s.limitLabel} />
-            <Legend color={colors.bad} label={s.over} />
+            <Legend color={green.green} label={s.smoked} />
+            <Legend color={green.textDim} label={s.limitLabel} />
+            <Legend color={BAD} label={s.over} />
           </View>
         </Section>
 
@@ -151,7 +158,7 @@ export default function ProgressScreen() {
                     marginHorizontal: 1,
                     height: 4 + frac * 48,
                     borderRadius: 3,
-                    backgroundColor: isPeak ? colors.accent : colors.accentSoft,
+                    backgroundColor: isPeak ? green.green : HIST_SOFT,
                   }}
                 />
               );
@@ -170,16 +177,18 @@ export default function ProgressScreen() {
         <Section title={s.moneySaved} sub={s.baselineNote(settings.baselinePerDay)}>
           <View style={styles.chartWrap}>
             <LineChart
-              series={[{ points: savings.map((p) => p.saved), color: colors.accent, fill: true }]}
+              series={[{ points: savings.map((p) => p.saved), color: green.green, fill: true }]}
               xLabels={savings.map((p) => `${p.day.getDate()}/${p.day.getMonth() + 1}`)}
               formatY={(v) => `${cur}${Math.round(v)}`}
+              gridColor={green.border}
+              labelColor={green.textDim}
             />
           </View>
         </Section>
 
         {/* Spend summary */}
         <View style={styles.spendRow}>
-          <MaterialIcons name="payments" size={20} color={colors.textDim} />
+          <MaterialIcons name="payments" size={20} color={green.textDim} />
           <Text style={styles.spendText}>
             {s.spentSummary(cur, totalSpent(purchases).toFixed(0), totalCigarettesBought(purchases))}
           </Text>
@@ -247,45 +256,45 @@ function Legend({ color, label }: { color: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  title: { color: colors.text, fontSize: 22, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
+  title: { color: green.text, fontSize: 22, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
 
   rangeRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
-  chip: { paddingHorizontal: spacing.lg, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.fill },
-  chipSel: { backgroundColor: colors.accent },
-  chipText: { color: colors.textDim, fontSize: 13, fontFamily: fonts.semibold },
-  chipTextSel: { color: colors.onAccent },
+  chip: { paddingHorizontal: spacing.lg, paddingVertical: 8, borderRadius: 999, backgroundColor: green.cardSoft },
+  chipSel: { backgroundColor: green.green },
+  chipText: { color: green.textDim, fontSize: 13, fontFamily: fonts.semibold },
+  chipTextSel: { color: green.onGreen },
 
   metrics: { marginBottom: spacing.sm },
   metricRow: { flexDirection: "row" },
-  metricRowDivider: { borderTopWidth: 1, borderTopColor: colors.line },
+  metricRowDivider: { borderTopWidth: 1, borderTopColor: green.border },
   metricCell: { flex: 1, paddingVertical: spacing.md, paddingHorizontal: spacing.sm },
-  metricCellDivider: { borderLeftWidth: 1, borderLeftColor: colors.line },
+  metricCellDivider: { borderLeftWidth: 1, borderLeftColor: green.border },
   metricTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  metricVal: { color: colors.text, fontSize: 24, fontFamily: fonts.monoSemibold, textAlign: textStart },
-  metricValDim: { color: colors.textDim, fontSize: 16, fontFamily: fonts.mono },
-  metricLabel: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
+  metricVal: { color: green.text, fontSize: 24, fontFamily: fonts.monoSemibold, textAlign: textStart },
+  metricValDim: { color: green.textDim, fontSize: 16, fontFamily: fonts.mono },
+  metricLabel: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
   metricCaption: { fontSize: 11, fontFamily: fonts.medium, marginTop: 2, textAlign: textStart },
 
-  section: { paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line },
+  section: { paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: green.border },
   eyebrow: {
-    color: colors.textDim,
+    color: green.textDim,
     fontSize: 12,
     textTransform: "uppercase",
     letterSpacing: 1.2,
     fontFamily: fonts.medium,
     textAlign: textStart,
   },
-  sectionSub: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
+  sectionSub: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
   chartWrap: { marginTop: spacing.md },
 
   legend: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.md },
   legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
   dot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { color: colors.textDim, fontSize: 12, fontFamily: fonts.regular },
+  legendText: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
 
   histRow: { flexDirection: "row", alignItems: "flex-end", height: 56, marginTop: spacing.md },
   ticks: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  tick: { color: colors.textDim, fontSize: 10, fontFamily: fonts.regular },
+  tick: { color: green.textDim, fontSize: 10, fontFamily: fonts.regular },
 
   spendRow: {
     flexDirection: "row",
@@ -293,7 +302,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: colors.line,
+    borderTopColor: green.border,
   },
-  spendText: { color: colors.textDim, flex: 1, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
+  spendText: { color: green.textDim, flex: 1, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
 });

@@ -78,12 +78,15 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
-      <RefreshScroll onRefresh={refresh}>
-        {/* Header */}
+      {/* Fixed header — kept out of the scroll so the pull-to-refresh spinner
+          appears below it (in its own space) instead of over the title. */}
+      <View style={styles.fixedHeader}>
         <Text style={styles.brand}>{s.reduceTitle}</Text>
         <Text style={styles.impact}>{s.todayImpact}</Text>
         <Text style={styles.momentum}>{s.keepMomentum}</Text>
+      </View>
 
+      <RefreshScroll onRefresh={refresh}>
         {/* Hero circle */}
         <View style={styles.heroWrap}>
           <View style={styles.hero}>
@@ -165,10 +168,11 @@ export default function TodayScreen() {
         </View>
       </RefreshScroll>
 
-      {/* Floating log button */}
+      {/* Floating log button — text first, icon second so the icon sits on the
+          left in the RTL (Hebrew) layout. */}
       <Pressable style={styles.logBtn} onPress={() => addRef.current?.present()}>
-        <MaterialIcons name="smoking-rooms" size={20} color={green.onGreen} />
         <Text style={styles.logBtnText}>{s.logCigarette}</Text>
+        <MaterialIcons name="smoking-rooms" size={20} color={green.onGreen} />
       </Pressable>
 
       <AddSmokeSheet ref={addRef} onLogged={onLogged} />
@@ -208,6 +212,7 @@ function RefreshScroll({ children, onRefresh }: { children: React.ReactNode; onR
 }
 
 const styles = StyleSheet.create({
+  fixedHeader: { paddingHorizontal: 22, paddingTop: spacing.sm, paddingBottom: spacing.md, backgroundColor: green.bg },
   brand: { color: green.green, fontSize: 22, fontFamily: fonts.bold, textAlign: "center" },
   impact: { color: green.green, fontSize: 17, fontFamily: fonts.semibold, textAlign: "center", marginTop: spacing.lg },
   momentum: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: "center", marginTop: 4 },
@@ -268,13 +273,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    backgroundColor: "rgba(0,80,39,0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(0,80,39,0.2)",
+    backgroundColor: green.bg,
     borderRadius: 17,
-    paddingVertical: 10,
+    paddingVertical: 11,
   },
-  saveBtnText: { color: green.greenDeep, fontSize: 13, fontFamily: fonts.semibold },
+  saveBtnText: { color: green.greenDeep, fontSize: 13, fontFamily: fonts.bold },
 
   card: {
     backgroundColor: green.card,

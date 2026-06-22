@@ -8,7 +8,7 @@ import { Tabs } from "expo-router";
 import { Pressable } from "react-native";
 
 import { useStrings } from "@/i18n/useStrings";
-import { colors, fonts } from "@/theme";
+import { fonts, green } from "@/theme";
 
 // Small, contained press feedback (the default Android ripple fills the whole
 // tab slot — this keeps it a subtle circle behind the icon).
@@ -17,7 +17,7 @@ function TabButton(props: any) {
   return (
     <Pressable
       {...props}
-      android_ripple={{ color: colors.accentSoft, borderless: true, radius: 28 }}
+      android_ripple={{ color: "rgba(46,204,113,0.18)", borderless: true, radius: 28 }}
     />
   );
 }
@@ -29,16 +29,16 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textFaint,
+        tabBarActiveTintColor: green.green,
+        tabBarInactiveTintColor: green.textDim,
         tabBarLabelStyle: { fontSize: 10, fontFamily: fonts.medium },
         tabBarStyle: {
-          backgroundColor: colors.bg,
-          borderTopColor: colors.line,
+          backgroundColor: green.bg,
+          borderTopColor: green.border,
           elevation: 0,
           shadowOpacity: 0,
         },
-        sceneStyle: { backgroundColor: colors.bg },
+        sceneStyle: { backgroundColor: green.bg },
         tabBarButton: (props) => <TabButton {...props} />,
       }}
     >

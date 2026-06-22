@@ -122,7 +122,7 @@ export function makeStrings(he: boolean) {
     feelSocial: he ? "חברתי" : "Social",
     feelAfterMeal: he ? "אחרי אוכל" : "After meal",
     feelHabit: he ? "הרגל" : "Habit",
-    feelingHint: he ? "או כתוב בעצמך — לחוץ, הרגע קמתי…" : "or type it — stressed, just woke up…",
+    feelingHint: he ? "לחוץ, משועמם, הרגע קמתי…" : "stressed, bored, just woke up…",
     giveMoreInfo: he ? "עוד פרטים" : "Give more info",
     whenQ: he ? "מתי?" : "When?",
     anythingElse: he ? "עוד משהו על הסיגריה הזו?" : "Anything else about this one?",
