@@ -1,8 +1,7 @@
 /**
- * The app-wide Zustand store — the React Native equivalent of the Flutter
- * AppState (ChangeNotifier + Provider). It holds the raw data and the write
- * actions; all *derived* values (counts, limits, savings) come from the pure
- * functions in src/domain/logic.ts so the store stays thin.
+ * The app-wide Zustand store. It holds the raw data and the write actions; all
+ * *derived* values (counts, limits, savings) come from the pure functions in
+ * src/domain/logic.ts so the store stays thin.
  *
  * Usage in a component:
  *   const logs = useAppStore((s) => s.logs);        // re-renders only on logs change

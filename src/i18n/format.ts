@@ -1,4 +1,4 @@
-/** Date/time formatting helpers (replace Flutter's intl DateFormat). */
+/** Date/time formatting helpers. */
 
 /** "Monday, 16 Jun" — matches DateFormat('EEEE, d MMM'). */
 export function formatWeekdayDate(date: Date, locale: string): string {

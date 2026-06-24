@@ -1,7 +1,6 @@
 /**
- * Boot splash — ported from lib/screens/splash_screen.dart. Logo fades + scales
- * in once, then breathes (gentle opacity pulse) while the app loads / auth
- * resolves.
+ * Boot splash. Logo fades + scales in once, then breathes (gentle opacity pulse)
+ * while the app loads / auth resolves.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect } from "react";

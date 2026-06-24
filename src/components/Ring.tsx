@@ -1,6 +1,5 @@
 /**
- * Count-vs-limit progress ring — the RN equivalent of Flutter's
- * CircularProgressIndicator in the Today card. Built with react-native-svg.
+ * Count-vs-limit progress ring in the Today card. Built with react-native-svg.
  */
 import { View } from "react-native";
 import Svg, { Circle } from "react-native-svg";

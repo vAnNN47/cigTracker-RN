@@ -1,7 +1,6 @@
 /**
- * Lightweight localization — ported from lib/l10n/strings.dart.
- * makeStrings(he) returns the active string table; useStrings() (separate hook)
- * resolves `he` from the device/locale. RTL handling comes in Step 7.
+ * Lightweight localization. makeStrings(he) returns the active string table;
+ * useStrings() (separate hook) resolves `he` from the device/locale.
  */
 export function makeStrings(he: boolean) {
   return {

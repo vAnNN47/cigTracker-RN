@@ -1,7 +1,6 @@
 /**
- * Pure business rules — ported from the methods that lived inside AppState
- * (lib/state/app_state.dart). Keeping them as free functions makes them
- * trivially testable and keeps the Zustand store thin.
+ * Pure business rules, kept as free functions (no React, no I/O) so they're
+ * trivially testable and the Zustand store stays thin.
  *
  * THE core rule: logical day = the date of (timestamp − dayStartHour).
  * With dayStartHour=4 (default), a 01:00 log counts toward the previous day.

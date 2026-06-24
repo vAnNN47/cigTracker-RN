@@ -1,7 +1,7 @@
 /**
- * Onboarding — ported from lib/screens/onboarding_screen.dart. Captures baseline
- * + daily limit on first run (numeric entry via the number-pad package), then
- * saves settings + the first daily limit and calls onDone.
+ * Onboarding. Captures baseline + daily limit on first run (numeric entry via
+ * the number-pad package), then saves settings + the first daily limit and
+ * calls onDone.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";

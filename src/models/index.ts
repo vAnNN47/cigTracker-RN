@@ -1,7 +1,6 @@
 /**
- * Domain models — ported from lib/models/*.dart.
- * In TS we use plain types + constants; "copyWith" becomes object spread,
- * and JSON (de)serialization lives in the Supabase repo (Step 5).
+ * Domain models. Plain TypeScript types + constants; "copyWith" becomes object
+ * spread, and JSON (de)serialization lives in the Supabase repo.
  */
 
 export type PackUnit = "pack" | "carton";

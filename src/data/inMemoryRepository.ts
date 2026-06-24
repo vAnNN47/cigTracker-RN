@@ -1,6 +1,5 @@
 /**
- * In-memory repo with seeded demo data — ported from
- * lib/data/in_memory_repository.dart. Lets the whole UI be alive before the
+ * In-memory repo with seeded demo data. Lets the whole UI be alive before a
  * backend is wired. Data resets on app restart.
  */
 import { randomUUID } from "expo-crypto";

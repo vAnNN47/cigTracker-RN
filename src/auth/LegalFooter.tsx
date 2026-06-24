@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
-import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
+import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
 // Placeholder policy copy until the real documents are wired in.
 const DOC =

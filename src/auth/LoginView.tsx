@@ -1,7 +1,7 @@
 /**
- * Login — ported from lib/screens/login_screen.dart, but NATIVE Google sign-in
- * (account picker, no browser) via signInWithGoogle -> signInWithIdToken.
- * On success the root auth gate re-renders; no manual navigation needed.
+ * Login with NATIVE Google sign-in (account picker, no browser) via
+ * signInWithGoogle -> signInWithIdToken. On success the root auth gate
+ * re-renders; no manual navigation needed.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { statusCodes } from "@react-native-google-signin/google-signin";
@@ -31,10 +31,10 @@ export function LoginView() {
       await signInWithGoogle();
       // success -> onAuthStateChange flips the gate; keep busy until unmount
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const code = (e as any)?.code;
       if (code !== statusCodes.SIGN_IN_CANCELLED && code !== statusCodes.IN_PROGRESS) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         setErr(String((e as any)?.message ?? e));
       }
       setBusy(false);

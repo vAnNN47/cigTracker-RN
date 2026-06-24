@@ -1,9 +1,8 @@
 /**
- * Self-dismissing toast with an optional action — ported from
- * lib/widgets/app_toast.dart (Overlay + Timer). Exposed via a context so any
+ * Self-dismissing toast with an optional action. Exposed via a context so any
  * screen can call useToast().show({ message, actionLabel, onAction }).
  */
-import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
