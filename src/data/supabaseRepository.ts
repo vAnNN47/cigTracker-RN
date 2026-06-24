@@ -42,7 +42,7 @@ function parseDateOnly(s: string): Date {
   return new Date(y, m - 1, d);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const rowToLog = (r: any): SmokeLog => ({
   id: r.id,
   tag: r.tag ?? DEFAULT_TAG,
@@ -51,7 +51,7 @@ const rowToLog = (r: any): SmokeLog => ({
   diary: r.diary ?? "",
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const rowToPurchase = (r: any): Purchase => ({
   id: r.id,
   unit: r.unit,
@@ -60,7 +60,7 @@ const rowToPurchase = (r: any): Purchase => ({
   boughtAt: new Date(r.bought_at),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const rowToLimit = (r: any): DailyLimit => ({
   id: r.id,
   limit: r.daily_max,
@@ -165,7 +165,7 @@ export class SupabaseRepository implements Repository {
     id: string,
     { unit, quantity, price, boughtAt }: { unit?: PackUnit; quantity?: number; price?: number; boughtAt?: Date },
   ): Promise<Purchase> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const patch: Record<string, any> = {};
     if (unit !== undefined) patch.unit = unit;
     if (quantity !== undefined) patch.quantity = quantity;

@@ -12,7 +12,7 @@ import { fonts, useColors } from "@/theme";
 
 // Small, contained press feedback (the default Android ripple fills the whole
 // tab slot — this keeps it a subtle circle behind the icon).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function TabButton(props: any) {
   return (
     <Pressable

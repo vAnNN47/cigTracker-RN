@@ -31,10 +31,10 @@ export function LoginView() {
       await signInWithGoogle();
       // success -> onAuthStateChange flips the gate; keep busy until unmount
     } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const code = (e as any)?.code;
       if (code !== statusCodes.SIGN_IN_CANCELLED && code !== statusCodes.IN_PROGRESS) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         setErr(String((e as any)?.message ?? e));
       }
       setBusy(false);

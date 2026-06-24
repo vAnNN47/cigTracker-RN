@@ -28,7 +28,7 @@ export async function signInWithGoogle(): Promise<void> {
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
   const result = await GoogleSignin.signIn();
   // v13+ returns { type, data: { idToken, user } }; older returns { idToken }.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const idToken = (result as any).data?.idToken ?? (result as any).idToken;
   if (!idToken) throw new Error("No ID token returned from Google");
   const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: idToken });

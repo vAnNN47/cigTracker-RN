@@ -36,7 +36,7 @@ const K = {
 } as const;
 
 // ---- (de)serialization helpers ------------------------------------------------
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const parse = <T,>(raw: string | null, fallback: T): any => {
   if (!raw) return fallback;
   try {
@@ -46,7 +46,7 @@ const parse = <T,>(raw: string | null, fallback: T): any => {
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const reviveLog = (r: any): SmokeLog => ({
   id: r.id,
   tag: r.tag ?? DEFAULT_TAG, // older entries had no location
@@ -54,13 +54,13 @@ const reviveLog = (r: any): SmokeLog => ({
   comment: r.comment ?? "",
   diary: r.diary ?? "",
 });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const reviveLimit = (r: any): DailyLimit => ({
   id: r.id,
   limit: r.limit,
   effectiveFrom: new Date(r.effectiveFrom),
 });
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const revivePurchase = (r: any): Purchase => ({
   id: r.id,
   unit: r.unit,
