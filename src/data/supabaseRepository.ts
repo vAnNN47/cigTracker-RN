@@ -191,7 +191,7 @@ export class SupabaseRepository implements Repository {
       pricePerPack: data.price_per_pack != null ? Number(data.price_per_pack) : 35,
       baselinePerDay: data.baseline_per_day ?? 20,
       dayStartHour: data.day_start_hour ?? 4,
-      // count_down may not exist as a column yet — defaults to false (count up).
+      // Defaults to false (count up) for rows that predate the count_down column.
       countDown: data.count_down ?? false,
     };
   }
@@ -204,6 +204,7 @@ export class SupabaseRepository implements Repository {
       price_per_pack: settings.pricePerPack,
       baseline_per_day: settings.baselinePerDay,
       day_start_hour: settings.dayStartHour,
+      count_down: settings.countDown,
     });
     if (error) throw error;
     return settings;
