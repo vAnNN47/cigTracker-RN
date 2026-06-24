@@ -12,14 +12,16 @@
 The common workflow for every feature/fix:
 
 1. **Document** — capture the work in [current-feature.md](current-feature.md) (Goals, Notes).
-2. **Branch** — `/feature <name> start` cuts a branch off the current branch (see Branching).
-3. **Implement** — build the goals one by one.
+2. **Branch + build + verify** — `/fire <area>` does steps 2–4 in one: it cuts a branch off the current branch (see Branching), builds the area's open roadmap items, and runs the verify gate once at the end.
+3. **Implement** — (covered by `/fire`) build the goals one by one.
 4. **Verify** — there is no web `build` step. Verify by:
    - `npx tsc --noEmit` passes (no type errors), and
    - `npm run lint` is clean, and
    - it works on a device/emulator (run via `npx expo start`), checked in **both Hebrew (RTL) and English (LTR)**.
 5. **Iterate** — adjust as needed.
-6. **Commit** — only after verify passes (see Commits — ask first).
+6. **Commit** — every skill that changes files runs on **its own fresh branch** and
+   **auto-commits** at the end (no ask, no push, never main). Worst case: revert the commit or
+   switch back to the previous branch. (Outside a skill, still ask before committing.)
 7. **Merge** — merge into the **parent** branch it was cut from. **Never** `main`/`master` automatically (see Branching).
 8. **Delete branch** — after merge (ask first).
 9. **Review** — review AI-generated code periodically and on demand.
@@ -28,12 +30,16 @@ The common workflow for every feature/fix:
 Do NOT commit until typecheck passes. If types fail, fix them first.
 
 ## Branching
-- New branch per feature/fix, **cut from the branch you're on**. Name `<current-branch>_<name>_<NN>` (NN starts `01`) — e.g. on `dev_02`, feature `clock` → `dev_02_clock_01`. Create it with `/feature <name> start`.
+- New branch per feature/fix, **cut from the branch you're on**. Name `<current-branch>_<area>_<NN>` (NN starts `01`) — e.g. on `dev_02`, area `clock` → `dev_02_clock_01`. Create it with `/fire <area>` (which then builds + verifies the area's items).
 - Merge a finished feature into its **parent** branch; ask before deleting the branch once merged.
 - **🔒 `main`/`master` is protected** — never merge or push there automatically. A main merge needs BOTH, in order: (1) you confirm you tested on a real device (iOS or Android), then (2) an explicit second go-ahead.
 
 ## Commits
-- **Ask before committing** (don't auto-commit).
+- **Every skill auto-commits — no asking.** Each skill run that changes files = a **new branch**
+  (cut from the current one) → its change → **auto-commit at the end**. A bad run can then be
+  reverted or abandoned without harming any other branch (that isolation is the whole point).
+  Auto-commit is **local-branch only**: never `push`, never `main`/`master`. *Outside* a skill,
+  ask before committing.
 - Conventional commit messages (`feat:`, `fix:`, `chore:`, etc.).
 - One feature/fix per commit; keep them focused.
 - **Never** add AI/Claude attribution to commit messages — no `Co-Authored-By: Claude`, no "Generated with Claude" trailer.
