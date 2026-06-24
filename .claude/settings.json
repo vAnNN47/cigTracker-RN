@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "deny": [
+      "PowerShell(rm *)",
+      "PowerShell(del *)"
+    ],
+    "ask": [
+      "PowerShell(git push *)"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }
