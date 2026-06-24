@@ -1,14 +1,14 @@
 /**
  * Main drawer (≈76%, opens from the burger on the RTL/right side). Its contents
  * are DYNAMIC per tab: each tab (Today / Diary / Community / Progress) shows its
- * own 2–3 quick links (task: per-tab drawer). Tapping a link opens a dummy
- * sub-screen as a transient overlay "in the current tab" — closing it returns to
- * the tab, and to see it again you reopen the drawer (task: 70% drawer screens).
+ * own 2–3 quick links (task: per-tab drawer). Tapping a link EXPANDS the same
+ * 76% drawer to a full screen in place (with a back button) — back collapses it
+ * back to 76%, the scrim closes the whole drawer (task: 70% → 100% drawer screens).
  * Settings now lives in the Account drawer, so it's no longer listed here.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -79,56 +79,65 @@ export function MainDrawer() {
   const tab = tabFromPath(path);
   const cfg = tabConfig(s.he)[tab];
 
-  // The dummy sub-screen opened from a link, tagged with the tab it belongs to.
-  // It's only shown while you're still on that tab — switching tabs hides it
-  // (no effect needed), so you must reopen the drawer to get back to it.
+  // The sub-screen opened from a link, tagged with the tab it belongs to. It's
+  // only shown while you're still on that tab — switching tabs collapses it.
   const [sub, setSub] = useState<{ tab: TabKey; link: Link } | null>(null);
   const activeLink = sub && sub.tab === tab ? sub.link : null;
-
+  // Retained so the screen keeps its content through the collapse animation
+  // (activeLink flips to null immediately; this lingers until fully closed).
+  const [shownLink, setShownLink] = useState<Link | null>(null);
   const openLink = (l: Link) => {
-    hide();
+    setShownLink(l);
     setSub({ tab, link: l });
   };
 
+  // Reset to the collapsed list whenever the whole drawer closes, so it reopens
+  // at 76% rather than mid-expand.
+  useEffect(() => {
+    if (!open) setSub(null);
+  }, [open]);
+
   // Burger sits on the reading START edge, so the drawer opens from the start:
-  // right in Hebrew (RTL), left in English (LTR). Its sub-screen slides from the
-  // same edge.
+  // right in Hebrew (RTL), left in English (LTR). The sub-screen grows from the
+  // same edge in place.
   const backIcon = I18nManager.isRTL ? "arrow-forward" : "arrow-back";
 
   return (
-    <>
-      <SlideDrawer open={open} side="start" widthPct={0.76} onClose={hide}>
-        <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-          <Text style={styles.title}>{s.menu}</Text>
-          <Text style={styles.sectionTitle}>{cfg.title}</Text>
-          {cfg.links.map((l) => (
-            <Row key={l.label} icon={l.icon} label={l.label} onPress={() => openLink(l)} />
-          ))}
-        </SafeAreaView>
-      </SlideDrawer>
-
-      {/* Dummy sub-screen — slides from the same (start) side as the drawer; back
-          returns to the tab, reopen the drawer to get back here. */}
-      <SlideDrawer open={activeLink !== null} side="start" widthPct={1} onClose={() => setSub(null)}>
+    <SlideDrawer
+      open={open}
+      side="start"
+      widthPct={0.76}
+      expanded={activeLink !== null}
+      onClose={hide}
+      onCollapse={() => setSub(null)}
+      expandedContent={
         <SafeAreaView style={[styles.safe, styles.subSafe]} edges={["top", "bottom"]}>
           <View style={styles.subHeader}>
             <Pressable onPress={() => setSub(null)} hitSlop={10} style={styles.backBtn}>
               <MaterialIcons name={backIcon} size={24} color={green.text} />
             </Pressable>
-            <Text style={styles.subTitle}>{activeLink?.label}</Text>
+            <Text style={styles.subTitle}>{shownLink?.label}</Text>
             <View style={styles.backBtn} />
           </View>
           <ScrollView contentContainerStyle={styles.subBody}>
             <View style={styles.subIcon}>
-              {activeLink && <MaterialIcons name={activeLink.icon} size={32} color={green.green} />}
+              {shownLink && <MaterialIcons name={shownLink.icon} size={32} color={green.green} />}
             </View>
-            <Text style={styles.subHeadline}>{activeLink?.label}</Text>
+            <Text style={styles.subHeadline}>{shownLink?.label}</Text>
             <Text style={styles.subText}>{DUMMY_BODY}</Text>
             <Text style={styles.subText}>{DUMMY_BODY}</Text>
           </ScrollView>
         </SafeAreaView>
-      </SlideDrawer>
-    </>
+      }
+    >
+      <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+        <Text style={styles.title}>{s.menu}</Text>
+        <Text style={styles.sectionTitle}>{cfg.title}</Text>
+        {cfg.links.map((l) => (
+          <Row key={l.label} icon={l.icon} label={l.label} onPress={() => openLink(l)} />
+        ))}
+      </SafeAreaView>
+    </SlideDrawer>
   );
 }
 
