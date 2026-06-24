@@ -8,7 +8,7 @@ import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -51,10 +51,14 @@ export default function EditLogModal() {
   const save = async () => {
     if (!log) return close();
     setSaving(true);
-    // Pick any time freely; only prevent a future time at save.
-    const when = smokedAt.getTime() > Date.now() ? new Date() : smokedAt;
-    await editLog(log.id, { tag, comment: comment.trim(), diary: diary.trim(), smokedAt: when });
-    close();
+    try {
+      // Any time is allowed, including the future (logging a smoke you're about to have).
+      await editLog(log.id, { tag, comment: comment.trim(), diary: diary.trim(), smokedAt });
+      close();
+    } catch (e) {
+      Alert.alert(`${s.couldNotSave}: ${e}`);
+      setSaving(false);
+    }
   };
 
   return (
@@ -66,7 +70,7 @@ export default function EditLogModal() {
         </Pressable>
         <Text style={styles.title}>{s.editEntry}</Text>
         <Pressable onPress={save} hitSlop={8} disabled={saving} style={[styles.headerBtn, styles.saveBtnWrap]}>
-          {saving ? <ActivityIndicator color={green.onGreen} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
+          {saving ? <ActivityIndicator color={green.green} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
         </Pressable>
       </View>
 
