@@ -1,35 +1,50 @@
 ---
 name: feature
-description: Open or update one app feature/component's own context doc (todos, problems, dated fix log)
-argument-hint: <feature-name> [todo|fix <text>]
+description: Per-feature context docs + feature branching (start/merge, with main protected)
+argument-hint: <name> [start | todo <text> | fix <text> | merge]
 ---
 
-# /feature — per-feature context docs
+# /feature — per-feature docs + branching
 
-Every app area (a screen, a tab, a sheet, a button, a component) gets ONE living
-markdown doc at `context/features/<name>.md` that tracks its open todos/problems,
-what's done, and a **dated log of past fixes**. This skill opens and updates those
-docs. It does NOT touch git — you commit code yourself.
+Every app area (screen, tab, sheet, button, component) gets ONE living markdown doc at
+`context/features/<name>.md` (open todos/problems · done · dated fix log). This skill
+opens/updates those docs **and** manages the feature's git branch.
 
 ## Usage
 
 | Command | What it does |
 |---------|--------------|
-| `/feature <name>` | Show that feature's doc. If it doesn't exist, create it from `context/features/_template.md` and fill in **What / where**. |
-| `/feature <name> todo <text>` | Add an open todo/problem to the doc **and** mirror it into `context/roadmap.md`. |
-| `/feature <name> fix <text>` | Log a completed fix: append `- YYYY-MM-DD — <text>` to the doc's **Fix log**, check off the matching todo, and remove it from `context/roadmap.md`. |
+| `/feature <name>` | Show that feature's doc (create from `_template.md` if missing). |
+| `/feature <name> start` | Create the doc if needed, set Status "In Progress", and **cut a branch** off the current branch (see Branching). |
+| `/feature <name> todo <text>` | Add an open todo/problem to the doc **and** `context/roadmap.md`. |
+| `/feature <name> fix <text>` | Log a dated fix in the doc's **Fix log**, tick off the todo, remove it from `roadmap.md`. |
+| `/feature <name> merge` | Merge the finished feature branch back into its **parent** branch (never main — see Branching). |
 
-`<name>` is kebab-case: `settings`, `today`, `edit-log-sheet`, `slide-drawer`, …
+`<name>` is kebab-case: `settings`, `today`, `clock`, `slide-drawer`, …
 
 ## Steps
 
-1. Resolve `context/features/<name>.md`. If missing, copy `_template.md`, set the
-   title, and fill **What / where** (one-line purpose + main source files). Ask if
-   you can't infer them.
-2. If the command includes extra text, apply the verb:
-   - `todo` → add a `- [ ]` line under **Open**, and add the same item to `context/roadmap.md`.
-   - `fix` → move the item to **Fix log** with **today's date** (YYYY-MM-DD), tick it in **Done** if relevant, and delete it from `context/roadmap.md`.
-3. Keep `context/roadmap.md` consistent (every open problem listed there; resolved ones removed).
-4. Print the doc's **Open** list and the last few **Fix log** entries.
+1. **Resolve the doc** `context/features/<name>.md`. If missing, copy `_template.md`, set the
+   title, and fill **What / where**. Ask if you can't infer it.
+2. **Apply the verb:**
+   - `start` → set Status "In Progress"; create + checkout the branch (Branching, below); list the Open items to implement.
+   - `todo <text>` → add a `- [ ]` under **Open**, mirror into `roadmap.md`.
+   - `fix <text>` → move it to **Fix log** with **today's date** (YYYY-MM-DD), tick **Done**, delete from `roadmap.md`.
+   - `merge` → see Branching.
+3. Keep `roadmap.md` consistent (open items listed, resolved removed).
+4. Print the doc's **Open** list and recent **Fix log**.
 
-That's the whole skill — no branches, no merge, no reset.
+## Branching
+
+- A feature is built on its **own branch**, cut from **the branch you're on now** (the parent).
+- **Branch name:** `<current-branch>_<name>_<NN>` — `NN` is the next free 2-digit index, starting `01`.
+  - e.g. on `dev_02`, `/feature clock start` → **`dev_02_clock_01`**.
+- When the feature is 100% done, `merge` folds it back into the **parent** branch it was cut from; then offer to delete the feature branch.
+- **🔒 main / master is protected.** NEVER merge or push to `main`/`master` automatically.
+  Merging to main requires BOTH, in order:
+  1. You confirm you **tested it on a real device** (iOS or Android), then
+  2. an **explicit second go-ahead**.
+  Until both happen, work stays on the dev-branch chain.
+
+## Commits
+Commit code yourself or ask me to. Conventional messages, **no AI attribution** (see ai-interaction.md).

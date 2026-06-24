@@ -12,7 +12,7 @@
 The common workflow for every feature/fix:
 
 1. **Document** — capture the work in [current-feature.md](current-feature.md) (Goals, Notes).
-2. **Branch** — create a branch for the feature/fix.
+2. **Branch** — `/feature <name> start` cuts a branch off the current branch (see Branching).
 3. **Implement** — build the goals one by one.
 4. **Verify** — there is no web `build` step. Verify by:
    - `npx tsc --noEmit` passes (no type errors), and
@@ -20,15 +20,17 @@ The common workflow for every feature/fix:
    - it works on a device/emulator (run via `npx expo start`), checked in **both Hebrew (RTL) and English (LTR)**.
 5. **Iterate** — adjust as needed.
 6. **Commit** — only after verify passes (see Commits — ask first).
-7. **Merge** — merge to main.
-8. **Delete branch** — after merge.
+7. **Merge** — merge into the **parent** branch it was cut from. **Never** `main`/`master` automatically (see Branching).
+8. **Delete branch** — after merge (ask first).
 9. **Review** — review AI-generated code periodically and on demand.
 10. Mark complete in [current-feature.md](current-feature.md) and append to History.
 
 Do NOT commit until typecheck passes. If types fail, fix them first.
 
 ## Branching
-- New branch per feature/fix. Name `feature/[name]` or `fix/[name]`. Ask before deleting a branch once merged.
+- New branch per feature/fix, **cut from the branch you're on**. Name `<current-branch>_<name>_<NN>` (NN starts `01`) — e.g. on `dev_02`, feature `clock` → `dev_02_clock_01`. Create it with `/feature <name> start`.
+- Merge a finished feature into its **parent** branch; ask before deleting the branch once merged.
+- **🔒 `main`/`master` is protected** — never merge or push there automatically. A main merge needs BOTH, in order: (1) you confirm you tested on a real device (iOS or Android), then (2) an explicit second go-ahead.
 
 ## Commits
 - **Ask before committing** (don't auto-commit).
