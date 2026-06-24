@@ -1,7 +1,7 @@
 /**
- * The data contract the UI depends on — ported from lib/data/repository.dart.
- * The in-memory repo implements it now; the Supabase repo (Step 5) implements
- * the same interface, so no UI/store changes are needed to switch backends.
+ * The data contract the UI depends on. Every backend (in-memory, AsyncStorage,
+ * Supabase) implements this same interface, so switching backends needs no
+ * UI/store changes.
  */
 import { AppSettings, DailyLimit, LocationTag, PackUnit, Purchase, SmokeLog } from "@/models";
 

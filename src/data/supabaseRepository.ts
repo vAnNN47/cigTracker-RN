@@ -1,6 +1,5 @@
 /**
- * Supabase implementation of Repository — ported from
- * lib/data/supabase_repository.dart. Row ownership + the diary edit-lock are
+ * Supabase implementation of Repository. Row ownership + the diary edit-lock are
  * enforced by RLS; this just maps rows. Schema:
  *   smoke_logs(id, user_id, smoked_at, log_date, comment, diary)
  *   daily_limits(id, user_id, daily_max, effective_from)

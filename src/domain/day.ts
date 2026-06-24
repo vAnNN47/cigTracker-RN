@@ -1,7 +1,6 @@
 /**
- * Date helpers — ported from lib/utils/date_utils.dart (Day class).
- * A "day key" is local midnight of a date. We build it with the local
- * Date constructor (new Date(y, m, d)) so it never drifts across timezones.
+ * Date helpers. A "day key" is local midnight of a date. We build it with the
+ * local Date constructor (new Date(y, m, d)) so it never drifts across timezones.
  */
 
 /** Local midnight of the given date — a stable day key. */

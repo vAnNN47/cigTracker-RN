@@ -1,7 +1,7 @@
 /**
- * Login — ported from lib/screens/login_screen.dart, but NATIVE Google sign-in
- * (account picker, no browser) via signInWithGoogle -> signInWithIdToken.
- * On success the root auth gate re-renders; no manual navigation needed.
+ * Login with NATIVE Google sign-in (account picker, no browser) via
+ * signInWithGoogle -> signInWithIdToken. On success the root auth gate
+ * re-renders; no manual navigation needed.
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { statusCodes } from "@react-native-google-signin/google-signin";
