@@ -16,6 +16,12 @@ over all of it — never delete entries, only add.
 
 ---
 
+## 2026-06-25 — SHIPPED (branch `skill_testing_01_tracking-loop`)
+- ✅ `[tracking]` — task-tracking loop **v1**: this `context/done-log.md` ledger + new `/recall`
+  skill (open-vs-done digest) + `/inbox` & `/fire` wired to append `ASKED`/`SHIPPED` blocks.
+  Registered `/recall` in `SKILLS_README.md`; `[tracking]` marked `[~]` in `SKILLS_TODO.md`
+  (v2 idea: per-item IDs). Commit `e24dada`.
+
 ## 2026-06-25 — ASKED (batch: "skills next level")
 Routed via `/inbox` → mostly `.claude/skills/SKILLS_TODO.md` (skills-system), one app bug → `roadmap.md`.
 - → SKILLS_TODO `[marketplace]` — adopt skills.sh / skill-creator
