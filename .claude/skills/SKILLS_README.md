@@ -35,8 +35,9 @@ The whole loop is three skills, one verb each:
 
 Plus helpers: **`/package`** (reuse-first widgets),
 **`/recall`** (open-vs-done digest — closes the tracking loop over a batch),
-**`/skill-doctor`** (audits + scores the skill set itself), and
-**`/skills-help`** (explains each skill — what it does + how to use, read live).
+**`/skill-doctor`** (audits + scores the skill set itself),
+**`/skills-help`** (explains each skill — what it does + how to use, read live), and
+**`/skill-forge`** (the `/fire`-for-skills drainer — builds one `SKILLS_TODO` item to Done).
 
 > Plus the marketplace **`skill-creator`** (installed under `.agents/skills/`, symlinked in): authors
 > new skills and runs **empirical** evals / trigger-rate optimization to improve an existing one.
@@ -101,6 +102,15 @@ critiques framing (frontmatter + prose) with opinions and concrete rewrites, and
 Read-only "what & how" for the project's own skills, **read live** from each `SKILL.md` so it never
 drifts. `/skills-help` prints a table of every skill (what it does + how to use); `/skills-help fire`
 explains one in depth. The quick reminder; `SKILLS_TUTORIAL.md` is the longer read.
+
+## `/skill-forge <todo-item>`
+The **drainer for the skills backlog** — the `/fire` twin whose queue is `SKILLS_TODO.md`. Picks one
+open item, **builds it** (authors a new skill in house style — delegating objectively-testable ones
+to `/skill-creator`'s eval loop — / tweaks an existing skill / adopts a marketplace skill), runs the
+**load-check**, then **moves the line to Done**. The only skill that empties `SKILLS_TODO.md`.
+`/skill-doctor` *scans* the set; `/skill-forge` *builds from* the queue.
+- `/skill-forge caveman` — adopt the queued marketplace skill + record its security scan + tick Done
+- `/skill-forge render-audit` — author the queued `[new-skill]` (offers the `/skill-creator` loop)
 
 ## `/package [list|check <need>|new <name>]`
 The reuse-first workflow for `packages/` (app-agnostic, portable components).
