@@ -6,18 +6,27 @@ argument-hint: check | run
 
 # /polish — clean + pay down debt before you ship
 
-The pre-release pass. Run it when you've finished developing and are about to open the
-iPhone/Android to test or cut a version — **not** after every task. It folds the old
-`/cleanup` + `/tech-debt` into one sweep: first it clears **small mechanical mess**, then it
-drains the **structural debt** queued in the roadmap.
+The pre-release pass. Run it when you've finished developing and are about to ship / cut a
+version — **not** after every task. It folds the old `/cleanup` + `/tech-debt` into one sweep:
+first it clears **small mechanical mess**, then it drains the **structural debt** queued in the
+roadmap.
 
 ## Modes — $ARGUMENTS
 
-**`check`** (default) — report only, change nothing. List findings split into:
-- ✅ **trivial** (auto-fixable mess)
-- 🧱 **structural** (the 🧹 Reorg / tech debt items in the roadmap)
+**`check`** (default) — **report + queue; no app-code changes.** Scan with the **LSP tool**
+(grep only for raw-text patterns it can't express — `console.log`, `TODO`, etc.; if LSP is down,
+STOP and notify — see coding-standards.md). List findings split into:
+- ✅ **trivial** (auto-fixable mess — just reported)
+- 🧱 **structural** (consolidations / reorgs / lint-rule debt)
 
-**`run`** — do the work, in two phases:
+Then **write every structural finding into `context/roadmap.md` under 🧹 Reorg / tech debt as a
+`- [ ]` TODO, tagged `[area]`, deduped** against what's already there. Populating that queue is the
+whole job of `check` — it's what `/polish run` (Phase 2) and later passes drain. `check` writes only
+to the roadmap doc (no app code, no branch); save it and report what was queued.
+
+**`run`** — do the work, in two phases. Like every code-changing skill, **`run` first cuts its own
+fresh branch** (off the current branch) and **auto-commits at the end — no asking** (local only:
+never push, never `main`).
 
 ### Phase 1 — small mess (the janitor)
 Scan and fix the trivial stuff:
@@ -45,11 +54,13 @@ extracting a `packages/` component, lint/rule triage, scrubbing dead references.
 - **One focused item at a time**, each kept reviewable.
 - After each: **remove it from the roadmap** and log a dated line in the relevant feature doc's
   Fix log (or `context/current-feature.md` History if cross-cutting).
-- Commit each on its own if asked — conventional message, **no AI attribution**.
+- **Auto-commit** — conventional message, **no AI attribution**. No asking (the branch was cut at
+  the start of `run`, so committing is safe and isolated); never push, never `main`.
 
 ## Verify
 Make the edits, then run `npx tsc --noEmit` + `npm run lint` **once** at the end of each phase
-(PowerShell + fnm — see CLAUDE.md). Don't typecheck after every file.
+(PowerShell + fnm — see CLAUDE.md). Don't typecheck after every file. That's the whole gate —
+**device / RTL+LTR checks are the user's job, not this skill's** (see coding-standards.md).
 
 ## Not this skill's job
 - Sorting fresh ideas → `/inbox`.

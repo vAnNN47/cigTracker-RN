@@ -14,10 +14,14 @@ The common workflow for every feature/fix:
 1. **Document** — capture the work in [current-feature.md](current-feature.md) (Goals, Notes).
 2. **Branch + build + verify** — `/fire <area>` does steps 2–4 in one: it cuts a branch off the current branch (see Branching), builds the area's open roadmap items, and runs the verify gate once at the end.
 3. **Implement** — (covered by `/fire`) build the goals one by one.
-4. **Verify** — there is no web `build` step. Verify by:
+4. **Verify (automated gate)** — there is no web `build` step. A skill/Claude verifies by:
    - `npx tsc --noEmit` passes (no type errors), and
-   - `npm run lint` is clean, and
-   - it works on a device/emulator (run via `npx expo start`), checked in **both Hebrew (RTL) and English (LTR)**.
+   - `npm run lint` is clean.
+   That is the **whole** automated gate. **Device/emulator/web checks — including Hebrew (RTL) +
+   English (LTR) — are the user's job, not the skill's.** The skill finishes at tsc+lint; the user
+   runs the app and comes back with findings (see coding-standards.md → "Verification = type-check
+   + lint"). The only place a device test is required is the `main` merge gate (Branching), where
+   the *user* confirms it.
 5. **Iterate** — adjust as needed.
 6. **Commit** — every skill that changes files runs on **its own fresh branch** and
    **auto-commits** at the end (no ask, no push, never main). Worst case: revert the commit or

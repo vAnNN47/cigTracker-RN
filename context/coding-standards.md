@@ -22,6 +22,8 @@
 
 ## Documentation comments (hover docs)
 - Put a **one-line JSDoc** (`/** ... */`) above each exported component, hook, and non-trivial function — VS Code shows it on hover (like C# `///` XML docs).
+- **Write it as you write the code, never as a later pass.** New exported code is not "done"
+  (and not committed) without its one-line JSDoc — adding docs should never need to be its own task.
 - Keep it to a single summary line. **No inline narration** of obvious code. Document *why*, not *what*, when a comment is needed.
 
 ```ts
@@ -68,3 +70,22 @@ export function Toast({ ... }) { ... }
 ## Code quality
 - No commented-out code, no unused imports/variables.
 - `npx tsc --noEmit` must pass and `npm run lint` should be clean before a change is considered done.
+
+## Code navigation — LSP over grep (global; applies to ALL work and every skill)
+- Use the **LSP tool** for anything about symbols: `goToDefinition`, `findReferences`, `hover`,
+  `documentSymbol`, `workspaceSymbol`. Use `findReferences` to prove "zero references → safe to
+  delete/rename/move" before doing it.
+- **Grep is only for raw text patterns LSP can't express** — e.g. finding every `console.log`,
+  a `TODO`, a string literal, a usage in a non-source file. Prefer LSP wherever it can answer.
+- **If the LSP server isn't connected/working, STOP and notify the user — never silently fall
+  back to grep** for symbol/reference work (grep loses the accuracy guarantee; the user wants to
+  know the server is down). This is the standing rule — no skill needs to re-ask it per run.
+
+## Verification = type-check + lint. The human does device checks.
+- For any automated change, **"verify" means `npx tsc --noEmit` + `npm run lint`, both clean.**
+  That is the whole gate Claude/a skill runs, once, at the end.
+- **Device / emulator / web smoke-testing is the user's responsibility, not the skill's.** Don't
+  claim to have device-tested, don't add "needs a device check" as a step you must perform, and
+  don't block on it. Finish the tsc+lint gate → the automated part is done; the user runs the app
+  and comes back with findings. (The one exception is the explicit `main`/`master` merge gate,
+  where the *user* confirms they device-tested — see ai-interaction.md.)

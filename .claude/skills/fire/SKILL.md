@@ -29,21 +29,24 @@ hand-off; `/fire` goes all the way.
    `context/roadmap.md` — that list is the work. If none, say so and stop.
 2. **Branch.** Cut a branch off the branch you're on now (see Branching). 
 3. **BUILD all the items** — implement them for real, following `context/coding-standards.md`
-   (store→repository seam, theme tokens, `useStrings`, RTL-safe, and **never `any`** — type to
-   what the code expects; `unknown`+narrowing only when truly unavoidable, never `as any`). Use the
-   **LSP tool** (`goToDefinition` / `findReferences` / `hover`) to navigate and understand code
-   instead of grep. **If the LSP server isn't connected/working, STOP and notify the user — do
-   NOT fall back to Grep.** Make **all** the edits; **do not** run typecheck/lint after each file.
+   (store→repository seam, theme tokens, `useStrings`, RTL-safe, **a one-line JSDoc `/** */` on
+   every new exported component/hook/function as you write it — never a later pass**, and **never
+   `any`** — type to what the code expects; `unknown`+narrowing only when truly unavoidable, never
+   `as any`). Use the **LSP tool** (`goToDefinition` / `findReferences` / `hover`) to navigate and
+   understand code instead of grep. **If the LSP server isn't connected/working, STOP and notify
+   the user — do NOT fall back to Grep.** Make **all** the edits; **do not** run typecheck/lint after each file.
 4. **Verify ONCE, at the end** (not per file — Opus rarely typos and per-edit checks just burn
    tokens): run `npx tsc --noEmit` then `npm run lint` (PowerShell + fnm — see CLAUDE.md). Fix
-   what breaks, then re-run the gate. Flag that the change still needs a **device check in both
-   Hebrew (RTL) + English (LTR)** — you can't do that headlessly.
+   what breaks, then re-run the gate. **That is the whole gate — device / RTL+LTR checks are the
+   user's job, not yours; don't perform or block on them** (see coding-standards.md → "Verification
+   = type-check + lint").
 5. **Close the loop.** For each item you actually finished: **remove it from `roadmap.md`** and
    add a dated line (`YYYY-MM-DD — what changed`) to the area doc's **Fix log** (and a `- [x]`
    under **Done** if it's a lasting capability). Items you didn't finish **stay** open in the
    roadmap — never tick something you didn't do.
-6. **Report** what was built, the verify result, what still needs a device test, and any item
-   left open. **Don't auto-run `/polish`** — hygiene is a separate, pre-release pass.
+6. **Report** what was built, the verify result, and any item left open. (The user will device-test
+   and report findings — that's their job, not the skill's.) **Don't auto-run `/polish`** — hygiene
+   is a separate, pre-release pass.
 7. **Commit automatically at the end**, on the working branch — `/fire` always runs on a
    fresh branch cut from the parent, so an auto-commit can never harm the parent or any older
    branch. Conventional message, **no AI attribution**. **Never `push`** and **never commit to

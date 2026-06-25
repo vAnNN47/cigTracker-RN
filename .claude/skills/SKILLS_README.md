@@ -12,7 +12,7 @@ The whole loop is three skills, one verb each:
 ```
   ideas off-PC ──► /inbox ──► roadmap.md (the open queue) ──► /fire <area> ──► built + logged
                                                                                     │
-                                       before device-test / release: /polish ◄──────┘
+                                                  before release: /polish ◄──────┘
 ```
 
 - **`/inbox`** — INTAKE. Sort a brain-dump into the roadmap. Never writes code.
@@ -24,15 +24,21 @@ Plus two helpers: **`/list-components`** (inventory) and **`/package`** (reuse-f
 > **Every skill that changes files runs on its own fresh branch and auto-commits at the end —
 > no asking** (local-branch only: never push, never main). Each skill run = new branch → its
 > change → commit, so a bad run is reverted or abandoned without touching any other branch.
-> A report-only run (e.g. `/polish check`) changes nothing, so it neither branches nor commits.
+> `/polish check` only appends `- [ ]` TODOs to `context/roadmap.md` (no app-code change), so it
+> skips the branch and just saves the doc; every **code-changing** run branches + auto-commits.
 
-> **Two house rules for any skill that touches code** (`/fire`, `/polish`, `/package new`):
-> 1. **Use the LSP tool for symbol work** — `goToDefinition` / `findReferences` / `hover` (and
->    `findReferences` for "zero references → safe to delete") instead of grep. **If the LSP server
->    isn't connected/working, STOP and notify the user — do NOT silently fall back to Grep**
->    (grep loses the accuracy guarantee; the user wants to know the server is down).
-> 2. **Never write `any`** — type to what the code expects; `unknown`+narrowing is the only escape
->    hatch, never `as any` (see `context/coding-standards.md`).
+> **House rules for any skill that touches code** (`/fire`, `/polish`, `/package new`). These are
+> not skill-local — the canonical statements live in **`context/coding-standards.md`**, which
+> `CLAUDE.md` auto-loads every session, so they apply to **all** work (skill or not) with no need
+> to re-ask per run. In brief:
+> 1. **LSP over grep** for symbol/reference work — `goToDefinition` / `findReferences` / `hover`
+>    (and `findReferences` for "zero references → safe to delete"). Grep only for raw-text patterns
+>    LSP can't express. **If the LSP server is down, STOP and notify — never silently fall back to grep.**
+> 2. **Never write `any`** — type to what the code expects; `unknown`+narrowing only, never `as any`.
+> 3. **Verify = `tsc` + lint, once at the end.** **Device / emulator / RTL+LTR checks are the
+>    user's job — skills never device-test** and don't block on it; the user runs the app and reports back.
+> 4. **JSDoc as you write** — every new exported component/hook/function gets its one-line `/** */`
+>    immediately, never deferred to a later cleanup pass.
 
 ---
 
