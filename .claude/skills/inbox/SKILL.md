@@ -8,9 +8,10 @@ argument-hint: <paste your batch> (or run empty to read context/inbox.md)
 
 You jot ideas off-PC (often Hebrew, often a numbered list). This skill reads that raw
 batch and **routes each item into `context/roadmap.md`** — the single open queue —
-tagged by area, and **dedupes** so nothing lands twice. It is **intake only**: it never
-writes app code, never cuts a branch, never scaffolds a package. (To actually build an
-area's items, run `/fire <area>`.)
+tagged by area, and **dedupes** so nothing lands twice. It writes **no app code** and
+**scaffolds no package** — but, like every skill, it **cuts its own fresh branch and
+auto-commits** the roadmap edit at the end (no asking). (To actually build an area's items,
+run `/fire <area>`.)
 
 ## ⚠️ Ask before you map (the most important rule)
 
@@ -76,12 +77,21 @@ ambiguous ones first; only print the final routing map once you're sure. ASK, AS
      (link to `features/<area>.md` if that doc already exists);
    - package candidates → note "run `/package new <name>`" — do NOT scaffold here.
 8. If the batch came from `context/inbox.md`, **remove the triaged lines** from it.
+9. **Branch + commit — always, no asking.** Like every skill, inbox runs on its **own fresh
+   branch** and **auto-commits** the result. Cut `<current-branch>_inbox_NN` off the current
+   branch, then commit the roadmap (+ `inbox.md`) edit with a `docs(roadmap):` message.
+   **Local branch only — never push, never `main`/`master`.**
+   - **Exception — explicit branch instruction wins:** if the user's request spells out how to
+     handle the branch (e.g. "create a branch named XYZ", or "stay on this branch"), follow that
+     instead of auto-naming. That overrides the auto-cut; still commit the routing.
 
 ## Rules
 - **ASK before mapping** — clarify every ambiguous item (meaning + which element) with the user
   *before* writing anything to the roadmap. The first code match is NOT automatically the source
   of truth; similar elements exist. Never print the map until you're sure.
-- **Routing only** — never write code, cut a branch, or scaffold a package.
+- **No app code, no package scaffolding** — inbox only routes into the roadmap. But it **always
+  cuts a branch and auto-commits** the roadmap edit (step 9), unless the user gave an explicit
+  branch instruction.
 - The roadmap is the **single source of truth**; always dedupe against it.
 - One item lands in exactly one place — pick the best section, don't double-file.
 - Keep the kebab **slug == roadmap `[tag]`** convention (see SKILLS_README).
