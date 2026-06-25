@@ -14,7 +14,7 @@ import { Alert, I18nManager, Linking, Pressable, ScrollView, Share, StyleSheet, 
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SettingsView } from "@/app/settings";
-import { SlideDrawer } from "@/components/SlideDrawer";
+import { SlideDrawer } from "@/components/drawers/SlideDrawer";
 import { resolveLang, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { supabase } from "@/lib/supabase";

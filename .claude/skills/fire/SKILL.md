@@ -29,8 +29,11 @@ hand-off; `/fire` goes all the way.
    `context/roadmap.md` — that list is the work. If none, say so and stop.
 2. **Branch.** Cut a branch off the branch you're on now (see Branching). 
 3. **BUILD all the items** — implement them for real, following `context/coding-standards.md`
-   (store→repository seam, theme tokens, `useStrings`, RTL-safe). Make **all** the edits;
-   **do not** run typecheck/lint after each file.
+   (store→repository seam, theme tokens, `useStrings`, RTL-safe, and **never `any`** — type to
+   what the code expects; `unknown`+narrowing only when truly unavoidable, never `as any`). Use the
+   **LSP tool** (`goToDefinition` / `findReferences` / `hover`) to navigate and understand code
+   instead of grep. **If the LSP server isn't connected/working, STOP and notify the user — do
+   NOT fall back to Grep.** Make **all** the edits; **do not** run typecheck/lint after each file.
 4. **Verify ONCE, at the end** (not per file — Opus rarely typos and per-edit checks just burn
    tokens): run `npx tsc --noEmit` then `npm run lint` (PowerShell + fnm — see CLAUDE.md). Fix
    what breaks, then re-run the gate. Flag that the change still needs a **device check in both

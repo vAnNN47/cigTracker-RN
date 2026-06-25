@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { SlideDrawer } from "@/components/SlideDrawer";
+import { SlideDrawer } from "@/components/drawers/SlideDrawer";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useDrawerStore } from "@/store/useDrawerStore";

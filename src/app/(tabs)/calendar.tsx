@@ -12,10 +12,10 @@ import { useRef, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
-import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
-import { Ring } from "@/components/Ring";
-import { TabHeader } from "@/components/TabHeader";
+import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/sheets/AddPurchaseSheet";
+import { LogDetailSheet, LogDetailSheetRef } from "@/components/sheets/LogDetailSheet";
+import { Ring } from "@/components/charts/Ring";
+import { TabHeader } from "@/components/ui/TabHeader";
 import { isSameDay, keyOf } from "@/domain/day";
 import {
   countForDay,

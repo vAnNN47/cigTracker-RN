@@ -11,9 +11,10 @@ Project context for Claude + you. The always-on files are referenced by the root
 - `current-feature.md` — optional "what I'm actively focused on right now" pointer
 
 ## Per-feature docs — `features/`
-ONE living doc per app area (screen / tab / sheet / button / component), tracking its
-open todos & problems, what's done, and a **dated fix log**. Created and updated with
-the `/feature` skill. Copy `features/_template.md` to start a new one.
-Examples: `features/settings.md`, `features/today.md`.
+ONE living doc per app area (screen / tab / sheet / drawer), holding its **context + a
+dated fix log** — what it is, what's done, and what changed when. Open todos do **not**
+live here; they live in `roadmap.md` tagged `[area]`. `/fire <area>` builds the roadmap
+items and moves each finished one into that area's fix log. Copy `features/_template.md`
+to start a new one. Examples: `features/settings.md`, `features/today.md`.
 
 See `.claude/skills/SKILLS_README.md` for how the skills use these files.
