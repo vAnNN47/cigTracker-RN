@@ -11,6 +11,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useDrawerStore } from "@/store/useDrawerStore";
 import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
+/** Shared tab top bar: burger (main drawer) + optional title + avatar (account drawer). */
 export function TabHeader({ title }: { title?: string }) {
   const green = useColors();
   const styles = useStyles();

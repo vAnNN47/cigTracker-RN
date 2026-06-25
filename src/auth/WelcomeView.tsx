@@ -25,6 +25,7 @@ import { LegalFooter } from "./LegalFooter";
 
 const BAD = "#C0392B";
 
+/** First-run chooser: continue with Google (cloud) or without an account (local). */
 export function WelcomeView() {
   const s = useStrings();
   const green = useColors();
@@ -49,11 +50,9 @@ export function WelcomeView() {
       // success → onAuthStateChange flips the gate, which sets dataMode.
       // Keep busy until this view unmounts.
     } catch (e) {
-       
-      const code = (e as any)?.code;
+      const code = (e as { code?: string })?.code;
       if (code !== statusCodes.SIGN_IN_CANCELLED && code !== statusCodes.IN_PROGRESS) {
-         
-        setErr(String((e as any)?.message ?? e));
+        setErr(String((e as { message?: string })?.message ?? e));
       }
       setBusy(false);
     }

@@ -36,32 +36,50 @@ const K = {
 } as const;
 
 // ---- (de)serialization helpers ------------------------------------------------
- 
-const parse = <T,>(raw: string | null, fallback: T): any => {
+
+/** Stored JSON row shapes (dates as ISO strings) — revived to domain types below. */
+interface StoredLog {
+  id: string;
+  tag: LocationTag | null;
+  smokedAt: string;
+  comment: string | null;
+  diary: string | null;
+}
+interface StoredLimit {
+  id: string;
+  limit: number;
+  effectiveFrom: string;
+}
+interface StoredPurchase {
+  id: string;
+  unit: PackUnit;
+  quantity: number;
+  price: number;
+  boughtAt: string;
+}
+
+const parse = <T,>(raw: string | null, fallback: T): T => {
   if (!raw) return fallback;
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw) as T;
   } catch {
     return fallback;
   }
 };
 
- 
-const reviveLog = (r: any): SmokeLog => ({
+const reviveLog = (r: StoredLog): SmokeLog => ({
   id: r.id,
   tag: r.tag ?? DEFAULT_TAG, // older entries had no location
   smokedAt: new Date(r.smokedAt),
   comment: r.comment ?? "",
   diary: r.diary ?? "",
 });
- 
-const reviveLimit = (r: any): DailyLimit => ({
+const reviveLimit = (r: StoredLimit): DailyLimit => ({
   id: r.id,
   limit: r.limit,
   effectiveFrom: new Date(r.effectiveFrom),
 });
- 
-const revivePurchase = (r: any): Purchase => ({
+const revivePurchase = (r: StoredPurchase): Purchase => ({
   id: r.id,
   unit: r.unit,
   quantity: r.quantity,
@@ -69,6 +87,7 @@ const revivePurchase = (r: any): Purchase => ({
   boughtAt: new Date(r.boughtAt),
 });
 
+/** On-device Repository persisting to AsyncStorage (the no-account "local" mode). */
 export class AsyncStorageRepository implements Repository {
   private logs: SmokeLog[] = [];
   private limits: DailyLimit[] = [];
@@ -83,9 +102,9 @@ export class AsyncStorageRepository implements Repository {
     this.loading = (async () => {
       const entries = await AsyncStorage.multiGet([K.logs, K.limits, K.purchases, K.settings]);
       const map = Object.fromEntries(entries);
-      this.logs = parse<unknown[]>(map[K.logs], []).map(reviveLog);
-      this.limits = parse<unknown[]>(map[K.limits], []).map(reviveLimit);
-      this.purchases = parse<unknown[]>(map[K.purchases], []).map(revivePurchase);
+      this.logs = parse<StoredLog[]>(map[K.logs], []).map(reviveLog);
+      this.limits = parse<StoredLimit[]>(map[K.limits], []).map(reviveLimit);
+      this.purchases = parse<StoredPurchase[]>(map[K.purchases], []).map(revivePurchase);
       this.settings = { ...DEFAULT_SETTINGS, ...parse<Partial<AppSettings>>(map[K.settings], {}) };
       this.loaded = true;
     })();

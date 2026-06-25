@@ -37,6 +37,7 @@ const RANGES: { key: string; value: number | null }[] = [
   { key: "All", value: null },
 ];
 
+/** Stats tab: headline metrics, trend/savings line charts, and hourly histogram. */
 export default function ProgressScreen() {
   const s = useStrings();
   const green = useColors();

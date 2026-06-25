@@ -33,6 +33,7 @@ interface Props {
 
 type TagDef = { key: LocationTag; label: string; icon: keyof typeof MaterialIcons.glyphMap };
 
+/** Log-a-cigarette bottom sheet (tag, feeling, time, notes); opened via ref.present(). */
 export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
   function AddSmokeSheet({ onLogged }, ref) {
     const s = useStrings();

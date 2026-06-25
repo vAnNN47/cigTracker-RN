@@ -36,6 +36,7 @@ export interface LogDetailSheetRef {
   present: (args: { log: SmokeLog; number: number; editable: boolean }) => void;
 }
 
+/** Read-only log detail bottom sheet; opened imperatively via ref.present(). */
 export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
   function LogDetailSheet(_props, ref) {
     const s = useStrings();

@@ -64,6 +64,7 @@ function buildWeeks(monthFirst: Date): (Date | null)[][] {
   return out;
 }
 
+/** Diary tab: status-tinted month calendar; tapping a day shows its logs + purchases. */
 export default function HistoryScreen() {
   const s = useStrings();
   const green = useColors();

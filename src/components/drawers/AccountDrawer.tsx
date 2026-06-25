@@ -28,6 +28,7 @@ const LOREM =
 
 type Sub = "none" | "language" | "theme" | "settings" | "faq" | "privacy" | "terms";
 
+/** Avatar-side drawer: account status, Settings, and About/Privacy/Feedback sub-panels. */
 export function AccountDrawer() {
   const s = useStrings();
   const green = useColors();
@@ -54,10 +55,13 @@ export function AccountDrawer() {
     }
   }, [open, signedIn]);
 
-  // Reset to the account list whenever the drawer closes.
-  useEffect(() => {
+  // Reset to the account list whenever the drawer closes (during render, so the
+  // list is already shown the next time it opens — no stale sub-panel frame).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (!open) setSub("none");
-  }, [open]);
+  }
 
   const version = Constants.expoConfig?.version ?? "1.0.0";
   const backIcon = I18nManager.isRTL ? "chevron-right" : "chevron-left";

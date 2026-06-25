@@ -13,6 +13,7 @@ export function today(): Date {
   return keyOf(new Date());
 }
 
+/** Whether two day keys fall on the same calendar day. */
 export function isSameDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&

@@ -9,6 +9,7 @@ import { useAppStore } from "@/store/useAppStore";
 
 import { makeStrings } from "./strings";
 
+/** The active string table for the chosen locale (or the device language). */
 export function useStrings() {
   const locale = useAppStore((s) => s.locale);
   return useMemo(() => {

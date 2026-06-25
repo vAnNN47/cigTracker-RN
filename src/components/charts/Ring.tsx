@@ -15,6 +15,7 @@ interface RingProps {
   children?: React.ReactNode; // centered content (the count)
 }
 
+/** Count-vs-limit progress ring (SVG) with centered content. */
 export function Ring({ size = 84, strokeWidth = 8, pct, color, track = colors.track, children }: RingProps) {
   const r = (size - strokeWidth) / 2;
   const c = 2 * Math.PI * r;

@@ -14,6 +14,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
+/** First-run setup: capture baseline + daily limit, then save and call onDone. */
 export function OnboardingView({ onDone }: { onDone: () => void }) {
   const s = useStrings();
   const green = useColors();

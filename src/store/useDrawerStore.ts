@@ -12,6 +12,7 @@ interface DrawerState {
   hide: () => void;
 }
 
+/** Tracks which slide-in drawer ("main" | "account") is currently open. */
 export const useDrawerStore = create<DrawerState>((set) => ({
   open: null,
   show: (kind) => set({ open: kind }),

@@ -16,6 +16,7 @@ import { SupabaseRepository } from "./supabaseRepository";
 
 export type DataMode = "local" | "supabase";
 
+/** Maps a runtime data mode to its Repository implementation. */
 export function createRepository(mode: DataMode | null): Repository {
   if (mode === "supabase") return new SupabaseRepository();
   if (mode === "local") return new AsyncStorageRepository();

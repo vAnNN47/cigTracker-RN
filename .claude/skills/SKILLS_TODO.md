@@ -10,7 +10,7 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 > **Done** with a date.
 
 ## Open
-
+- [ ] polish check should use LSP also, because when claude checks he uses grep again.
 - [ ] _(none)_
 
 ## Done

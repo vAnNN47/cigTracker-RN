@@ -18,6 +18,7 @@ import { addDays, isSameDay, keyOf, today } from "@/domain/day";
 
 import { Repository } from "./repository";
 
+/** Volatile Repository with seeded demo data (resets on restart). */
 export class InMemoryRepository implements Repository {
   private logs: SmokeLog[] = [];
   private limits: DailyLimit[] = [];

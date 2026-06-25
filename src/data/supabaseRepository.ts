@@ -41,8 +41,28 @@ function parseDateOnly(s: string): Date {
   return new Date(y, m - 1, d);
 }
 
- 
-const rowToLog = (r: any): SmokeLog => ({
+/** Raw DB row shapes (untyped supabase client) — mapped to domain types below. */
+interface LogRow {
+  id: string;
+  tag: LocationTag | null;
+  smoked_at: string;
+  comment: string | null;
+  diary: string | null;
+}
+interface PurchaseRow {
+  id: string;
+  unit: PackUnit;
+  quantity: number;
+  price: number | string;
+  bought_at: string;
+}
+interface LimitRow {
+  id: string;
+  daily_max: number;
+  effective_from: string;
+}
+
+const rowToLog = (r: LogRow): SmokeLog => ({
   id: r.id,
   tag: r.tag ?? DEFAULT_TAG,
   smokedAt: new Date(r.smoked_at),
@@ -50,8 +70,7 @@ const rowToLog = (r: any): SmokeLog => ({
   diary: r.diary ?? "",
 });
 
- 
-const rowToPurchase = (r: any): Purchase => ({
+const rowToPurchase = (r: PurchaseRow): Purchase => ({
   id: r.id,
   unit: r.unit,
   quantity: r.quantity,
@@ -59,13 +78,13 @@ const rowToPurchase = (r: any): Purchase => ({
   boughtAt: new Date(r.bought_at),
 });
 
- 
-const rowToLimit = (r: any): DailyLimit => ({
+const rowToLimit = (r: LimitRow): DailyLimit => ({
   id: r.id,
   limit: r.daily_max,
   effectiveFrom: parseDateOnly(r.effective_from),
 });
 
+/** Cloud Repository backed by Supabase (row ownership enforced by RLS). */
 export class SupabaseRepository implements Repository {
   async getLogs(): Promise<SmokeLog[]> {
     const { data, error } = await supabase.from("smoke_logs").select().order("smoked_at");
@@ -164,8 +183,7 @@ export class SupabaseRepository implements Repository {
     id: string,
     { unit, quantity, price, boughtAt }: { unit?: PackUnit; quantity?: number; price?: number; boughtAt?: Date },
   ): Promise<Purchase> {
-     
-    const patch: Record<string, any> = {};
+    const patch: Record<string, string | number> = {};
     if (unit !== undefined) patch.unit = unit;
     if (quantity !== undefined) patch.quantity = quantity;
     if (price !== undefined) patch.price = price;

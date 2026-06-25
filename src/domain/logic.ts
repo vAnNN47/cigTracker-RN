@@ -23,6 +23,7 @@ export function logicalDay(dt: Date, dayStartHour: number): Date {
   return keyOf(new Date(dt.getTime() - dayStartHour * HOUR_MS));
 }
 
+/** The logical "today" key for the current moment. */
 export function logicalToday(dayStartHour: number): Date {
   return logicalDay(new Date(), dayStartHour);
 }
@@ -34,6 +35,7 @@ export function isLogEditable(log: SmokeLog, dayStartHour: number): boolean {
 
 // ---- Logs -----------------------------------------------------------------
 
+/** Logs belonging to a given logical day, sorted by time. */
 export function logsForDay(logs: SmokeLog[], day: Date, dayStartHour: number): SmokeLog[] {
   const key = keyOf(day);
   return logs
@@ -41,10 +43,12 @@ export function logsForDay(logs: SmokeLog[], day: Date, dayStartHour: number): S
     .sort((a, b) => a.smokedAt.getTime() - b.smokedAt.getTime());
 }
 
+/** How many cigarettes were logged on a given logical day. */
 export function countForDay(logs: SmokeLog[], day: Date, dayStartHour: number): number {
   return logsForDay(logs, day, dayStartHour).length;
 }
 
+/** Count of logs whose logical day falls within [from, to] (inclusive). */
 export function countBetween(
   logs: SmokeLog[],
   fromInclusive: Date,
@@ -94,6 +98,7 @@ export function limitForDay(
   return best?.limit ?? settings.baselinePerDay;
 }
 
+/** The daily limit in effect for today. */
 export function currentLimit(limits: DailyLimit[], settings: AppSettings): number {
   return limitForDay(limits, logicalToday(settings.dayStartHour), settings);
 }
@@ -106,10 +111,12 @@ export interface DayStat {
   limit: number;
 }
 
+/** Whether a day's count is at or under its limit. */
 export function withinLimit(s: DayStat): boolean {
   return s.count <= s.limit;
 }
 
+/** Earliest day with any log or limit (or 30 days back if there's none). */
 export function firstTrackedDay(
   logs: SmokeLog[],
   limits: DailyLimit[],
@@ -124,6 +131,7 @@ export function firstTrackedDay(
   return dates[0];
 }
 
+/** Per-day {count, limit} series across the tracked range (or the last N days). */
 export function dailyStats(
   logs: SmokeLog[],
   limits: DailyLimit[],
@@ -145,6 +153,7 @@ export function dailyStats(
 
 // ---- Spend + savings -------------------------------------------------------
 
+/** Purchases made on a given logical day, sorted by time. */
 export function purchasesForDay(
   purchases: Purchase[],
   day: Date,
@@ -156,10 +165,12 @@ export function purchasesForDay(
     .sort((a, b) => a.boughtAt.getTime() - b.boughtAt.getTime());
 }
 
+/** Sum of all purchase prices. */
 export function totalSpent(purchases: Purchase[]): number {
   return purchases.reduce((sum, p) => sum + p.price, 0);
 }
 
+/** Total cigarettes across all purchases (packs/cartons expanded to sticks). */
 export function totalCigarettesBought(purchases: Purchase[]): number {
   return purchases.reduce((sum, p) => sum + cigsInPurchase(p), 0);
 }

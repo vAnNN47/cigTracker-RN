@@ -6,5 +6,11 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ["dist/*"],
-  }
+  },
+  {
+    rules: {
+      // `any` is build-blocked — use real types or `unknown` + narrowing.
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
 ]);

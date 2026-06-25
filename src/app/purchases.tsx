@@ -25,6 +25,7 @@ interface DayGroup {
   items: Purchase[];
 }
 
+/** Read-only purchase history grouped by day, with per-day and grand totals. */
 export default function PurchasesScreen() {
   const s = useStrings();
   const green = useColors();

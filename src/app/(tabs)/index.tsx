@@ -30,6 +30,7 @@ import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
 const HOUR = 60 * 60 * 1000;
 
+/** Today tab: tap-to-log hero ring (count up/down), streak, savings, and recent logs. */
 export default function TodayScreen() {
   const s = useStrings();
   const green = useColors();
@@ -59,7 +60,7 @@ export default function TodayScreen() {
   const heroSub = settings.countDown ? s.smokedTodayN(count) : s.leftTodayN(left);
 
   // Gentle pulse so the circle reads as tappable.
-  const pulse = useRef(new Animated.Value(1)).current;
+  const [pulse] = useState(() => new Animated.Value(1));
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -73,7 +74,7 @@ export default function TodayScreen() {
 
   // Floating add button: fades in once the hero circle has scrolled away, so the
   // user never has to scroll back up to log (task: pinned add button).
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollY] = useState(() => new Animated.Value(0));
   const [fabShown, setFabShown] = useState(false);
   useEffect(() => {
     const id = scrollY.addListener(({ value }) => {

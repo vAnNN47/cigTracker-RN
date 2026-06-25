@@ -23,18 +23,20 @@ function ensureConfigured() {
   configured = true;
 }
 
+/** Native Google sign-in → exchanges the ID token for a Supabase session. */
 export async function signInWithGoogle(): Promise<void> {
   ensureConfigured();
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
   const result = await GoogleSignin.signIn();
   // v13+ returns { type, data: { idToken, user } }; older returns { idToken }.
-   
-  const idToken = (result as any).data?.idToken ?? (result as any).idToken;
+  const r = result as unknown as { data?: { idToken?: string | null }; idToken?: string | null };
+  const idToken = r.data?.idToken ?? r.idToken;
   if (!idToken) throw new Error("No ID token returned from Google");
   const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: idToken });
   if (error) throw error;
 }
 
+/** Signs out of both Google and Supabase. */
 export async function signOut(): Promise<void> {
   ensureConfigured();
   try {

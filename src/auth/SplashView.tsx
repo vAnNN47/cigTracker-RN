@@ -15,6 +15,7 @@ import Animated, {
 
 import { green } from "@/theme";
 
+/** Boot splash: logo fades/scales in, then breathes while the app loads. */
 export function SplashView() {
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.86);

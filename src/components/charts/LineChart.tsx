@@ -61,6 +61,7 @@ function pickIdxs(len: number, k: number): number[] {
   return [...out];
 }
 
+/** Responsive multi-series line chart (SVG): smooth curves, gridlines, optional fill/dots. */
 export function LineChart({
   series,
   height = 170,

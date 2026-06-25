@@ -81,11 +81,14 @@ function Gate() {
     if (session && dataMode === null) setDataMode("supabase");
   }, [session, dataMode, setDataMode]);
 
-  // Switching modes (or signing out) forces a fresh load with the new repo.
-  useEffect(() => {
+  // Switching modes (or signing out) forces a fresh load with the new repo —
+  // reset during render (not in an effect) so there's no stale-data frame.
+  const [prevMode, setPrevMode] = useState(dataMode);
+  if (prevMode !== dataMode) {
+    setPrevMode(dataMode);
     setDataLoaded(false);
     setOnboardDone(false);
-  }, [dataMode]);
+  }
 
   const authed = dataMode === "local" || (dataMode === "supabase" && !!session);
 
@@ -129,6 +132,7 @@ function Gate() {
   );
 }
 
+/** Root layout + auth gate: splash/login/onboarding overlay above the always-mounted Stack. */
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     HankenGrotesk_400Regular,

@@ -21,6 +21,7 @@ import { fonts, makeUseStyles, radius, spacing, type, useColors, useIsDark } fro
 
 type TagDef = { key: LocationTag; label: string; icon: keyof typeof MaterialIcons.glyphMap };
 
+/** Full-screen modal route to edit a today log's time, location, comment and diary. */
 export default function EditLogModal() {
   const s = useStrings();
   const green = useColors();

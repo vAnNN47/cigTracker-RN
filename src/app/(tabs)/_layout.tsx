@@ -5,23 +5,13 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { type ComponentProps } from "react";
 import { Pressable } from "react-native";
 
 import { useStrings } from "@/i18n/useStrings";
 import { fonts, useColors } from "@/theme";
 
-// Small, contained press feedback (the default Android ripple fills the whole
-// tab slot — this keeps it a subtle circle behind the icon).
- 
-function TabButton(props: any) {
-  return (
-    <Pressable
-      {...props}
-      android_ripple={{ color: "rgba(46,204,113,0.18)", borderless: true, radius: 28 }}
-    />
-  );
-}
-
+/** Bottom tab navigator: Today · Diary · Community · Stats. */
 export default function TabsLayout() {
   const s = useStrings();
   const green = useColors();
@@ -42,7 +32,14 @@ export default function TabsLayout() {
           shadowOpacity: 0,
         },
         sceneStyle: { backgroundColor: green.bg },
-        tabBarButton: (props) => <TabButton {...props} />,
+        // Contained press feedback — the default Android ripple fills the whole
+        // tab slot; this keeps it a subtle circle behind the icon.
+        tabBarButton: (props) => (
+          <Pressable
+            {...(props as ComponentProps<typeof Pressable>)}
+            android_ripple={{ color: "rgba(46,204,113,0.18)", borderless: true, radius: 28 }}
+          />
+        ),
       }}
     >
       <Tabs.Screen

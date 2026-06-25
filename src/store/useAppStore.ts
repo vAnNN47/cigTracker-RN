@@ -57,6 +57,7 @@ interface AppStore {
   saveSettings: (settings: AppSettings) => Promise<void>;
 }
 
+/** App-wide store: raw data + write actions + the active repository/data mode. */
 export const useAppStore = create<AppStore>()((set, get) => ({
   repo: createRepository(null),
   dataMode: null,

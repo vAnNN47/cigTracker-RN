@@ -8,7 +8,7 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -69,6 +69,7 @@ function tabFromPath(path: string): TabKey {
 const DUMMY_BODY =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 
+/** Burger-side drawer with per-tab quick links; expands in place to a full screen. */
 export function MainDrawer() {
   const s = useStrings();
   const green = useColors();
@@ -91,11 +92,13 @@ export function MainDrawer() {
     setSub({ tab, link: l });
   };
 
-  // Reset to the collapsed list whenever the whole drawer closes, so it reopens
-  // at 76% rather than mid-expand.
-  useEffect(() => {
+  // Reset to the collapsed list whenever the whole drawer closes (during render),
+  // so it reopens at 76% rather than mid-expand.
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
     if (!open) setSub(null);
-  }, [open]);
+  }
 
   // Burger sits on the reading START edge, so the drawer opens from the start:
   // right in Hebrew (RTL), left in English (LTR). The sub-screen grows from the

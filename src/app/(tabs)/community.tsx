@@ -17,6 +17,7 @@ import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
 // Stable accent per author so avatars look distinct without real images.
 const AVATAR_TINTS = ["#2ECC71", "#7FB8C9", "#E0A98A", "#C69CE0"];
 
+/** Community tab: a (currently dummy) social feed with compose/like stubs. */
 export default function CommunityScreen() {
   const s = useStrings();
   const green = useColors();

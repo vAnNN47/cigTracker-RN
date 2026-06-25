@@ -48,11 +48,16 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
   const [langOpen, setLangOpen] = useState(false);
 
   const formRef = useRef(form);
-  formRef.current = form;
   const limitRef = useRef(limitDraft);
-  limitRef.current = limitDraft;
   const settingsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const limitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Mirror the latest drafts into refs (from an effect, not during render) so the
+  // unmount flush below persists the current values.
+  useEffect(() => {
+    formRef.current = form;
+    limitRef.current = limitDraft;
+  }, [form, limitDraft]);
 
   // Flush any pending write when leaving the screen so nothing is lost.
   useEffect(

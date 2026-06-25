@@ -28,6 +28,7 @@ export interface AddPurchaseSheetRef {
   present: (purchase?: Purchase) => void;
 }
 
+/** Add/edit a purchase bottom sheet; opened imperatively via ref.present(). */
 export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
   function AddPurchaseSheet(_props, ref) {
     const s = useStrings();

@@ -17,6 +17,7 @@ import { LegalFooter } from "./LegalFooter";
 
 const BAD = "#C0392B";
 
+/** Signed-out screen with native Google sign-in; the root gate re-renders on success. */
 export function LoginView() {
   const s = useStrings();
   const green = useColors();
@@ -31,11 +32,9 @@ export function LoginView() {
       await signInWithGoogle();
       // success -> onAuthStateChange flips the gate; keep busy until unmount
     } catch (e) {
-       
-      const code = (e as any)?.code;
+      const code = (e as { code?: string })?.code;
       if (code !== statusCodes.SIGN_IN_CANCELLED && code !== statusCodes.IN_PROGRESS) {
-         
-        setErr(String((e as any)?.message ?? e));
+        setErr(String((e as { message?: string })?.message ?? e));
       }
       setBusy(false);
     }

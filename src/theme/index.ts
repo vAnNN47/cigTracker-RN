@@ -17,6 +17,7 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAppStore } from "@/store/useAppStore";
 
+/** Light "haze" palette — legacy keys remapped + new status/tag/text tiers. */
 export const colors = {
   // Surfaces
   bg: "#0e1116", // app surface
@@ -155,6 +156,7 @@ export const type = {
   tabLabel: { fontSize: 10, fontFamily: fonts.medium },
 } as const;
 
+/** All design tokens bundled together (colors, fonts, radius, spacing, type). */
 export const theme = { colors, fonts, radius, spacing, type } as const;
 
 export type AppColors = typeof colors;
@@ -162,17 +164,14 @@ export type Theme = typeof theme;
 
 export type ThemeMode = "device" | "light" | "dark";
 
-/**
- * The active palette for the current theme mode. "device" follows the OS color
- * scheme; "light"/"dark" force it. Re-resolves (and re-renders consumers) when
- * the mode or the device scheme changes.
- */
+/** True when the dark palette should apply (forced dark, or OS dark under "device"). */
 export function useIsDark(): boolean {
   const mode = useAppStore((s) => s.themeMode);
   const scheme = useColorScheme();
   return mode === "dark" || (mode === "device" && scheme === "dark");
 }
 
+/** The active palette (light `green` or `dark`) for the current theme mode. */
 export function useColors(): Palette {
   return (useIsDark() ? dark : green) as Palette;
 }
