@@ -50,6 +50,12 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
 7. **Report + commit** — what you built, the load-check result, anything left open; auto-commit on
    the working branch (local only, never push/main).
 
+## Unique-slug rule (when you add or relabel a SKILLS_TODO line)
+Every `SKILLS_TODO` item carries a **unique `[slug]` tag** — no two open items may share one (unlike
+roadmap `[area]` tags, which repeat by design). If you split, relabel, or add a line, give it its own
+descriptive slug (`[caveman]`, `[render-audit]`, not a second `[marketplace]`/`[new-skill]`). No name
+fits? Use `[cool-task]`, and if that's taken, number it `[cool-task-01]`, `[cool-task-02]`, …
+
 ## Stale or mismatched items
 If the item is already done, wrong, or no longer wanted, **say so and stop** — fix the `SKILLS_TODO`
 line instead of inventing work.

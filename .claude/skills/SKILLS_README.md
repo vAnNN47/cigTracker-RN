@@ -146,3 +146,12 @@ items → `/polish` before you device-test or release.
 - **Add the *kind* to the slug only when it disambiguates** (`edit-log-sheet`, `slide-drawer`).
 - Granularity test: *"Would I open a branch for this thing?"* Yes → its own slug/doc. No → a
   roadmap line under the bigger thing's tag.
+
+### `SKILLS_TODO` slugs are UNIQUE (the one exception)
+
+The above is the **roadmap** rule, where `[area]` tags **repeat** by design. `SKILLS_TODO.md` is the
+opposite: **every open item carries a unique `[slug]` tag** — never two `[marketplace]` or two
+`[new-skill]`. Each skills-item is a distinct task, so it gets its own descriptive slug (`[caveman]`,
+`[skills-sh]`, `[render-audit]`). No name fits? Use `[cool-task]`, and if that's already taken,
+number it: `[cool-task-01]`, `[cool-task-02]`, … `/inbox` (intake) and `/skill-forge` (drain) both
+enforce this when they write a line.

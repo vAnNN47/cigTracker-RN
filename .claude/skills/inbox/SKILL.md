@@ -51,6 +51,11 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
    | `community` | קהילה, social |
 
    No match → propose a new slug and ask before using it.
+
+   > **Roadmap vs. SKILLS_TODO slugs differ.** Roadmap `[area]` tags **repeat** (many items share
+   > `[today]`). **`SKILLS_TODO` slugs must be UNIQUE per item** — never add a second `[marketplace]`
+   > or `[new-skill]`. Give each skills-item its own descriptive slug (`[caveman]`, `[render-audit]`);
+   > if nothing fits use `[cool-task]`, and if that's taken, number it `[cool-task-01]`, `[cool-task-02]`.
 4. **Dedupe** against both queues; an already-open item is marked ⚠️ **dup** and not re-added.
 5. **Clarify ambiguities — ASK FIRST**, before printing anything (prefer `AskUserQuestion` to triage
    a long list crisply). Wait for answers. If everything is unambiguous, say so and proceed.
@@ -72,3 +77,5 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
 - **ASK before mapping** — the first code match is not automatically the right one.
 - **No app code, no scaffolding, no branch** — inbox only routes + auto-commits the doc edit.
 - One item lands in exactly one place; keep the kebab **slug == `[tag]`** convention.
+- **`SKILLS_TODO` tags are unique per item** (roadmap `[area]` tags repeat; skills slugs don't). No
+  duplicate `[marketplace]`/`[new-skill]` — fall back to `[cool-task]` → `[cool-task-01]` if stuck.
