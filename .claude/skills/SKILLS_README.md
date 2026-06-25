@@ -1,9 +1,23 @@
 # Skills — how to use them
 
 Project skills live in `.claude/skills/<name>/SKILL.md` and run as slash commands in
-Claude Code. **Reload the VS Code window after adding or changing a skill.** There are five.
+Claude Code. **Reload the VS Code window after adding or changing a skill.**
 
 > New here? Read [SKILLS_TUTORIAL.md](SKILLS_TUTORIAL.md) first — the plain-English "what & when".
+
+## Authoring a skill — frontmatter rules (read before adding one)
+
+A `SKILL.md` starts with YAML frontmatter. Get these right or the skill fails to load:
+
+- `name:` — string, kebab-case, **must equal the folder name**.
+- `description:` — string, one line (shown in the skill list).
+- `argument-hint:` — **string** shown during `/` autocomplete. ⚠️ **A value starting with `[` is
+  parsed by YAML as an array and breaks** ("argument-hint must be a string"). If your hint uses
+  brackets, **quote the whole value**: `argument-hint: "[area] [format]"`. Bracket-free values
+  (`<area> <branch>`, `check | run`) need no quotes.
+
+> The real automated guard is `skill-creator` (skills.sh), which validates frontmatter on author —
+> see the `[new-skill]` / `[marketplace]` items in `SKILLS_TODO.md`. Until then, follow the above.
 
 ## The three-verb flow
 

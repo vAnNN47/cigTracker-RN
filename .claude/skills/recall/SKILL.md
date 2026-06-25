@@ -1,7 +1,7 @@
 ---
 name: recall
 description: Digest of what's open vs what shipped — never lose track of a batch you asked for
-argument-hint: [area | since <date>]
+argument-hint: "[area | since <date>]"
 ---
 
 # /recall — what did I ask for, and what got done?
