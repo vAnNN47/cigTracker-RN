@@ -6,64 +6,40 @@ argument-hint: check | run
 
 # /polish — clean + pay down debt before you ship
 
-The pre-release pass. Run it when you've finished developing and are about to ship / cut a
-version — **not** after every task. It folds the old `/cleanup` + `/tech-debt` into one sweep:
-first it clears **small mechanical mess**, then it drains the **structural debt** queued in the
-roadmap.
+The pre-release pass — run when you're about to ship a version, **not** after every task. Folds the
+old `/cleanup` + `/tech-debt`: first clear small mechanical mess, then drain the structural debt
+queued in the roadmap.
+
+> Follows the shared **House rules** (SKILLS_README → House rules): LSP-over-grep (STOP if LSP
+> down) · never `any` · verify = tsc+lint once · auto-commit, no push/main.
 
 ## Modes — $ARGUMENTS
 
-**`check`** (default) — **report + queue; no app-code changes.** Scan with the **LSP tool**
-(grep only for raw-text patterns it can't express — `console.log`, `TODO`, etc.; if LSP is down,
-STOP and notify — see coding-standards.md). List findings split into:
-- ✅ **trivial** (auto-fixable mess — just reported)
-- 🧱 **structural** (consolidations / reorgs / lint-rule debt)
+**`check`** (default) — **report + queue, no app-code changes.** Scan (LSP; grep only for raw text
+like `console.log`/`TODO`). List findings split into ✅ **trivial** (auto-fixable) and 🧱
+**structural** (consolidations / reorgs / lint-rule debt). Then **write every structural finding
+into `context/roadmap.md` under 🧹 Reorg / tech debt** as a `- [ ]` TODO tagged `[area]`, deduped —
+populating that queue is the whole job of `check`. Doc-only → **auto-commit on the current branch**
+(no new branch), then report what was queued.
 
-Then **write every structural finding into `context/roadmap.md` under 🧹 Reorg / tech debt as a
-`- [ ]` TODO, tagged `[area]`, deduped** against what's already there. Populating that queue is the
-whole job of `check` — it's what `/polish run` (Phase 2) and later passes drain. `check` touches only
-the roadmap doc (no app code). **Auto-commit that roadmap update on the current branch — no asking,
-no new branch** (it's a doc-only queue change you can start building off immediately); never
-`main`/`master` (if you're on it, cut a branch first). Then report what was queued.
+**`run`** — do the work in two phases. Cuts its own fresh branch first; auto-commits at the end.
 
-**`run`** — do the work, in two phases. Like every code-changing skill, **`run` first cuts its own
-fresh branch** (off the current branch) and **auto-commits at the end — no asking** (local only:
-never push, never `main`).
-
-### Phase 1 — small mess (the janitor)
-Scan and fix the trivial stuff:
-1. Stray `console.log` / `console.warn` in `src/`.
-2. Unused imports / variables.
-3. Stale `TODO` / `FIXME`, `@ts-ignore`, `eslint-disable`, and any `any` / `as any` (replace with
-   the real type, or `unknown`+narrowing — never leave `any`).
-4. Orphaned/unused files (zero references) — confirm with the **LSP tool** (`findReferences`)
-   before deleting. **If the LSP server isn't working, STOP and notify the user — do NOT fall
-   back to Grep.**
-5. Leftover "Flutter" references (this app is fully React Native now).
-6. Context files (`context/*.md`) still match reality.
-7. `.env` has every var the code reads (via `expo-constants` / `app.config.js`) — never print values.
-
-Report findings as a numbered list; ask which to fix (`1,3,5` / `all` / `none`); fix only those.
-Anything too big to be trivial → **file it** into `context/roadmap.md` under **🧹 Reorg / tech
-debt** (deduped) and handle it in Phase 2, not inline.
+### Phase 1 — small mess (janitor)
+Scan and fix the trivial stuff: stray `console.log`/`warn` in `src/`; unused imports/vars; stale
+`TODO`/`FIXME`/`@ts-ignore`/`eslint-disable` and any `any` (→ real type or `unknown`+narrowing);
+orphaned files (confirm zero refs via LSP `findReferences` before deleting); leftover "Flutter"
+references; `context/*.md` still matching reality; `.env` covering every var the code reads (never
+print values). Report as a numbered list → ask which to fix (`1,3` / `all` / `none`) → fix only
+those. Anything non-trivial → **file it** into the roadmap's 🧹 section and handle in Phase 2.
 
 ### Phase 2 — structural debt (drain the roadmap)
-Work the **🧹 Reorg / tech debt** items in `context/roadmap.md` — consolidations, folder reorgs,
-extracting a `packages/` component, lint/rule triage, scrubbing dead references.
-- Use the **LSP tool** (`findReferences` / `goToDefinition`) to make renames/moves/deletions
-  safe and to confirm nothing references a thing before removing it. **If the LSP server isn't
-  working, STOP and notify the user — do NOT fall back to Grep.**
-- **One focused item at a time**, each kept reviewable.
-- After each: **remove it from the roadmap** and log a dated line in the relevant feature doc's
-  Fix log (or `context/current-feature.md` History if cross-cutting).
-- **Auto-commit** — conventional message, **no AI attribution**. No asking (the branch was cut at
-  the start of `run`, so committing is safe and isolated); never push, never `main`.
+Work the **🧹 Reorg / tech debt** items — consolidations, folder reorgs, extracting a `packages/`
+component, lint triage, scrubbing dead refs. Use LSP to make renames/moves/deletions safe. **One
+focused item at a time**, each reviewable. After each: remove it from the roadmap, log a dated line
+in the relevant feature doc's Fix log (or `current-feature.md` History if cross-cutting), commit.
 
 ## Verify
-Make the edits, then run `npx tsc --noEmit` + `npm run lint` **once** at the end of each phase
-(PowerShell + fnm — see CLAUDE.md). Don't typecheck after every file. That's the whole gate —
-**device / RTL+LTR checks are the user's job, not this skill's** (see coding-standards.md).
+After the edits, run `tsc --noEmit` + lint **once** at the end of each phase (PowerShell + fnm).
 
 ## Not this skill's job
-- Sorting fresh ideas → `/inbox`.
-- Building an app area's features/bugs → `/fire <area>`.
+- Sorting fresh ideas → `/inbox` · Building an app area → `/fire <area>` · Open-vs-done → `/recall`.

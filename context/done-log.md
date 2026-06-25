@@ -16,6 +16,13 @@ over all of it — never delete entries, only add.
 
 ---
 
+## 2026-06-26 — SHIPPED (branch `skill_testing_02_skills-refactor`)
+- ✅ `[refactor]` — slimmed the messy SKILL.md files. The repeated house-rules (LSP-over-grep,
+  never-`any`, verify=tsc+lint, branch/commit) now live once in **SKILLS_README → House rules**;
+  each skill points there instead of restating. Tightened `fire`/`polish`/`inbox`, standardized
+  `list-components`, and synced `inbox` to reality (skills-items → `SKILLS_TODO`, app-items →
+  roadmap; logs the `ASKED` ledger block). Net: noticeably shorter, single source for the rules.
+
 ## 2026-06-25 — SHIPPED (branch `skill_testing_01_tracking-loop`)
 - ✅ `[tracking]` — task-tracking loop **v1**: this `context/done-log.md` ledger + new `/recall`
   skill (open-vs-done digest) + `/inbox` & `/fire` wired to append `ASKED`/`SHIPPED` blocks.

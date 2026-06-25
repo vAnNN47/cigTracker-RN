@@ -4,16 +4,12 @@ description: List project components
 argument-hint: subdirectory
 ---
 
-## Task
+# /list-components — inventory the components
 
-List the React Native component files (`.tsx`, `.ts`) in `src/components/` (and note reusable ones in `packages/`).
+Lists the component files (`.tsx`, `.ts`) in `src/components/` (and notes reusable ones in
+`packages/`). A `[subdirectory]` in `$ARGUMENTS` scopes the list to that subfolder.
 
-If a [subdirectory] is provided via $ARGUMENTS, only list files in that subdirectory.
-
-## Output Format
-
+## Output
 - Numbered list of files with relative paths.
-- Brief one-line description of each — prefer the file's top-of-file JSDoc summary if present, otherwise infer from the filename.
-- Summary count at the end.
-
-If no files are found, say "No components found."
+- One-line description each — prefer the file's top-of-file JSDoc, else infer from the filename.
+- A summary count at the end. No files → "No components found."

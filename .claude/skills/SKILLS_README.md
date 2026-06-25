@@ -22,26 +22,21 @@ The whole loop is three skills, one verb each:
 Plus helpers: **`/list-components`** (inventory), **`/package`** (reuse-first widgets), and
 **`/recall`** (open-vs-done digest — closes the tracking loop over a batch).
 
-> **Every code-changing skill runs on its own fresh branch and auto-commits at the end —
-> no asking** (local-branch only: never push, never main). Each such run = new branch → its
-> change → commit, so a bad run is reverted or abandoned without touching any other branch.
-> **The doc-only skills stay on the current branch:** `/inbox` (routes into `context/roadmap.md`)
-> and `/polish check` (appends `- [ ]` TODOs) change no app code, so each **auto-commits its doc
-> edit on the current branch** (no new branch — you can build straight off it). Every
-> **code-changing** run cuts its own branch + auto-commits.
+## House rules (the shared rules every SKILL.md points to)
 
-> **House rules for any skill that touches code** (`/fire`, `/polish`, `/package new`). These are
-> not skill-local — the canonical statements live in **`context/coding-standards.md`**, which
-> `CLAUDE.md` auto-loads every session, so they apply to **all** work (skill or not) with no need
-> to re-ask per run. In brief:
-> 1. **LSP over grep** for symbol/reference work — `goToDefinition` / `findReferences` / `hover`
->    (and `findReferences` for "zero references → safe to delete"). Grep only for raw-text patterns
->    LSP can't express. **If the LSP server is down, STOP and notify — never silently fall back to grep.**
-> 2. **Never write `any`** — type to what the code expects; `unknown`+narrowing only, never `as any`.
-> 3. **Verify = `tsc` + lint, once at the end.** **Device / emulator / RTL+LTR checks are the
->    user's job — skills never device-test** and don't block on it; the user runs the app and reports back.
-> 4. **JSDoc as you write** — every new exported component/hook/function gets its one-line `/** */`
->    immediately, never deferred to a later cleanup pass.
+These are **not skill-local** — the canonical statements live in `context/coding-standards.md` +
+`context/ai-interaction.md`, both **auto-loaded every session** by `CLAUDE.md`, so they apply to all
+work with no re-asking. Each SKILL.md just references this section instead of restating them.
+
+**Code-touching skills** (`/fire`, `/polish run`, `/package new`):
+1. **LSP over grep** for symbols/references (`goToDefinition` / `findReferences` / `hover`; `findReferences` proves "zero refs → safe to delete"). Grep only for raw-text LSP can't express. **LSP down → STOP and notify; never fall back to grep.**
+2. **Never `any`** — type to what the code expects; `unknown`+narrowing only, never `as any`.
+3. **Verify = `tsc --noEmit` + lint, once at the end** (not per file). **Device / RTL+LTR checks are the user's job** — skills never device-test or block on it.
+4. **JSDoc as you write** — every new export gets its one-line `/** */` immediately, never a later pass.
+
+**Branch & commit** (all skills):
+- Code-changing run → **its own fresh branch** (cut from current) → **auto-commit at the end, no asking.** Local only: **never push, never `main`/`master`.**
+- Doc-only runs (`/inbox`, `/polish check`) stay on the **current branch** and auto-commit the doc edit there (no new branch — build straight off it).
 
 ---
 
