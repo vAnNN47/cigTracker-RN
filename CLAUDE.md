@@ -20,7 +20,7 @@ Read these for full project context:
 - @context/roadmap.md — global list of all open bugs & problems
 - @context/current-feature.md — what's actively in progress right now
 
-Per-feature/component notes live in `context/features/<name>.md` (open todos, what's done, dated fix log), maintained with the `/feature` skill. See `.claude/skills/SKILLS_README.md` for how the skills work.
+Per-feature/component notes live in `context/features/<name>.md` (context + what's done + a dated fix log); open work lives in `context/roadmap.md` tagged `[area]`. Sort ideas in with `/inbox`, build an area with `/fire <area>`, tidy before release with `/polish`. See `.claude/skills/SKILLS_README.md` for how the skills work.
 
 ## Commands
 

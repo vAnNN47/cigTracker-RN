@@ -2,10 +2,6 @@
 
 **What / where:** Currency, price/pack, baseline/day, day-start hour, count-down toggle, language. Stepper writes are debounced (instant draft, persist after idle, flush on unmount). Persists through the store → repository. Files: [src/app/settings.tsx](../../src/app/settings.tsx) (also rendered as a panel inside the account drawer), writes via `useAppStore.saveSettings`.
 
-## Open (todos / problems)
-
-- _(nothing open)_
-
 ## Done
 
 - [x] Debounced stepper writes (instant draft state, persist after short idle, flush pending on unmount) — existing
