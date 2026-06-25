@@ -26,7 +26,8 @@ Scan and fix the trivial stuff:
 3. Stale `TODO` / `FIXME`, `@ts-ignore`, `eslint-disable`, and any `any` / `as any` (replace with
    the real type, or `unknown`+narrowing — never leave `any`).
 4. Orphaned/unused files (zero references) — confirm with the **LSP tool** (`findReferences`)
-   when available before deleting; fall back to Grep.
+   before deleting. **If the LSP server isn't working, STOP and notify the user — do NOT fall
+   back to Grep.**
 5. Leftover "Flutter" references (this app is fully React Native now).
 6. Context files (`context/*.md`) still match reality.
 7. `.env` has every var the code reads (via `expo-constants` / `app.config.js`) — never print values.
@@ -38,8 +39,9 @@ debt** (deduped) and handle it in Phase 2, not inline.
 ### Phase 2 — structural debt (drain the roadmap)
 Work the **🧹 Reorg / tech debt** items in `context/roadmap.md` — consolidations, folder reorgs,
 extracting a `packages/` component, lint/rule triage, scrubbing dead references.
-- Use the **LSP tool** when available (`findReferences` / `goToDefinition`) to make
-  renames/moves/deletions safe and to confirm nothing references a thing before removing it.
+- Use the **LSP tool** (`findReferences` / `goToDefinition`) to make renames/moves/deletions
+  safe and to confirm nothing references a thing before removing it. **If the LSP server isn't
+  working, STOP and notify the user — do NOT fall back to Grep.**
 - **One focused item at a time**, each kept reviewable.
 - After each: **remove it from the roadmap** and log a dated line in the relevant feature doc's
   Fix log (or `context/current-feature.md` History if cross-cutting).
