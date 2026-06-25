@@ -26,6 +26,16 @@ export type Locale = "device" | "en" | "he";
 export const textStart = "left" as const;
 
 /**
+ * Text alignment for the reading END edge — the mirror of {@link textStart}.
+ *
+ * With `doLeftAndRightSwapInRTL` ON, writing "right" yields end-alignment in BOTH
+ * directions (plain right in LTR; auto-swapped to left in RTL). Use on a full-width
+ * <Text> that must hug the END edge (e.g. a header's trailing action), so it stays
+ * parallel with a `textStart` action on the opposite side.
+ */
+export const textEnd = "right" as const;
+
+/**
  * Alignment + base writing direction for editable <TextInput>s.
  *
  * The L/R auto-swap that start-aligns <Text> is unreliable for TextInput, and it

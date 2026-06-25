@@ -13,7 +13,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { formatTime } from "@/i18n/format";
-import { inputAlign, textStart } from "@/i18n/rtl";
+import { inputAlign, textEnd, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { LocationTag } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
@@ -70,7 +70,7 @@ export default function EditLogModal() {
           <Text style={styles.cancel}>{s.cancel}</Text>
         </Pressable>
         <Text style={styles.title}>{s.editEntry}</Text>
-        <Pressable onPress={save} hitSlop={8} disabled={saving} style={[styles.headerBtn, styles.saveBtnWrap]}>
+        <Pressable onPress={save} hitSlop={8} disabled={saving} style={styles.headerBtn}>
           {saving ? <ActivityIndicator color={green.green} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
         </Pressable>
       </View>
@@ -178,11 +178,12 @@ const useStyles = makeUseStyles((green) =>
       borderBottomWidth: 1,
       borderBottomColor: green.border,
     },
+    // Both actions stretch to fill their (equal min-width) box; each Text is pinned
+    // to its own reading edge via the same RTL-safe swap, so they sit parallel.
     headerBtn: { minWidth: 64, justifyContent: "center" },
-    saveBtnWrap: { alignItems: "flex-end" },
-    cancel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.medium },
+    cancel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.medium, textAlign: textStart },
     title: { color: green.text, fontSize: 18, fontFamily: fonts.bold },
-    saveBtn: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold },
+    saveBtn: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold, textAlign: textEnd },
     body: { padding: spacing.lg, gap: spacing.md },
 
     timeRow: {

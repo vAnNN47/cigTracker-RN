@@ -16,17 +16,18 @@ The whole loop is three skills, one verb each:
 ```
 
 - **`/inbox`** — INTAKE. Sort a brain-dump into the roadmap. Never writes code.
-- **`/fire <area>`** — DO. Branch → build that area's roadmap items → verify once → log the fixes.
+- **`/fire <area> <branch>`** — DO. Cut `<branch>` → build that area's roadmap items → verify once → log the fixes.
 - **`/polish`** — POLISH. Pre-release hygiene: fix small mess + drain structural debt.
 
 Plus two helpers: **`/list-components`** (inventory) and **`/package`** (reuse-first widgets).
 
-> **Every skill that changes files runs on its own fresh branch and auto-commits at the end —
-> no asking** (local-branch only: never push, never main). Each skill run = new branch → its
+> **Every code-changing skill runs on its own fresh branch and auto-commits at the end —
+> no asking** (local-branch only: never push, never main). Each such run = new branch → its
 > change → commit, so a bad run is reverted or abandoned without touching any other branch.
-> `/polish check` only appends `- [ ]` TODOs to `context/roadmap.md` (no app-code change), so it
-> auto-commits that doc update on the **current** branch (no new branch — you can build straight off
-> it); every **code-changing** run cuts its own branch + auto-commits.
+> **The doc-only skills stay on the current branch:** `/inbox` (routes into `context/roadmap.md`)
+> and `/polish check` (appends `- [ ]` TODOs) change no app code, so each **auto-commits its doc
+> edit on the current branch** (no new branch — you can build straight off it). Every
+> **code-changing** run cuts its own branch + auto-commits.
 
 > **House rules for any skill that touches code** (`/fire`, `/polish`, `/package new`). These are
 > not skill-local — the canonical statements live in **`context/coding-standards.md`**, which
@@ -50,12 +51,12 @@ by area, and **dedupes** against what's already open. Routing only — never wri
 - `/inbox 1. no spinner on Today edit 2. more padding on sheet buttons …` — sort that batch
 - `/inbox` (empty) — read and sort `context/inbox.md` if present
 
-## `/fire <area> [merge]`
-The one action skill. Cuts a branch, **builds** every open `[area]` item from the roadmap,
-verifies **once** at the end (`tsc` + lint), then moves each finished item to that area's
-**Fix log**. Replaces the old `feature start` + `feature fix` split — no "shall I start?" gate.
+## `/fire <area> <branch>`
+The one action skill. Cuts the branch you name, **builds** every open `[area]` item from the
+roadmap, verifies **once** at the end (`tsc` + lint), then moves each finished item to that
+area's **Fix log**. Replaces the old `feature start` + `feature fix` split — no "shall I start?" gate.
 
-- `/fire today` — branch + build all open `[today]` items + verify + log
+- `/fire today today-ring-fix` — cut `today-ring-fix` + build all open `[today]` items + verify + log
 - `/fire today merge` — merge the finished branch into its parent (never main automatically)
 
 ## `/polish [check|run]`
