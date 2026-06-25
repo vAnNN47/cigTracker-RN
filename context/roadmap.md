@@ -11,6 +11,7 @@ fixed it moves to that feature's **Fix log** (with a date) and leaves this list.
 
 ## 🐞 Bugs
 
+- [ ] **[sheets?]** On iOS, typing fast into a text field makes the cursor jump backwards — likely a controlled-`TextInput` re-render resetting the caret. ⚠️ Which field? (edit-log comment/diary, add-smoke sheet, or settings) — confirm before fixing. (כשכותבים מהר ב-iOS הסמן קופץ אחורה — קשור לרינדורים?)
 
 ## 🧩 Improvements
 

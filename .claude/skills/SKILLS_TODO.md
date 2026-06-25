@@ -11,7 +11,17 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 
 ## Open
 - [ ] polish check should use LSP also, because when claude checks he uses grep again.
-- [ ] _(none)_
+
+### Skills marketplace + "next level" (batch 2026-06-25)
+- [ ] **[marketplace]** Learn/adopt skills.sh (Anthropic's skill marketplace — the user called it "Vercel skills") — pull `skill-creator` + any generic skills into `.claude/skills/`; ours and marketplace skills coexist. (איך להשתמש בסקילס מהמרקטפלייס)
+- [ ] **[strategy]** Keep BOTH our workflow skills (inbox/fire/polish) **and** marketplace capability-skills — don't replace; layer marketplace skills under our flow. (להשאיר חלק שלנו חלק מהמרקטפלייס)
+- [ ] **[refactor]** Slim the SKILL.md files — they're prose-heavy/repetitive. Move repeated house-rules to one referenced doc, adopt progressive disclosure (tight SKILL.md + on-demand detail files), like real-world skills. (לשפצר את הסקילס, נראה בלאגן)
+- [ ] **[new-skill]** Build a **render-audit / performance** skill — checks for unnecessary re-renders (memo/useCallback/stable keys/store selectors), ties into React DevTools Profiler / `expo-observe`. (סקיל שבודק כמות רינדורים ומשפר)
+- [ ] **[tracking]** Close the task-tracking loop — after a batch it's hard to recall what was asked vs done. Add a done-log / stamp routed items with id+date so `/inbox`→`/fire` keeps the batch origin. **(highest-value item.)** (קשה לעקוב מה בוצע / מה רציתי)
+- [ ] **[scope]** Decide which skills THIS app's scope needs (render-audit, rtl-audit, a11y, theme/token-consistency, repo-interface-parity). (איזה סקילס צריך לסקופ של האפ)
+- [ ] **[portability]** Make generic skills project-agnostic and move them to **user-level `~/.claude/skills/`** (apply to all projects); keep project-glue skills (inbox/fire/polish, which reference this repo's `context/`) in the repo. (סקילס סט גנרי לכל הפרויקטים)
+- [ ] **[new-skill]** Use `skill-creator` to author new custom skills to a higher standard; pull a design skill + an RN best-practices/render skill from the marketplace. (skill-creator — לעלות שלב)
+- [ ] **[answer-format]** Every skill, on a batched/question input, must answer with a **per-question breakdown** (not schematic): split the questions out, ✅ = known+answered, ❌ = couldn't solve, ⚠️ = answerable-but-unsure / unsure-but-likely. (פורמט תשובות לבאטצ׳ שאלות)
 
 ## Done
 
