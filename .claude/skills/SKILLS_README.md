@@ -25,7 +25,8 @@ Plus two helpers: **`/list-components`** (inventory) and **`/package`** (reuse-f
 > no asking** (local-branch only: never push, never main). Each skill run = new branch → its
 > change → commit, so a bad run is reverted or abandoned without touching any other branch.
 > `/polish check` only appends `- [ ]` TODOs to `context/roadmap.md` (no app-code change), so it
-> skips the branch and just saves the doc; every **code-changing** run branches + auto-commits.
+> auto-commits that doc update on the **current** branch (no new branch — you can build straight off
+> it); every **code-changing** run cuts its own branch + auto-commits.
 
 > **House rules for any skill that touches code** (`/fire`, `/polish`, `/package new`). These are
 > not skill-local — the canonical statements live in **`context/coding-standards.md`**, which

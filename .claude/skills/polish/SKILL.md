@@ -21,8 +21,10 @@ STOP and notify — see coding-standards.md). List findings split into:
 
 Then **write every structural finding into `context/roadmap.md` under 🧹 Reorg / tech debt as a
 `- [ ]` TODO, tagged `[area]`, deduped** against what's already there. Populating that queue is the
-whole job of `check` — it's what `/polish run` (Phase 2) and later passes drain. `check` writes only
-to the roadmap doc (no app code, no branch); save it and report what was queued.
+whole job of `check` — it's what `/polish run` (Phase 2) and later passes drain. `check` touches only
+the roadmap doc (no app code). **Auto-commit that roadmap update on the current branch — no asking,
+no new branch** (it's a doc-only queue change you can start building off immediately); never
+`main`/`master` (if you're on it, cut a branch first). Then report what was queued.
 
 **`run`** — do the work, in two phases. Like every code-changing skill, **`run` first cuts its own
 fresh branch** (off the current branch) and **auto-commits at the end — no asking** (local only:
