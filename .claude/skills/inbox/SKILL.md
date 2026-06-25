@@ -77,9 +77,12 @@ ambiguous ones first; only print the final routing map once you're sure. ASK, AS
    - add each item as a `- [ ]` line under its roadmap section, tagged `**[area]**`
      (link to `features/<area>.md` if that doc already exists);
    - package candidates → note "run `/package new <name>`" — do NOT scaffold here.
+   - **append an `ASKED` block to `context/done-log.md`** (newest at top): the batch's one-line
+     title + where each item was routed. That ledger is what `/recall` reads so a batch is never
+     lost — process items routed to `SKILLS_TODO.md` go in the same block.
 8. If the batch came from `context/inbox.md`, **remove the triaged lines** from it.
 9. **Commit — always, no asking, on the current branch.** inbox **does not cut a branch.** When
-   the routing is done, commit the roadmap (+ `inbox.md`) edit **on whatever branch you're on**
+   the routing is done, commit the roadmap (+ `done-log.md` + `inbox.md`) edit **on whatever branch you're on**
    with a `docs(roadmap):` message — **never ask whether to commit, just do it**, then give the
    summary. **Local commit only — never push, never `main`/`master`.**
 

@@ -45,7 +45,9 @@ hand-off; `/fire` goes all the way.
 5. **Close the loop.** For each item you actually finished: **remove it from `roadmap.md`** and
    add a dated line (`YYYY-MM-DD — what changed`) to the area doc's **Fix log** (and a `- [x]`
    under **Done** if it's a lasting capability). Items you didn't finish **stay** open in the
-   roadmap — never tick something you didn't do.
+   roadmap — never tick something you didn't do. **Then append a `SHIPPED` block to
+   `context/done-log.md`** (newest at top) listing each closed item + the branch — that ledger is
+   what `/recall` reads, so the tracking loop stays intact.
 6. **Report** what was built, the verify result, and any item left open. (The user will device-test
    and report findings — that's their job, not the skill's.) **Don't auto-run `/polish`** — hygiene
    is a separate, pre-release pass.

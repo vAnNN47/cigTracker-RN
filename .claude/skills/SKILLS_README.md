@@ -19,7 +19,8 @@ The whole loop is three skills, one verb each:
 - **`/fire <area> <branch>`** — DO. Cut `<branch>` → build that area's roadmap items → verify once → log the fixes.
 - **`/polish`** — POLISH. Pre-release hygiene: fix small mess + drain structural debt.
 
-Plus two helpers: **`/list-components`** (inventory) and **`/package`** (reuse-first widgets).
+Plus helpers: **`/list-components`** (inventory), **`/package`** (reuse-first widgets), and
+**`/recall`** (open-vs-done digest — closes the tracking loop over a batch).
 
 > **Every code-changing skill runs on its own fresh branch and auto-commits at the end —
 > no asking** (local-branch only: never push, never main). Each such run = new branch → its
@@ -66,6 +67,12 @@ roadmap's **🧹 Reorg / tech debt** items.
 
 - `/polish` or `/polish check` — report only, change nothing
 - `/polish run` — fix trivial mess (you pick), then drain structural debt one item at a time
+
+## `/recall [<area> | since <date>]`
+Read-only digest of **what's open vs what shipped**, so a batch of work is never lost. Reads the
+ledger (`context/done-log.md`, maintained by `/inbox`+`/fire`) plus `roadmap.md` + `SKILLS_TODO.md`
+and prints 🟢 shipped / 🟡 open-app / 🔵 open-skills, grouped by area. Writes nothing.
+- `/recall` — full digest · `/recall today` — one area · `/recall since 2026-06-01` — recent only
 
 ## `/list-components [subdir]`
 Lists component files under `src/components/` (and notes reusable ones in `packages/`) with a
