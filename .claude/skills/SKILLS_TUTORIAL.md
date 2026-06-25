@@ -63,10 +63,10 @@ building reusable UI, and put new reusable things here.
 - `/package list` · `/package check bottom sheet` · `/package new slide-drawer`
 **Reach for it when:** you're about to build a generic, reusable component.
 
-### `/list-components` — just show me what's there
-A read-only inventory of `src/components/` with a one-line description each.
-- `/list-components` or `/list-components drawers`.
-**Reach for it when:** you forget what already exists.
+### `/skills-help` — remind me what my own commands do
+A read-only guide to these skills, read live from each `SKILL.md` so it's always current.
+- `/skills-help` (all of them) or `/skills-help fire` (one in depth).
+**Reach for it when:** you forget which skill does what, or how to run one.
 
 ---
 

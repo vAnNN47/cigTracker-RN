@@ -33,8 +33,14 @@ The whole loop is three skills, one verb each:
 - **`/fire <area> <branch>`** — DO. Cut `<branch>` → build that area's roadmap items → verify once → log the fixes.
 - **`/polish`** — POLISH. Pre-release hygiene: fix small mess + drain structural debt.
 
-Plus helpers: **`/list-components`** (inventory), **`/package`** (reuse-first widgets), and
-**`/recall`** (open-vs-done digest — closes the tracking loop over a batch).
+Plus helpers: **`/package`** (reuse-first widgets),
+**`/recall`** (open-vs-done digest — closes the tracking loop over a batch),
+**`/skill-doctor`** (audits + scores the skill set itself), and
+**`/skills-help`** (explains each skill — what it does + how to use, read live).
+
+> Plus the marketplace **`skill-creator`** (installed under `.agents/skills/`, symlinked in): authors
+> new skills and runs **empirical** evals / trigger-rate optimization to improve an existing one.
+> `/skill-doctor` gives the cheap /10; hand a skill to `skill-creator` for the measured score.
 
 ## House rules (the shared rules every SKILL.md points to)
 
@@ -83,9 +89,18 @@ ledger (`context/done-log.md`, maintained by `/inbox`+`/fire`) plus `roadmap.md`
 and prints 🟢 shipped / 🟡 open-app / 🔵 open-skills, grouped by area. Writes nothing.
 - `/recall` — full digest · `/recall today` — one area · `/recall since 2026-06-01` — recent only
 
-## `/list-components [subdir]`
-Lists component files under `src/components/` (and notes reusable ones in `packages/`) with a
-one-line description each. `/list-components drawers` scopes to a subfolder.
+## `/skill-doctor [audit|fix]`
+Turns the lens on `.claude/skills/` itself: inventories every skill, flags overlap/duplication,
+critiques framing (frontmatter + prose) with opinions and concrete rewrites, and **scores each skill
+/10** (fast qualitative rubric — triggering, scope, distinctness, framing, frontmatter). `audit`
+(default) is read-only; `fix` applies the wording changes you approve. Never changes what a skill
+*does*. For an *empirical* score (real trigger-rate / eval pass-rate) escalate a skill to
+`/skill-creator`.
+
+## `/skills-help [skill-name]`
+Read-only "what & how" for the project's own skills, **read live** from each `SKILL.md` so it never
+drifts. `/skills-help` prints a table of every skill (what it does + how to use); `/skills-help fire`
+explains one in depth. The quick reminder; `SKILLS_TUTORIAL.md` is the longer read.
 
 ## `/package [list|check <need>|new <name>]`
 The reuse-first workflow for `packages/` (app-agnostic, portable components).

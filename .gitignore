@@ -41,3 +41,8 @@ example
 # generated native folders
 /ios
 /android
+
+# Marketplace skills (skills.sh) — restore with `npx skills add` from skills-lock.json.
+# The materialized files + the absolute symlink are machine-specific; the lockfile is the manifest.
+/.agents/
+/.claude/skills/skill-creator
