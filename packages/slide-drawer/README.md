@@ -11,18 +11,25 @@ panel over the first.
   full screen (with your own back button); collapsing reverses it.
 - **Cross-fade**: `children` (the collapsed list) fade out as `expandedContent`
   (the screen) fade in, synced to the width animation.
+- **No reflow while growing**: each layer is laid out at its final width from the
+  first frame and the growing panel just uncovers it through a clip, so text
+  never re-wraps mid-stretch.
+- **Drag to close**: a horizontal drag toward the panel's own edge dismisses it —
+  the panel tracks the finger, then slides off past a threshold or on a fling.
 - Scrim backdrop (tap to close) + Android hardware-back handling.
 - App-agnostic: colors are props (`panelColor` / `scrimColor`), no theme import.
 
 ## Peer dependencies
 
 ```
-npm i react-native-reanimated react-native-worklets
+npm i react-native-reanimated react-native-worklets react-native-gesture-handler
 ```
 
 (`react-native-worklets` provides `scheduleOnRN`, the non-deprecated replacement
-for Reanimated's `runOnJS`; it ships with Reanimated on RN 0.79+/SDK 53+.) These
-are native modules → use a dev build and rebuild after install.
+for Reanimated's `runOnJS`; it ships with Reanimated on RN 0.79+/SDK 53+.
+`react-native-gesture-handler` powers drag-to-close — wrap your app in its
+`GestureHandlerRootView`.) These are native modules → use a dev build and rebuild
+after install.
 
 ## Usage
 
