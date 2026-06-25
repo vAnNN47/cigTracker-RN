@@ -1,6 +1,6 @@
 ---
 name: list-components
-description: List project components
+description: Inventory src/components/ (+ reusable packages/) with a one-line description each
 argument-hint: subdirectory
 ---
 
