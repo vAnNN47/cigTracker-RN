@@ -1,7 +1,10 @@
 # Coding Standards
 
 ## TypeScript
-- Strict mode is on. No `any` — use a real type or `unknown`.
+- Strict mode is on. **Never use `any` — ever.** No `as any`, and never add a new
+  `eslint-disable @typescript-eslint/no-explicit-any`. Always type to what the code actually
+  expects. For a genuinely unknowable value (a `catch` error, an untyped third-party payload),
+  use `unknown` and **narrow** it before use — `unknown` is the only escape hatch, never `any`.
 - Define `interface`/`type` for all component props, repository methods, and data models.
 - Prefer inference where obvious; add explicit types where they aid the reader.
 

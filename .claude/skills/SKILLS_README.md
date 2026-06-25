@@ -26,6 +26,13 @@ Plus two helpers: **`/list-components`** (inventory) and **`/package`** (reuse-f
 > change → commit, so a bad run is reverted or abandoned without touching any other branch.
 > A report-only run (e.g. `/polish check`) changes nothing, so it neither branches nor commits.
 
+> **Two house rules for any skill that touches code** (`/fire`, `/polish`, `/package new`):
+> 1. **Prefer the LSP tool when it's available** — `goToDefinition` / `findReferences` / `hover`
+>    for navigation + reference-finding instead of grep (and to confirm "zero references → safe to
+>    delete"). Fall back to Grep if the LSP server isn't connected.
+> 2. **Never write `any`** — type to what the code expects; `unknown`+narrowing is the only escape
+>    hatch, never `as any` (see `context/coding-standards.md`).
+
 ---
 
 ## `/inbox [<paste your batch>]`
