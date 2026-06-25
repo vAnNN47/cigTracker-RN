@@ -11,6 +11,8 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 
 ## Open
 - [ ] polish check should use LSP also, because when claude checks he uses grep again.
+- [ ] **[polish-check]** `/polish check` needs a documented **file/scope argument** and **queue routing**: (a) define what `/polish check <file>` does (scope the scan to that path) in both `polish/SKILL.md` and `SKILLS_README.md`; (b) when the target is a skills-system file, structural findings must go to **`SKILLS_TODO.md`**, not the app `roadmap.md` — `check` currently hard-codes roadmap as the only queue. (Surfaced running `/polish check SKILLS_README.md`, 2026-06-26.)
+- [ ] **[docs]** Fix `SKILLS_README.md` line ~78: `/polish check` is described as "report only, change nothing" but it actually queues structural TODOs + auto-commits the doc edit — reword to "report + queue (doc-only commit)". (Trivial; do on next `/polish run` or a docs pass.)
 
 ### Skills marketplace + "next level" (batch 2026-06-25)
 - [ ] **[marketplace]** Learn/adopt skills.sh (Anthropic's skill marketplace — the user called it "Vercel skills") — pull `skill-creator` + any generic skills into `.claude/skills/`; ours and marketplace skills coexist. (איך להשתמש בסקילס מהמרקטפלייס)
