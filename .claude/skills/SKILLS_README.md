@@ -42,6 +42,12 @@ Plus helpers: **`/package`** (reuse-first widgets),
 > Plus the marketplace **`skill-creator`** (installed under `.agents/skills/`, symlinked in): authors
 > new skills and runs **empirical** evals / trigger-rate optimization to improve an existing one.
 > `/skill-doctor` gives the cheap /10; hand a skill to `skill-creator` for the measured score.
+>
+> And the marketplace **`caveman`** — an output-prose compressor toggled by "caveman mode" /
+> "less tokens" / `/caveman` ("stop caveman" to exit). Strips articles/filler/hedging from prose
+> (~75% on prose), **code blocks + technical terms unchanged**. It trims *output* tokens; the LSP
+> rule trims *input/context* tokens — orthogonal, so the real total saving is modest (best on long
+> chatty turns, small on code-writing turns). Not always-on — invoke it when you want brevity.
 
 ## House rules (the shared rules every SKILL.md points to)
 
