@@ -11,7 +11,7 @@ fixed it moves to that feature's **Fix log** (with a date) and leaves this list.
 
 ## 🐞 Bugs
 
-- [ ] **[sheets?]** On iOS, typing fast into a text field makes the cursor jump backwards — likely a controlled-`TextInput` re-render resetting the caret. ⚠️ Which field? (edit-log comment/diary, add-smoke sheet, or settings) — confirm before fixing. (כשכותבים מהר ב-iOS הסמן קופץ אחורה — קשור לרינדורים?)
+- [ ] **[inputs]** On iOS, typing fast into a text field makes the cursor jump backwards — controlled-`TextInput` re-render resetting the caret. Reported broadly, so audit **every** controlled `TextInput` (edit-log comment/diary, add-smoke sheet, settings price/baseline). Likely fix: uncontrolled/defaultValue or stop the parent re-rendering per keystroke (stable handlers, Zustand selectors). Pairs with the render-audit skill. (כשכותבים מהר ב-iOS הסמן קופץ אחורה — קשור לרינדורים)
 
 ## 🧩 Improvements
 
