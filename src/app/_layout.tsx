@@ -34,7 +34,7 @@ import { SplashView } from "@/auth/SplashView";
 import { WelcomeView } from "@/auth/WelcomeView";
 import { AccountDrawer } from "@/components/drawers/AccountDrawer";
 import { MainDrawer } from "@/components/drawers/MainDrawer";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider } from "@/components/feedback/Toast";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { USE_SUPABASE } from "@/lib/config";
 import { supabase } from "@/lib/supabase";

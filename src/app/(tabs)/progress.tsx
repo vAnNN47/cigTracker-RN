@@ -10,8 +10,8 @@ import { ReactNode, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { LineChart } from "@/components/LineChart";
-import { TabHeader } from "@/components/TabHeader";
+import { LineChart } from "@/components/charts/LineChart";
+import { TabHeader } from "@/components/ui/TabHeader";
 import { addDays } from "@/domain/day";
 import {
     countBetween,

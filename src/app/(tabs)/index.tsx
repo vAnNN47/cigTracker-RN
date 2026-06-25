@@ -15,11 +15,11 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/AddPurchaseSheet";
-import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/AddSmokeSheet";
-import { LogDetailSheet, LogDetailSheetRef } from "@/components/LogDetailSheet";
-import { TabHeader } from "@/components/TabHeader";
-import { useToast } from "@/components/Toast";
+import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/sheets/AddPurchaseSheet";
+import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/sheets/AddSmokeSheet";
+import { LogDetailSheet, LogDetailSheetRef } from "@/components/sheets/LogDetailSheet";
+import { TabHeader } from "@/components/ui/TabHeader";
+import { useToast } from "@/components/feedback/Toast";
 import { currentLimit, currentStreak, isLogEditable, logicalDay, logicalToday, logsForDay } from "@/domain/logic";
 import { formatTime } from "@/i18n/format";
 import { textStart } from "@/i18n/rtl";

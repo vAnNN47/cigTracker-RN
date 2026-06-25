@@ -6,7 +6,7 @@
 import {
   SlideDrawer as BaseSlideDrawer,
   type SlideDrawerProps as BaseSlideDrawerProps,
-} from "../../packages/slide-drawer";
+} from "../../../packages/slide-drawer";
 import { useColors } from "@/theme";
 
 export type SlideDrawerProps = Omit<BaseSlideDrawerProps, "panelColor" | "scrimColor">;

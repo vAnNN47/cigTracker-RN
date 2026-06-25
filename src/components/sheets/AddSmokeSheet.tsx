@@ -21,7 +21,7 @@ import { DEFAULT_TAG, LocationTag, SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { fonts, makeUseStyles, radius, spacing, type, useColors, useIsDark } from "@/theme";
 
-import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../packages/keyboard-sheet";
+import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../../packages/keyboard-sheet";
 
 export interface AddSmokeSheetRef {
   present: () => void;
@@ -73,9 +73,8 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
     const save = async () => {
       setSaving(true);
       try {
-        // Let the user pick any hour/minute freely; only prevent a future time here.
-        const when = smokedAt.getTime() > Date.now() ? new Date() : smokedAt;
-        const log = await addSmoke({ tag, comment: comment.trim(), diary: diary.trim(), smokedAt: when });
+        // Any time is allowed, including the future (logging a smoke you're about to have).
+        const log = await addSmoke({ tag, comment: comment.trim(), diary: diary.trim(), smokedAt });
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         sheetRef.current?.dismiss();
         onLogged(log);

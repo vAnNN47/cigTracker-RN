@@ -23,7 +23,7 @@ import { useStrings } from "@/i18n/useStrings";
 import { LocationTag, SmokeLog } from "@/models";
 import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
 
-import { KeyboardSheet, KeyboardSheetRef } from "../../packages/keyboard-sheet";
+import { KeyboardSheet, KeyboardSheetRef } from "../../../packages/keyboard-sheet";
 
 const TAG_ICON: Record<LocationTag, keyof typeof MaterialIcons.glyphMap> = {
   home: "home",

@@ -8,8 +8,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { TabHeader } from "@/components/TabHeader";
-import { useToast } from "@/components/Toast";
+import { TabHeader } from "@/components/ui/TabHeader";
+import { useToast } from "@/components/feedback/Toast";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
