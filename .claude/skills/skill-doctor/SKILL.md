@@ -26,9 +26,8 @@ auto-commit at the end (local branch only, never push/main). Touches `name`/`des
 
 ## Sources (read these)
 1. `.claude/skills/*/SKILL.md` — every skill (frontmatter + body).
-2. `.claude/skills/SKILLS_README.md` — the three-verb flow + House rules (the framing yardstick).
-3. `.claude/skills/SKILLS_TUTORIAL.md` — the plain-English "what & when" each skill claims.
-4. `.claude/skills/SKILLS_TODO.md` — open process items, so a flagged gap isn't already queued.
+2. `.claude/skills/SKILLS_README.md` — the three-verb flow + House rules + signatures (the framing yardstick).
+3. `.claude/skills/SKILLS_TODO.md` — open process items, so a flagged gap isn't already queued.
 
 ## Steps
 1. **Read** all `SKILL.md` files (dedicated Read/Glob tools, not shell).

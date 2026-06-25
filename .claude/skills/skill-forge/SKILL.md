@@ -32,7 +32,7 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
    |---|---|
    | **New skill** (`[new-skill]`) | Author `.claude/skills/<name>/SKILL.md` in house style. For a skill with **objectively verifiable output**, offer to run **`/skill-creator`**'s draft→eval→iterate loop (it's the rigorous engine). For workflow-glue/subjective skills, author directly — say so and skip the eval machinery. |
    | **Tweak** (`[docs]`, `[polish-check]`, framing) | Edit the relevant `SKILL.md` / `SKILLS_README` / context doc directly. |
-   | **Marketplace adopt** (`[marketplace]`) | `npx skills add <owner/repo> --skill <name> --agent claude-code -y` (see `find-skills`/the Done log for the pattern). Record the **security scan** (Gen/Socket/Snyk) in the Done line. |
+   | **Marketplace adopt** (`[marketplace]`) | `npx skills add <owner/repo> --skill <name> --agent claude-code -y` (see the Done log for the pattern; discover with `npx skills find <query>`). Record the **security scan** (Gen/Socket/Snyk) in the Done line. |
 3. **Branch.** Cut a fresh branch off the current one, named `<current>_forge_<slug>` (or a name you
    pass). Skills-system edits this session may instead ride the current branch — match what the
    surrounding work is doing; never `main`.
@@ -44,9 +44,8 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
    quoted. (No tsc — these are docs.) **Reload the VS Code window** note applies for the user to see
    a new skill.
 6. **Close the loop.** Move the item's `- [ ]` line to `## Done` in `SKILLS_TODO.md` as
-   `- [x] <date> — …` describing what shipped. If a new skill landed, also add its one-liner to the
-   **helpers** list in `SKILLS_README.md` (and `SKILLS_TUTORIAL.md` if you keep it in sync). An item
-   lives in exactly one place — open, then Done.
+   `- [x] <date> — …` describing what shipped. If a new skill landed, also add its row to the
+   **Skill signatures** table in `SKILLS_README.md`. An item lives in exactly one place — open, then Done.
 7. **Report + commit** — what you built, the load-check result, anything left open; auto-commit on
    the working branch (local only, never push/main).
 

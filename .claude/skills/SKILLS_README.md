@@ -3,7 +3,7 @@
 Project skills live in `.claude/skills/<name>/SKILL.md` and run as slash commands in
 Claude Code. **Reload the VS Code window after adding or changing a skill.**
 
-> New here? Read [SKILLS_TUTORIAL.md](SKILLS_TUTORIAL.md) first — the plain-English "what & when".
+> New here? Jump to **The three-verb flow** + **A normal day** below, or run `/skills-help`.
 
 ## Authoring a skill — frontmatter rules (read before adding one)
 
@@ -67,62 +67,32 @@ work with no re-asking. Each SKILL.md just references this section instead of re
 
 ---
 
-## `/inbox [<paste your batch>]`
-Sorts a raw brain-dump (Hebrew/English, numbered or not) into `context/roadmap.md`, tagged
-by area, and **dedupes** against what's already open. Routing only — never writes code.
+## Skill signatures
 
-- `/inbox 1. no spinner on Today edit 2. more padding on sheet buttons …` — sort that batch
-- `/inbox` (empty) — read and sort `context/inbox.md` if present
+Each skill's full body lives in its own `SKILL.md`, and **`/skills-help` reads those live** — so
+this table is just arg shapes, not a second copy of the prose.
 
-## `/fire <area> <branch>`
-The one action skill. Cuts the branch you name, **builds** every open `[area]` item from the
-roadmap, verifies **once** at the end (`tsc` + lint), then moves each finished item to that
-area's **Fix log**. Replaces the old `feature start` + `feature fix` split — no "shall I start?" gate.
+| Skill | Args | One-line |
+|-------|------|----------|
+| `/inbox` | `[<batch>]` | Sort a brain-dump into `roadmap.md` (skills-items → `SKILLS_TODO.md`), dedupe. **No code.** |
+| `/fire` | `<area> <branch>` · `<area> merge` | Branch → build all open `[area]` items → verify once (`tsc`+lint) → move to Fix log. |
+| `/polish` | `check` \| `run` | Pre-release: Phase 1 small mess + Phase 2 drain 🧹 tech-debt. `check`=report-only. |
+| `/recall` | `[<area>` \| `since <date>]` | Read-only 🟢shipped / 🟡open-app / 🔵open-skills digest. Writes nothing. |
+| `/package` | `list` \| `check <need>` \| `new <name>` | Reuse-first workflow for `packages/` (app-agnostic widgets). |
+| `/skill-doctor` | `audit` \| `fix` | Audit/score (/10) the skill set itself. `audit`=read-only. |
+| `/skill-forge` | `<todo-item>` | Drain one `SKILLS_TODO` item → build → load-check → move to Done. The `/fire` twin. |
+| `/skills-help` | `[skill-name]` | Read-only what/how, read live from each `SKILL.md`. |
 
-- `/fire today today-ring-fix` — cut `today-ring-fix` + build all open `[today]` items + verify + log
-- `/fire today merge` — merge the finished branch into its parent (never main automatically)
+> **Marketplace add-ons** (layered under the flow, don't replace it): `skill-creator` — authors
+> skills + empirical eval/trigger-rate (the measured score `/skill-doctor` can't give);
+> `caveman` — output-prose compressor (`/caveman`, "stop caveman" to exit).
 
-## `/polish [check|run]`
-The pre-release pass. Run when you're about to device-test or ship — **not** after every task.
-Merges the old `/cleanup` + `/tech-debt`: Phase 1 clears small mess, Phase 2 drains the
-roadmap's **🧹 Reorg / tech debt** items.
+## A normal day
 
-- `/polish` or `/polish check` — report only, change nothing
-- `/polish run` — fix trivial mess (you pick), then drain structural debt one item at a time
-
-## `/recall [<area> | since <date>]`
-Read-only digest of **what's open vs what shipped**, so a batch of work is never lost. Reads the
-ledger (`context/done-log.md`, maintained by `/inbox`+`/fire`) plus `roadmap.md` + `SKILLS_TODO.md`
-and prints 🟢 shipped / 🟡 open-app / 🔵 open-skills, grouped by area. Writes nothing.
-- `/recall` — full digest · `/recall today` — one area · `/recall since 2026-06-01` — recent only
-
-## `/skill-doctor [audit|fix]`
-Turns the lens on `.claude/skills/` itself: inventories every skill, flags overlap/duplication,
-critiques framing (frontmatter + prose) with opinions and concrete rewrites, and **scores each skill
-/10** (fast qualitative rubric — triggering, scope, distinctness, framing, frontmatter). `audit`
-(default) is read-only; `fix` applies the wording changes you approve. Never changes what a skill
-*does*. For an *empirical* score (real trigger-rate / eval pass-rate) escalate a skill to
-`/skill-creator`.
-
-## `/skills-help [skill-name]`
-Read-only "what & how" for the project's own skills, **read live** from each `SKILL.md` so it never
-drifts. `/skills-help` prints a table of every skill (what it does + how to use); `/skills-help fire`
-explains one in depth. The quick reminder; `SKILLS_TUTORIAL.md` is the longer read.
-
-## `/skill-forge <todo-item>`
-The **drainer for the skills backlog** — the `/fire` twin whose queue is `SKILLS_TODO.md`. Picks one
-open item, **builds it** (authors a new skill in house style — delegating objectively-testable ones
-to `/skill-creator`'s eval loop — / tweaks an existing skill / adopts a marketplace skill), runs the
-**load-check**, then **moves the line to Done**. The only skill that empties `SKILLS_TODO.md`.
-`/skill-doctor` *scans* the set; `/skill-forge` *builds from* the queue.
-- `/skill-forge caveman` — adopt the queued marketplace skill + record its security scan + tick Done
-- `/skill-forge render-audit` — author the queued `[new-skill]` (offers the `/skill-creator` loop)
-
-## `/package [list|check <need>|new <name>]`
-The reuse-first workflow for `packages/` (app-agnostic, portable components).
-- `/package list` — list packages with their README one-liner
-- `/package check keyboard-aware bottom sheet` — is there already a package (or installed lib)?
-- `/package new slide-drawer` — scaffold `packages/slide-drawer/`
+1. Back at the PC → **`/inbox`** your phone notes.
+2. Pick an area → **`/fire <area>`** (branches, builds, verifies, logs the fixes).
+3. Device-test in **both** Hebrew (RTL) + English (LTR) → **`/fire <area> merge`**.
+4. Before a release / when things feel messy → **`/polish`**.
 
 ---
 

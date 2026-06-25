@@ -8,7 +8,7 @@ argument-hint: "[skill-name]"
 
 A read-only guide to the project's own skills. It reads each `.claude/skills/*/SKILL.md`
 **live** (frontmatter + Usage), so the answer is always current — no hand-maintained list to
-drift. Use it as the quick "what & how"; `SKILLS_TUTORIAL.md` is the longer plain-English read.
+drift. The quick "what & how"; `SKILLS_README.md` holds the flow diagram + House rules.
 
 ## Usage
 
@@ -33,7 +33,7 @@ drift. Use it as the quick "what & how"; `SKILLS_TUTORIAL.md` is the longer plai
    - *What it does* = the frontmatter `description`, trimmed to one line.
    - *How to use* = the `argument-hint` plus the first concrete example from its Usage table.
    - Group by the three-verb flow first (`/inbox` → `/fire` → `/polish`), then helpers, so the
-     shape of the system is obvious. End with a one-line pointer to `SKILLS_TUTORIAL.md`.
+     shape of the system is obvious. End with a one-line pointer to `SKILLS_README.md`.
 3. **`<name>` given → one skill in depth.** Read that skill's `SKILL.md` and explain, in plain
    language: what it does, *when to reach for it*, and each command with a real example. If no
    folder matches `<name>`, say so and list the available names.
