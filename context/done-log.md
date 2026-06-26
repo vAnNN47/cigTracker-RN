@@ -16,6 +16,11 @@ over all of it — never delete entries, only add.
 
 ---
 
+## 2026-06-26 — ASKED (batch: "/bobcat or delete done-logs entirely? commit enough?")
+Routed via `/inbox` → **no new item** — folded as pinned decisions into existing SKILLS_TODO `[archive-tracking]`.
+Best-practice answer: keep the ledger (commit = shipped-only, captures no ASKED side), no cloud-push, archive-move not delete; strip trigger = status (open queues self-prune) + size roll (done-log > ~150 lines → `archive/<cat>/<year>/`); maintenance pass not per-session; context-cost ~0 (done-log is on-demand, not auto-loaded).
+- → SKILLS_TODO `[archive-tracking]` (folded: rejected `/bobcat`/delete; pinned two-tier strip trigger + who-pulls-it + context note)
+
 ## 2026-06-26 — ASKED (batch: "per-batch archive for done-vs-todo tracking")
 Routed via `/inbox` → one SKILLS_TODO design item. Marketplace checked (`npx skills find`):
 no skill clears the trust bar — only git `changelog-generator`s (≤115 installs), which diff
