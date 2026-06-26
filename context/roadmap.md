@@ -6,7 +6,8 @@ fixed it moves to that feature's **Fix log** (with a date) and leaves this list.
 
 > This is the single open queue. Add items by sorting a brain-dump with `/inbox`; build + clear
 > an area's items with `/fire <area>` (it moves each done item to that area's Fix log). Drain the
-> **🧹 Reorg / tech debt** section with `/polish`.
+> **🧹 Tech debt** section with `/polish`. **🔍 Audits** = skill-driven sweeps (render-perf,
+> ui-design, rtl/a11y) that surface findings — run the named skill, then file the fixes it finds.
 
 
 ## 🐞 Bugs
@@ -17,6 +18,10 @@ fixed it moves to that feature's **Fix log** (with a date) and leaves this list.
 
 - [ ] **[theme]** Dark mode redesign — keep it dark but more modern, in the spirit of Discord's dark background, with green as the primary color. (דארק מוד מודרני בסטייל דיסקורד, ירוק primary)
 
-## 🧹 Reorg / tech debt
+## 🔍 Audits
+
+- [ ] **[perf]** Whole-app render audit — run **`expo-react-native-performance`** (the 42-rule Expo render/perf skill) across `src/` **and** `packages/` (keyboard-sheet, month-pager, number-pad, pull-refresh) to catch re-render storms, missing list virtualization, and absent memoization before they bite. Also cross **`app-ui-design`** over the UI (sheets/drawers/screens) for design best-practice. Goal: no "multiple rendering issues". Pairs with the **[inputs]** iOS cursor-jump bug (same render-storm root). (אודיט רינדור לכל האפליקציה — perf + ui-design skills מול הקוד והפקג'ים)
+
+## 🧹 Tech debt
 
 - [ ] **[styling]** Migrate styling from React Native `StyleSheet` → **NativeWind v5 (Tailwind v4 syntax)**, preserving the current design exactly. Big multi-screen refactor — staged on branch `nativewindv5_migration`. ⚠️ Reverses the current "No Tailwind/NativeWind" rule in `coding-standards.md` — update that standard as part of the migration. (See Expo's `expo:expo-tailwind-setup`.)

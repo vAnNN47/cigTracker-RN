@@ -16,6 +16,13 @@ over all of it — never delete entries, only add.
 
 ---
 
+## 2026-06-26 — ASKED (batch: "wtf on new skills + cross perf skill against our code")
+Routed via `/inbox` → one SKILLS_TODO doc task, one new roadmap **🔍 Audits** section + item.
+Also restructured roadmap sections: added **🔍 Audits** (skill-driven sweeps), renamed
+**🧹 Reorg / tech debt** → **🧹 Tech debt**.
+- → SKILLS_TODO `[skills-explainer]` — persistent cheat-sheet for the new skills (perf / ui-design / caveman / wtf / skill-forge / skill-doctor)
+- → roadmap `[perf]` (🔍 Audits) — whole-app render audit: run `expo-react-native-performance` + `app-ui-design` across `src/` + `packages/` to catch render/best-practice issues
+
 ## 2026-06-26 — SHIPPED (branch `skill_testing_02_skills-refactor`)
 - ✅ `[refactor]` — slimmed the messy SKILL.md files. The repeated house-rules (LSP-over-grep,
   never-`any`, verify=tsc+lint, branch/commit) now live once in **SKILLS_README → House rules**;

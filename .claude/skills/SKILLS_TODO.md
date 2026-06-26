@@ -16,8 +16,7 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 
 ## Open
 
-_(empty — drained 2026-06-26 by a full `/skill-forge` pass; see `FORGE_REPORT_2026-06-26.md`.
-Recommended-next ideas live in that report, not re-queued — `/inbox` them if you want them back.)_
+- [ ] **[skills-explainer]** Write a persistent explainer doc (cheat-sheet) for the newly-added skills — **`expo-react-native-performance`**, **`app-ui-design`**, **`caveman`**, plus the in-house **`/wtf`**, **`/skill-forge`**, **`/skill-doctor`** — one line each: what it is, when it fires, what it touches. `/wtf <skill>` already explains them live from `SKILL.md`; decide if a static doc earns its keep vs. just pointing at `/wtf`, then either write it or close with that rationale.
 
 ## Done
 
