@@ -55,4 +55,6 @@ matter outside this repo too, also push the recipe to the upstream tracker so fu
   the repo's OPEN **and** CLOSED issues + PRs first"* (commit `963d586`). All four relevant items
   (#505, #563, #569, #571) were already on the tracker.
 - **Caveat:** the cache edit **reverts on plugin reinstall/update** — reapply the one-line disable.
-  The project skill survives. Recipe also posted to upstream **#569 / #571** (2026-06-26).
+  The project skill survives.
+- **Upstream refs (for search only — we don't post to others' repos):** #505 (`.toml`, wrong format
+  for Claude Code), #563 (empty transcript), #569 (skills not registered), #571 (`.toml` vs `.md`).

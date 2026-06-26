@@ -71,6 +71,16 @@ export function Toast({ ... }) { ... }
 - No commented-out code, no unused imports/variables.
 - `npx tsc --noEmit` must pass and `npm run lint` should be clean before a change is considered done.
 
+## Don't write to repos we don't own (global; applies to ALL work and every skill)
+- **Never post to, comment on, or open issues/PRs against third-party/upstream repos** (e.g. a
+  plugin's GitHub), and never commit/push to any repo we don't own. **Research them read-only** —
+  read their issues, PRs, and code to find answers (that's required; see the rule below) — but
+  **writing to them is off-limits.**
+- If a fix or finding belongs upstream, **tell the user and stop** — they decide whether to post it
+  themselves. Don't draft-and-send on their behalf, even if they earlier said "sounds good."
+- Our own commits stay **local, on our branch** — never pushed, never `main`/`master` automatically
+  (see `ai-interaction.md`). AI/Claude attribution stays out of commit messages (also `ai-interaction.md`).
+
 ## Never guess — check the source first (global; applies to ALL work and every skill)
 - **Never guess** a command, library, API, tool, or error cause. **Verify against the source
   before acting or answering** — and **check the actual repo FIRST** (its PRs, commits, the real
