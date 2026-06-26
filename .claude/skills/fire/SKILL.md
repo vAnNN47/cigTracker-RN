@@ -37,7 +37,7 @@ what `/inbox` writes. `<branch>` is the new working branch's name.
 5. **Close the loop.** For each finished item: remove it from `roadmap.md`, add a dated line to
    the area doc's **Fix log** (+ a `- [x]` under **Done** if it's a lasting capability), then
    append a `SHIPPED` block to `context/done-log.md` (newest on top) listing the closed items +
-   branch — that ledger is what `/recall` reads. Unfinished items **stay** open; never tick what
+   branch — that ledger is what `/wtf` reads. Unfinished items **stay** open; never tick what
    you didn't do.
 6. **Report** what was built, the verify result, and anything left open. Don't auto-run `/polish`.
 7. **Commit** automatically on the working branch.
@@ -54,4 +54,4 @@ roadmap line (relabel/remove) instead of faking a fix.
 - 🔒 **main/master protected** — never merge/push there automatically (see ai-interaction.md).
 
 ## Not this skill's job
-- Sorting a brain-dump → `/inbox` · Pre-release hygiene → `/polish` · Open-vs-done digest → `/recall`.
+- Sorting a brain-dump → `/inbox` · Pre-release hygiene → `/polish` · Catch-up / open-vs-done → `/wtf`.

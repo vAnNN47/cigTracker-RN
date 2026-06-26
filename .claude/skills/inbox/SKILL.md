@@ -68,7 +68,7 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
    - add each item as a `- [ ]` line under its section, tagged `**[area]**`;
    - package candidates → note "run `/package new <name>`";
    - **append an `ASKED` block to `context/done-log.md`** (newest on top): the batch's one-line
-     title + where each item routed — that ledger is what `/recall` reads, so a batch is never lost.
+     title + where each item routed — that ledger is what `/wtf` reads, so a batch is never lost.
 8. If the batch came from `context/inbox.md`, **remove the triaged lines** from it.
 9. **Commit** the roadmap / `SKILLS_TODO` / `done-log` (+ `inbox.md`) edit on the current branch with
    a `docs:` message — never ask, just do it. Local only: never push, never `main`.

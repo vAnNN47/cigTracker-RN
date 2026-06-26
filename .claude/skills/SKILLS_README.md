@@ -3,7 +3,8 @@
 Project skills live in `.claude/skills/<name>/SKILL.md` and run as slash commands in
 Claude Code. **Reload the VS Code window after adding or changing a skill.**
 
-> New here? Jump to **The three-verb flow** + **A normal day** below, or run `/skills-help`.
+> New here, or back after days away? Run **`/wtf`** — it catches you up on the work AND the
+> commands in one shot. Or read **The three-verb flow** + **A normal day** below.
 
 ## Authoring a skill — frontmatter rules (read before adding one)
 
@@ -33,10 +34,10 @@ The whole loop is three skills, one verb each:
 - **`/fire <area> <branch>`** — DO. Cut `<branch>` → build that area's roadmap items → verify once → log the fixes.
 - **`/polish`** — POLISH. Pre-release hygiene: fix small mess + drain structural debt.
 
-Plus helpers: **`/package`** (reuse-first widgets),
-**`/recall`** (open-vs-done digest — closes the tracking loop over a batch),
-**`/skill-doctor`** (audits + scores the skill set itself),
-**`/skills-help`** (explains each skill — what it does + how to use, read live), and
+Plus helpers: **`/wtf`** (the one "catch me up" button — open-vs-shipped work **+** how your
+commands work, read live; the only refresher you need to remember),
+**`/package`** (reuse-first widgets),
+**`/skill-doctor`** (audits + scores the skill set itself), and
 **`/skill-forge`** (the `/fire`-for-skills drainer — builds one `SKILLS_TODO` item to Done).
 
 > Plus the marketplace **`skill-creator`** (installed under `.agents/skills/`, symlinked in): authors
@@ -69,7 +70,7 @@ work with no re-asking. Each SKILL.md just references this section instead of re
 
 ## Skill signatures
 
-Each skill's full body lives in its own `SKILL.md`, and **`/skills-help` reads those live** — so
+Each skill's full body lives in its own `SKILL.md`, and **`/wtf <skill>` reads those live** — so
 this table is just arg shapes, not a second copy of the prose.
 
 | Skill | Args | One-line |
@@ -77,11 +78,10 @@ this table is just arg shapes, not a second copy of the prose.
 | `/inbox` | `[<batch>]` | Sort a brain-dump into `roadmap.md` (skills-items → `SKILLS_TODO.md`), dedupe. **No code.** |
 | `/fire` | `<area> <branch>` · `<area> merge` | Branch → build all open `[area]` items → verify once (`tsc`+lint) → move to Fix log. |
 | `/polish` | `check` \| `run` | Pre-release: Phase 1 small mess + Phase 2 drain 🧹 tech-debt. `check`=report-only. |
-| `/recall` | `[<area>` \| `since <date>]` | Read-only 🟢shipped / 🟡open-app / 🔵open-skills digest. Writes nothing. |
+| `/wtf` | `[skill` \| `area` \| `since <date>]` | The "catch me up" button: open-vs-shipped work **+** how a command/area works. Read-only. No arg = full refresh. |
 | `/package` | `list` \| `check <need>` \| `new <name>` | Reuse-first workflow for `packages/` (app-agnostic widgets). |
 | `/skill-doctor` | `audit` \| `fix` | Audit/score (/10) the skill set itself. `audit`=read-only. |
 | `/skill-forge` | `<todo-item>` | Drain one `SKILLS_TODO` item → build → load-check → move to Done. The `/fire` twin. |
-| `/skills-help` | `[skill-name]` | Read-only what/how, read live from each `SKILL.md`. |
 
 > **Marketplace add-ons** (layered under the flow, don't replace it): `skill-creator` — authors
 > skills + empirical eval/trigger-rate (the measured score `/skill-doctor` can't give);

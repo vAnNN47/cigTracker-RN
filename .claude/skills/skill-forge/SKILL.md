@@ -64,4 +64,4 @@ line instead of inventing work.
 - Inventory / overlap / framing critique / the /10 score → `/skill-doctor`.
 - The rigorous draft→eval→trigger-optimize **engine** for one skill → `/skill-creator` (forge
   *delegates* to it for new objectively-testable skills; it doesn't replace it).
-- Open-vs-shipped digest → `/recall`.
+- Catch-up / open-vs-shipped digest → `/wtf`.

@@ -6,7 +6,7 @@ the one place both live, stamped with a date.
 
 - **`/inbox`** appends an **ASKED** block — the raw batch + where each item was routed.
 - **`/fire`** appends a **SHIPPED** block — each item it closed, with the branch.
-- **`/recall`** reads this (plus `roadmap.md` / `SKILLS_TODO.md`) to print an open-vs-done digest.
+- **`/wtf`** reads this (plus `roadmap.md` / `SKILLS_TODO.md`) to print the catch-up / open-vs-done digest.
 
 Open work still lives in `context/roadmap.md` + `.claude/skills/SKILLS_TODO.md`; per-area detail
 stays in each `context/features/<area>.md` **Fix log**. This ledger is the chronological index

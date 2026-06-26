@@ -42,4 +42,4 @@ in the relevant feature doc's Fix log (or `current-feature.md` History if cross-
 After the edits, run `tsc --noEmit` + lint **once** at the end of each phase (PowerShell + fnm).
 
 ## Not this skill's job
-- Sorting fresh ideas → `/inbox` · Building an app area → `/fire <area>` · Open-vs-done → `/recall`.
+- Sorting fresh ideas → `/inbox` · Building an app area → `/fire <area>` · Catch-up / open-vs-done → `/wtf`.
