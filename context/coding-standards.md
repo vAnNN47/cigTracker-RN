@@ -71,6 +71,20 @@ export function Toast({ ... }) { ... }
 - No commented-out code, no unused imports/variables.
 - `npx tsc --noEmit` must pass and `npm run lint` should be clean before a change is considered done.
 
+## Never guess — check the source first (global; applies to ALL work and every skill)
+- **Never guess** a command, library, API, tool, or error cause. **Verify against the source
+  before acting or answering** — and **check the actual repo FIRST** (its PRs, commits, the real
+  files on disk) before reasoning from memory or generic docs. The answer is often already
+  upstream (e.g. a missing registration file fixed in an open PR).
+- **When hitting a bug: search the repo's OPEN *and* CLOSED issues + PRs first.** It may already
+  be the known solution — adopt it instead of inventing a workaround.
+- No hacked workarounds. Find the **proper, current (latest-year) best-practice** method; don't
+  assume older API shapes (see the Expo-SDK-56 rule in `CLAUDE.md`). **A hack is the LAST option,
+  used only after the user explicitly approves it.**
+- **Prove, don't theorize** — run the script, pipe the hook, read the file. Empirical beats
+  plausible. For a popular/active repo, assume the basic thing *can* work: a gap is config to
+  find, not a dead end to route around. This is a standing rule — no skill re-asks it per run.
+
 ## Code navigation — LSP over grep (global; applies to ALL work and every skill)
 - Use the **LSP tool** for anything about symbols: `goToDefinition`, `findReferences`, `hover`,
   `documentSymbol`, `workspaceSymbol`. Use `findReferences` to prove "zero references → safe to
