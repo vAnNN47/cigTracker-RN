@@ -66,6 +66,13 @@ work with no re-asking. Each SKILL.md just references this section instead of re
 - Code-changing run → **its own fresh branch** (cut from current) → **auto-commit at the end, no asking.** Local only: **never push, never `main`/`master`.**
 - Doc-only runs (`/inbox`, `/polish check`) stay on the **current branch** and auto-commit the doc edit there (no new branch — build straight off it).
 
+**Answering a batched/multi-question input** (all skills):
+- **Split the questions out and answer each on its own line** — never one schematic blob. Tag each
+  with a confidence marker: **✅** = known + answered, **❌** = couldn't solve, **⚠️** =
+  answerable-but-unsure / a best-guess. The reader must see per-item which got solved, which didn't,
+  and where you're guessing. (Don't let the first code match stand in for the whole answer — similar
+  elements exist; verify the specific one.)
+
 ---
 
 ## Skill signatures
@@ -77,7 +84,7 @@ this table is just arg shapes, not a second copy of the prose.
 |-------|------|----------|
 | `/inbox` | `[<batch>]` | Sort a brain-dump into `roadmap.md` (skills-items → `SKILLS_TODO.md`), dedupe. **No code.** |
 | `/fire` | `<area> <branch>` · `<area> merge` | Branch → build all open `[area]` items → verify once (`tsc`+lint) → move to Fix log. |
-| `/polish` | `check` \| `run` | Pre-release: Phase 1 small mess + Phase 2 drain 🧹 tech-debt. `check`=report-only. |
+| `/polish` | `check [file]` \| `run` | Pre-release: Phase 1 small mess + Phase 2 drain 🧹 tech-debt. `check`=report **+ queue** (doc-only commit); `check <file>` scopes the scan; skills-system findings route to `SKILLS_TODO.md`, app findings to `roadmap.md`. |
 | `/wtf` | `[skill` \| `area` \| `since <date>]` | The "catch me up" button: open-vs-shipped work **+** how a command/area works. Read-only. No arg = full refresh. |
 | `/package` | `list` \| `check <need>` \| `new <name>` | Reuse-first workflow for `packages/` (app-agnostic widgets). |
 | `/skill-doctor` | `audit` \| `fix` | Audit/score (/10) the skill set itself. `audit`=read-only. |
@@ -85,7 +92,12 @@ this table is just arg shapes, not a second copy of the prose.
 
 > **Marketplace add-ons** (layered under the flow, don't replace it): `skill-creator` — authors
 > skills + empirical eval/trigger-rate (the measured score `/skill-doctor` can't give);
-> `caveman` — output-prose compressor (`/caveman`, "stop caveman" to exit).
+> `caveman` — output-prose compressor (`/caveman`, "stop caveman" to exit);
+> `expo-react-native-performance` — 42-rule Expo/RN perf guide (lists, animations, images, memo,
+> profiler); **auto-triggers** when writing/reviewing RN components — this is our **render-audit**;
+> `app-ui-design` — mobile UI design (iOS HIG + Material 3, a11y, color/type), for the dark-mode
+> redesign. These are **capability** skills (do a job) — they sit *under* our workflow verbs
+> (`/inbox`→`/fire`→`/polish`), never replace them.
 
 ## A normal day
 

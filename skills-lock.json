@@ -1,11 +1,23 @@
 {
   "version": 1,
   "skills": {
+    "app-ui-design": {
+      "source": "majiayu000/claude-arsenal",
+      "sourceType": "github",
+      "skillPath": "skills/app-ui-design/SKILL.md",
+      "computedHash": "50d70ba214d76c60660c02ebcadb54b8e820c7dfbc9b68fb3f81c6695e5a266f"
+    },
     "caveman": {
       "source": "juliusbrussee/caveman",
       "sourceType": "github",
       "skillPath": "skills/caveman/SKILL.md",
       "computedHash": "b0e7741886c0c32270cedc1a2fc21c2879d90964d3ce00f24952de7064613404"
+    },
+    "expo-react-native-performance": {
+      "source": "pproenca/dot-skills",
+      "sourceType": "github",
+      "skillPath": "skills/.experimental/expo-react-native-performance/SKILL.md",
+      "computedHash": "84100681c79072fd1920304b8b15551e885eb5004385d96f70d19e8500731954"
     },
     "skill-creator": {
       "source": "anthropics/skills",

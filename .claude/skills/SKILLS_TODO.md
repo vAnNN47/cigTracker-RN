@@ -15,21 +15,22 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 > `[cool-task]`, and if that's already taken, number it: `[cool-task-01]`, `[cool-task-02]`, …
 
 ## Open
-- [ ] **[polish-check-lsp]** polish check should use LSP also, because when claude checks he uses grep again.
-- [ ] **[polish-check-scope]** `/polish check` needs a documented **file/scope argument** and **queue routing**: (a) define what `/polish check <file>` does (scope the scan to that path) in both `polish/SKILL.md` and `SKILLS_README.md`; (b) when the target is a skills-system file, structural findings must go to **`SKILLS_TODO.md`**, not the app `roadmap.md` — `check` currently hard-codes roadmap as the only queue. (Surfaced running `/polish check SKILLS_README.md`, 2026-06-26.)
-- [ ] **[docs]** Fix `SKILLS_README.md` line ~78: `/polish check` is described as "report only, change nothing" but it actually queues structural TODOs + auto-commits the doc edit — reword to "report + queue (doc-only commit)". (Trivial; do on next `/polish run` or a docs pass.)
 
-### Skills marketplace + "next level" (batch 2026-06-25)
-- [~] **[skills-sh]** Learn/adopt skills.sh (Anthropic's skill marketplace — the user called it "Vercel skills") — pull `skill-creator` + any generic skills into `.claude/skills/`; ours and marketplace skills coexist. **`skill-creator` installed 2026-06-26** (via `npx skills add`, symlinked, coexisting). Remaining: pull additional generic skills (a design skill + an RN best-practices/render skill).
-- [ ] **[strategy]** Keep BOTH our workflow skills (inbox/fire/polish) **and** marketplace capability-skills — don't replace; layer marketplace skills under our flow. (להשאיר חלק שלנו חלק מהמרקטפלייס)
-- [ ] **[render-audit]** Build a **render-audit / performance** skill — checks for unnecessary re-renders (memo/useCallback/stable keys/store selectors), ties into React DevTools Profiler / `expo-observe`. (סקיל שבודק כמות רינדורים ומשפר)
-- [~] **[tracking]** Close the task-tracking loop — after a batch it's hard to recall what was asked vs done. **v1 built (2026-06-25, branch `skill_testing_01_tracking-loop`):** `context/done-log.md` ledger (ASKED + SHIPPED) + new `/recall` skill + `/inbox`&`/fire` wired to append. Possible v2: per-item IDs in the roadmap. (קשה לעקוב מה בוצע / מה רציתי)
-- [ ] **[scope]** Decide which skills THIS app's scope needs (render-audit, rtl-audit, a11y, theme/token-consistency, repo-interface-parity). (איזה סקילס צריך לסקופ של האפ)
-- [ ] **[portability]** Make generic skills project-agnostic and move them to **user-level `~/.claude/skills/`** (apply to all projects); keep project-glue skills (inbox/fire/polish, which reference this repo's `context/`) in the repo. (סקילס סט גנרי לכל הפרויקטים)
-- [~] **[skill-creator-loop]** Use `skill-creator` to author new custom skills to a higher standard; pull a design skill + an RN best-practices/render skill from the marketplace. (skill-creator — לעלות שלב) **`skill-creator` installed 2026-06-26**; remaining: actually run its draft→eval→iterate loop on a real new skill, and pull the design + RN skills.
-- [ ] **[answer-format]** Every skill, on a batched/question input, must answer with a **per-question breakdown** (not schematic): split the questions out, ✅ = known+answered, ❌ = couldn't solve, ⚠️ = answerable-but-unsure / unsure-but-likely. (פורמט תשובות לבאטצ׳ שאלות)
+_(empty — drained 2026-06-26 by a full `/skill-forge` pass; see `FORGE_REPORT_2026-06-26.md`.
+Recommended-next ideas live in that report, not re-queued — `/inbox` them if you want them back.)_
 
 ## Done
+
+- [x] 2026-06-26 — **FULL DRAIN (`/skill-forge`, all-in-one-go; report: `FORGE_REPORT_2026-06-26.md`):**
+  - **[skills-sh]/[render-audit]/[skill-creator-loop]** — Adopted two marketplace skills (the "pull a design + an RN render skill" ask). **`expo-react-native-performance`** (`pproenca/dot-skills`, 872 installs; Gen **Safe** / Socket **0 alerts** / Snyk **Low**) — Expo-specific 42-rule render/perf guide → **this IS render-audit** (chose adopt-over-author; rejected web-only `dimillian@react-component-performance`). **`app-ui-design`** (`majiayu000/claude-arsenal`, 453 installs; Safe/0/Low) — iOS HIG + Material 3 + a11y, for the dark-mode redesign. Both copied to `.agents/skills/` + `.claude/skills/`, registered in the SKILLS_README marketplace callout, layered under our flow. ⚠️ reload VS Code window.
+  - **[polish-check-lsp]** — `/polish check` rewritten to force **LSP** for symbols (grep only for raw text; STOP if LSP down), no silent grep fallback. (`polish/SKILL.md`)
+  - **[polish-check-scope]** — added documented **`check [file]`** scope arg + **queue routing** (app findings → `roadmap.md`, skills-system findings → `SKILLS_TODO.md` with a unique slug). (`polish/SKILL.md` body + `argument-hint` + `SKILLS_README` signature)
+  - **[docs]** — fixed the `/polish` signature wording: "report-only" → "report **+ queue** (doc-only commit)".
+  - **[answer-format]** — baked the per-question ✅/❌/⚠️ breakdown rule into `SKILLS_README` → House rules (all skills).
+  - **[strategy]** — closed as already-true + now explicit in the README (capability skills sit under our verbs).
+  - **[scope]** — decision recorded (render+design ✅ filled; rtl-audit / token-consistency / repo-parity = gaps → recommended-next).
+  - **[portability]** — decision: keep per-project for now (workflow skills bind to this repo's `context/`; revisit at project #2).
+  - **[tracking]** — v1 (done-log + `/wtf`) shipped; v2 per-item IDs deferred as low-value.
 
 - [x] 2026-06-26 — **[wtf]** Authored **`/wtf`** — the single "catch me up" button — and **folded `/recall` + `/skills-help` into it** (deleted both standalone skills). No-arg = full refresh (flow map + 🟢shipped / 🟡open-app / 🔵open-skills); `/wtf <skill>` = deep-dive on one command (was `/skills-help <name>`); `/wtf <area>` / `/wtf since <date>` = scoped work digest (was `/recall`). Disambiguates the arg by "folder `.claude/skills/<word>` exists? → skill, else → area/date". SKILL.md written dead-simple (skill = a tool you DO, area = a room in the app you do it TO) with an exhaustive `[anything_here]` table. Repointed all live refs (README signatures/helpers/intro, fire/polish/inbox/skill-forge cross-refs, done-log header). Net skills: `/recall`+`/skills-help` (2) → `/wtf` (1).
 

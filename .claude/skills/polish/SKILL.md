@@ -1,7 +1,7 @@
 ---
 name: polish
 description: Pre-release hygiene pass — fix small mess AND drain structural tech-debt, in one
-argument-hint: check | run
+argument-hint: "check [file] | run"
 ---
 
 # /polish — clean + pay down debt before you ship
@@ -15,12 +15,24 @@ queued in the roadmap.
 
 ## Modes — $ARGUMENTS
 
-**`check`** (default) — **report + queue, no app-code changes.** Scan (LSP; grep only for raw text
-like `console.log`/`TODO`). List findings split into ✅ **trivial** (auto-fixable) and 🧱
-**structural** (consolidations / reorgs / lint-rule debt). Then **write every structural finding
-into `context/roadmap.md` under 🧹 Reorg / tech debt** as a `- [ ]` TODO tagged `[area]`, deduped —
-populating that queue is the whole job of `check`. Doc-only → **auto-commit on the current branch**
-(no new branch), then report what was queued.
+**`check [file]`** (default) — **report + queue, no app-code changes.** With no arg, scans the
+whole project; **`check <file>` scopes the scan to that path** (a file or folder) — same output,
+narrowed. **Use the LSP tool for all symbol/reference work** (`findReferences` to prove "zero refs
+→ dead"); **grep only for raw text** LSP can't express (`console.log`/`TODO`). Don't drop back to
+grep for symbols mid-check — if LSP is down, STOP and say so (House rules). List findings split into
+✅ **trivial** (auto-fixable) and 🧱 **structural** (consolidations / reorgs / lint-rule debt).
+
+**Then route every structural finding to the right queue, deduped** — populating that queue is the
+whole job of `check`:
+- a finding about **app code** (`src/`, `packages/`, `app/`) → `context/roadmap.md` under 🧹 Reorg
+  / tech debt, as a `- [ ]` TODO tagged `[area]`.
+- a finding about a **skills-system file** (`.claude/skills/*`, `context/` workflow docs) →
+  **`.claude/skills/SKILLS_TODO.md` under Open**, as a `- [ ]` TODO with a **unique `[slug]`** (the
+  skills queue never shares a slug — SKILLS_README naming rules). Never mis-route a skills-system
+  finding into the app roadmap.
+
+Doc-only → **auto-commit on the current branch** (no new branch), then report what was queued and
+to which queue.
 
 **`run`** — do the work in two phases. Cuts its own fresh branch first; auto-commits at the end.
 
