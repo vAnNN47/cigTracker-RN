@@ -44,6 +44,13 @@ references; `context/*.md` still matching reality; `.env` covering every var the
 print values). Report as a numbered list → ask which to fix (`1,3` / `all` / `none`) → fix only
 those. Anything non-trivial → **file it** into the roadmap's 🧹 section and handle in Phase 2.
 
+**Roll the ledger (size-gated, doc-only).** Check `context/done-log.md` line count. If it's **over
+~150 lines**, offer to **move** (never delete) its oldest `ASKED`/`SHIPPED` batches — whole blocks,
+verbatim — into `context/archive/done-log-<year>.md` (by each batch's year, newest-on-top), until
+the hot file is back to ~the newest 15 batches / ~120 lines. Leave a one-line pointer in
+`done-log.md` ("older batches → `archive/done-log-<year>.md`"). Under threshold → skip silently.
+This is the only writer of `context/archive/` (see `context/archive/README.md`).
+
 ### Phase 2 — structural debt (drain the roadmap)
 Work the **🧹 Reorg / tech debt** items — consolidations, folder reorgs, extracting a `packages/`
 component, lint triage, scrubbing dead refs. Use LSP to make renames/moves/deletions safe. **One

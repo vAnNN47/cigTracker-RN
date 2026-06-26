@@ -12,6 +12,11 @@ Open work still lives in `context/roadmap.md` + `.claude/skills/SKILLS_TODO.md`;
 stays in each `context/features/<area>.md` **Fix log**. This ledger is the chronological index
 over all of it — never delete entries, only add.
 
+**Archiving (keeps this file scannable):** when this file passes **~150 lines**, `/polish run`
+offers to **move** (never delete) the oldest batches into `context/archive/done-log-<year>.md`,
+leaving the newest ~15 batches here plus a pointer. `/wtf since <old-date>` reads the archive too,
+so nothing vanishes. See [archive/README.md](archive/README.md).
+
 > Format: newest at the top. `ASKED` = an intake batch. `SHIPPED` = completed work.
 
 ---

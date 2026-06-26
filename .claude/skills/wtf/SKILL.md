@@ -61,7 +61,9 @@ remember — they may have changed while you were gone):
 3. `context/roadmap.md` — the open queue: every app bug/idea/tech-debt, tagged `[area]`.
 4. `.claude/skills/SKILLS_TODO.md` — the open *skills-system* queue (separate from the app).
 5. `context/done-log.md` — the ledger: what you ASKED for + what SHIPPED (kept by `/inbox`+`/fire`).
-6. `context/features/<area>.md` **Fix log** — per-room dated history (only when you scope to an area).
+6. `context/archive/done-log-<year>.md` — older ledger batches rolled out of the hot file by
+   `/polish` (only read for `/wtf since <old-date>` + the ⚠️ Unaccounted reconcile, so nothing vanishes).
+7. `context/features/<area>.md` **Fix log** — per-room dated history (only when you scope to an area).
 
 ---
 
@@ -87,7 +89,8 @@ every command form with a real example. No folder matches that word? Say so, lis
 Filter the open work + the Fix log to that one `[area]` slug. Show its open items + its recent fixes.
 
 ### `/wtf since <date>` — recent only
-Same as the full catch-up, but only ledger activity on/after `YYYY-MM-DD`.
+Same as the full catch-up, but only ledger activity on/after `YYYY-MM-DD`. For an old date, also
+read `context/archive/done-log-<year>.md` so rolled-out batches still show.
 
 ---
 
