@@ -16,6 +16,7 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 
 ## Open
 
+- [ ] **[archive-tracking]** Refine the done-vs-todo tracking to a **per-batch archive** — design `archive/<category>/<date>/<batch-name>` (categories: skill / improvement / bug / audit / tech-debt), one folder per `/inbox` or `/fire` batch, holding both what was asked and what shipped for that batch. **Constraint: reconcile with — don't duplicate — the existing loop** (`done-log.md` ledger + per-area `features/<area>.md` Fix logs + `roadmap.md`/`SKILLS_TODO.md` open queues + `/wtf`). Decide what becomes source-of-truth vs. a generated index, and wire `/inbox`+`/fire` to write the archive entry. **Marketplace check (done 2026-06-26): no skill clears the bar** — `npx skills find` returned only git `changelog-generator`s (≤115 installs, diff git history, not category/date task tracking); build in-house as project glue. Likely a `/skill-forge` design task.
 - [ ] **[skills-explainer]** Write a persistent explainer doc (cheat-sheet) for the newly-added skills — **`expo-react-native-performance`**, **`app-ui-design`**, **`caveman`**, plus the in-house **`/wtf`**, **`/skill-forge`**, **`/skill-doctor`** — one line each: what it is, when it fires, what it touches. `/wtf <skill>` already explains them live from `SKILL.md`; decide if a static doc earns its keep vs. just pointing at `/wtf`, then either write it or close with that rationale.
 
 ## Done

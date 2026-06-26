@@ -16,6 +16,12 @@ over all of it — never delete entries, only add.
 
 ---
 
+## 2026-06-26 — ASKED (batch: "per-batch archive for done-vs-todo tracking")
+Routed via `/inbox` → one SKILLS_TODO design item. Marketplace checked (`npx skills find`):
+no skill clears the trust bar — only git `changelog-generator`s (≤115 installs), which diff
+git history rather than track todo/done by category+date. Build in-house.
+- → SKILLS_TODO `[archive-tracking]` — design `archive/<category>/<date>/<batch>` per-batch archive; reconcile with (not duplicate) the existing done-log + Fix-log + `/wtf` loop. Deferred design → likely `/skill-forge`.
+
 ## 2026-06-26 — ASKED (batch: "wtf on new skills + cross perf skill against our code")
 Routed via `/inbox` → one SKILLS_TODO doc task, one new roadmap **🔍 Audits** section + item.
 Also restructured roadmap sections: added **🔍 Audits** (skill-driven sweeps), renamed
