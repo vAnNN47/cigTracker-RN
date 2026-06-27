@@ -43,9 +43,16 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
    — `name` equals its folder, `description`/`argument-hint` are strings, bracketed `argument-hint`
    quoted. (No tsc — these are docs.) **Reload the VS Code window** note applies for the user to see
    a new skill.
-6. **Close the loop.** Move the item's `- [ ]` line to `## Done` in `SKILLS_TODO.md` as
-   `- [x] <date> — …` describing what shipped. If a new skill landed, also add its row to the
-   **Skill signatures** table in `SKILLS_README.md`. An item lives in exactly one place — open, then Done.
+6. **Close the loop** — the **same close as `/fire`** (see *Done-handling* in SKILLS_README):
+   - **Done store** — move the item's `- [ ]` line to `## Done` in `SKILLS_TODO.md` as
+     `- [x] <date> — …` describing what shipped. This inline `## Done` **is** the skills equivalent
+     of a roadmap item's `features/<area>.md` Fix log (skills have no per-area doc — same model,
+     different home).
+   - **Shared ledger** — append a `SHIPPED` block to `context/done-log.md` (newest on top) listing
+     what closed + the branch, **exactly as `/fire` does**, so the one chronological ledger indexes
+     skills-work too (it claims to index *all* of it — `/wtf` reads it).
+   - If a new skill landed, also add its row to the **Skill signatures** table in `SKILLS_README.md`.
+   - An item lives in exactly one place — open, then Done.
 7. **Report + commit** — what you built, the load-check result, anything left open; auto-commit on
    the working branch (local only, never push/main).
 

@@ -127,6 +127,27 @@ area doc's Fix log** when done. It is never in two places at once.
 **Typical flow:** `/inbox` your notes → scan `roadmap.md` → `/fire <area>` to build + close its
 items → `/polish` before you device-test or release.
 
+### Done-handling (roadmap & SKILLS_TODO close the same way)
+
+Both queues use **one model**: each has an *open store* and a *done store*, and **both drainers also
+write the one shared chronological ledger** (`context/done-log.md`). They differ only in *where* the
+done store lives — and that difference is justified, not an accident:
+
+| | App work | Skills/workflow work |
+|---|---|---|
+| **Drainer** | `/fire <area>` | `/skill-forge <item>` |
+| **Open store** | `context/roadmap.md` (`[area]` tags repeat) | `SKILLS_TODO.md` **Open** (slugs unique) |
+| **Done store** | `context/features/<area>.md` **Fix log** | `SKILLS_TODO.md` **`## Done`** *(no per-area doc exists, so inline `## Done` is the skills Fix log)* |
+| **Shared ledger** | `context/done-log.md` `SHIPPED` block | `context/done-log.md` `SHIPPED` block |
+
+- **Where does a done roadmap item go?** Out of `roadmap.md` → into its `features/<area>.md` **Fix
+  log** (dated), **plus** a `SHIPPED` block in `done-log.md`. It leaves the open queue entirely.
+- **`done-log.md` is the single chronological index over *both* queues** — that's why `/skill-forge`
+  appends a `SHIPPED` block just like `/fire`, so skills-completions aren't missing from `/wtf`.
+- The asymmetry (roadmap done → separate per-area file; skills done → inline `## Done`) is **by
+  design**: roadmap items map to areas that own a doc; skills items are one-off and have nowhere to
+  scatter to, so their `## Done` *is* their Fix log. Same model, different home.
+
 ### Naming convention (kebab area-tags)
 
 - **One feature doc per *area you'd cut a branch for*** — a tab, a sheet, a drawer — **not** one

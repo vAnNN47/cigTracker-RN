@@ -26,6 +26,18 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
+Built via `/skill-forge done-handling` (doc-only, skills-system):
+- **[done-handling]** Unified done-item handling into one documented model. `/skill-forge` now
+  appends a `SHIPPED` block to **this ledger** like `/fire` does (it previously only moved the line
+  to `SKILLS_TODO ## Done`, leaving skills-work out of the chronological index). Added a
+  **Done-handling** section to `SKILLS_README` (open store → done store per kind + the shared
+  ledger; the per-area-file vs. inline-`## Done` asymmetry is by design). Answers item-1: a done
+  roadmap item lands in its `features/<area>.md` Fix log **+** a `done-log.md` SHIPPED block,
+  leaving `roadmap.md`. *(This very block is the rule dogfooded.)*
+
+---
+
 ## 2026-06-27 — SHIPPED (branch: `perf-virtualization`)
 Built via `/fire perf` — drains the last `[perf]` audit items:
 - **[perf]** Virtualized `purchases.tsx` history: `ScrollView`+nested `.map` → built-in
