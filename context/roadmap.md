@@ -31,4 +31,35 @@ _(none open — render audit drained; `app-ui-design` findings live as `[a11y]`;
 
 ## 🧹 Tech debt
 
-- [ ] **[styling]** **Change the way the app's styling is written (to Tailwind/NativeWind) without changing how anything looks — a big behind-the-scenes refactor.** — Migrate styling from React Native `StyleSheet` → **NativeWind v5 (Tailwind v4 syntax)**, preserving the current design exactly. Big multi-screen refactor — staged on branch `nativewindv5_migration_01`. **⏳ In progress** — setup + token map + `src/tw/` wrappers + color-scheme bridge **done**; pilot `community.tsx` converted (tsc/lint green) but **device-verify pending — green `bg-*` fills not painting, must root-cause first** (see Known issues in [features/styling.md](features/styling.md)). **Run model: ONE screen per `/fire styling` run** — take the next unchecked screen from the **Migration queue** in `features/styling.md` (simplest→hardest), follow the **Per-screen procedure** there, then the user device-verifies it (light+dark+RTL vs original) before it's ticked. **Remaining:** the green-fill blocker, then the other **19** screens + the FINAL step (retire `makeUseStyles`, flip the project-wide rule). ⚠️ **The rule-flip is part of the cutover, not yet done** — the "No Tailwind/NativeWind, `StyleSheet` only" wording lives in **`coding-standards.md` (Styling), `CLAUDE.md` (theme section), and `project-overview.md` (tech-stack table)** — all three change to "NativeWind/Tailwind" once every screen is migrated. The **skills** (`/fire`, `/polish`, `/package`) defer to `coding-standards.md` as canonical, so flipping that doc flips the skills automatically (verify no skill mentions `StyleSheet` directly after). ⚠️ **Version note:** the `expo:expo-tailwind-setup` skill pins `react-native-css@0.0.0-nightly.5ce6396` + `nativewind@5.0.0-preview.2`, which peer on **Expo 54** — wrong for our SDK 56; use `react-native-css@^3.0.1` + `nativewind@5.0.0-preview.4` (done on the branch).
+- [ ] **[styling]** **Change the way the app's styling is written (to Tailwind/NativeWind) without changing how anything looks — a big behind-the-scenes refactor.** — Migrate styling from React Native `StyleSheet` → **NativeWind v5 (Tailwind v4 syntax)**, preserving the current design exactly. Staged on branch `nativewindv5_migration_01`. **⏳ In progress** — setup (deps + `metro.config.js`/`postcss.config.mjs` + `src/global.css` token map + `src/tw/` wrappers + `ColorSchemeBridge`) **done**; pilot `community.tsx` converted (tsc/lint green) but **device-verify pending** (green-fill blocker, below). Full cheatsheet/details in [features/styling.md](features/styling.md).
+
+  **🚧 BLOCKER (do first, before any more screens):** green `bg-*` fills don't paint in the pilot — share button (`bg-green`) + megaphone circle (`bg-green-bright`) render empty; compiled CSS is correct and themed *text* colors DO resolve, so it's narrow. Repro + root-cause (try `inlineVariables:true`; isolate plain-hex vs token vs `light-dark()` bg; check `bg` on `<Text>`; search react-native-css issues).
+
+  **▶️ Run model — ONE screen per `/fire styling` run.** Take the next unchecked screen below (simplest→hardest), then **device-verify it (light+dark+RTL vs the original) before ticking** — `tsc`+`lint` can't see pixels.
+
+  **Per-screen steps:** (1) read the target's `StyleSheet`, keep original open to diff. (2) swap RN imports → `@/tw` (`View/Text/ScrollView/Pressable/TextInput`), `Image`→`@/tw/image`, `Animated.View`→`@/tw/animated`; **keep `useColors()`** for icon/SVG `color` props + non-CSS elements (`SafeAreaView` bg). (3) map styles → className (tokens: `text-text`/`text-text-dim`, `bg-card`/`bg-card-soft`/`bg-green`, `border border-border`, `font-bold`/`font-medium`/`font-semibold`/`font-regular`, `rounded-card`/`rounded-pill`/`rounded-button`; spacing rides Tailwind's 4px step `xs→1 … xxl→6`; use arbitrary `text-[15px]`/`leading-[21px]`/`rounded-[19px]`/`tracking-[1.2px]` for off-scale numbers). (4) **RTL:** keep `style={{ textAlign: textStart }}` inline (no direction-aware class); `flex-row` auto-flips. (5) lazy-load any native module a stale dev build lacks (see `src/lib/clipboard.ts`). (6) `tsc`+`lint`, then device-verify.
+
+  **Screens to migrate (run order):**
+  - [x] `src/app/(tabs)/community.tsx` — pilot (device-verify pending: green-fill blocker)
+  - [ ] `src/app/_layout.tsx` (2)
+  - [ ] `src/auth/SplashView.tsx` (2)
+  - [ ] `src/components/ui/TabHeader.tsx` (3)
+  - [ ] `src/components/feedback/Toast.tsx` (5 — `Animated.View` → `@/tw/animated`)
+  - [ ] `src/auth/LegalFooter.tsx` (8)
+  - [ ] `src/auth/LoginView.tsx` (9)
+  - [ ] `src/auth/OnboardingView.tsx` (11)
+  - [ ] `src/app/purchases.tsx` (15 — SectionList)
+  - [ ] `src/components/sheets/AddPurchaseSheet.tsx` (15)
+  - [ ] `src/components/drawers/MainDrawer.tsx` (18)
+  - [ ] `src/auth/WelcomeView.tsx` (21)
+  - [ ] `src/components/sheets/LogDetailSheet.tsx` (22)
+  - [ ] `src/app/edit-log.tsx` (24)
+  - [ ] `src/app/settings.tsx` (27)
+  - [ ] `src/components/sheets/AddSmokeSheet.tsx` (27)
+  - [ ] `src/components/drawers/AccountDrawer.tsx` (28)
+  - [ ] `src/app/(tabs)/progress.tsx` (29 — SVG charts; colors stay via `useColors`)
+  - [ ] `src/app/(tabs)/index.tsx` (41 — Today: Ring/FAB/pulse Animated)
+  - [ ] `src/app/(tabs)/calendar.tsx` (43 — heaviest, day grid)
+  - [ ] **FINAL:** retire `src/theme`'s `makeUseStyles` (keep `useColors`), then flip the "No Tailwind/NativeWind, `StyleSheet` only" rule in **`coding-standards.md`**, **`CLAUDE.md`**, **`project-overview.md`** (skills defer to `coding-standards.md`, so they follow automatically — verify none names `StyleSheet` after).
+
+  ⚠️ **Version note:** the `expo:expo-tailwind-setup` skill pins `react-native-css@0.0.0-nightly.5ce6396` + `nativewind@5.0.0-preview.2`, which peer on **Expo 54** — wrong for SDK 56; use `react-native-css@^3.0.1` + `nativewind@5.0.0-preview.4` (done on the branch).
