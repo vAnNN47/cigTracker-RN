@@ -123,7 +123,7 @@ export default function TodayScreen() {
       <TabHeader title={s.appTitle} />
 
       <Animated.ScrollView
-        style={{ backgroundColor: green.bg }}
+        style={{ flex: 1, backgroundColor: green.bg }}
         contentContainerStyle={{ paddingTop: 16, paddingHorizontal: 22, paddingBottom: 24 }}
         alwaysBounceVertical
         scrollEventThrottle={16}
