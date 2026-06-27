@@ -1,6 +1,6 @@
 /**
- * In-app numeric keypad as a bottom sheet (no OS keyboard) — ported from
- * lib/widgets/number_pad_sheet.dart. Behaves identically on every platform.
+ * In-app numeric keypad as a bottom sheet (no OS keyboard).
+ * Behaves identically on every platform.
  *
  * Imperative API: keep one <NumberPad ref={ref} /> mounted, then call
  *   ref.current?.present({ title, initial, decimal, prefix, onSubmit });
