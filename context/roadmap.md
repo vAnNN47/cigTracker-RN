@@ -12,7 +12,6 @@ OPEN queue, not a tombstone wall.
 
 - [ ] **[inputs]** **Copying text from the edit screen threw a "can't find native module" error — but works fine in the release build, so watch it.** — Clipboard copy raised a "cannot find native (expo)" exception in dev; verified working in the release build. Keep as a watch item — confirm it stays fixed, then archive. (העתקת טקסט ממסך עריכה — דב-אונלי?)
 - [ ] **[edit-log]** **When a late-logged cigarette has a note, the note text doesn't line up with the time next to it.** — On the edit screen, the comment/note text isn't aligned against the time (`align` off). Check the row alignment for the note-vs-time layout. (הערה לא מיושרת מול השעה)
-- [ ] **[edit-log]** **On Android the edit-entry screen won't scroll down to the long diary field — you have to tap into the diary first to unstick it, and then you can't scroll back up.** — Edit-log opens as a full-screen modal (`KeyboardAwareScrollView`). On Android you can't scroll to reach the diary input when the view sits at the top; only after focusing the diary does the view shift down and allow scrolling, and once scrolled up it locks again until you re-focus. Investigate the `KeyboardAwareScrollView` scroll/keyboard behavior (or the modal presentation) on Android. `rn-debug` fits. (אנדרואיד — אי אפשר לגלול ליומן הארוך בלי פוקוס)
 
 ## 🧩 Improvements
 

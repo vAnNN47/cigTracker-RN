@@ -82,6 +82,7 @@ export default function EditLogModal() {
       </View>
 
       <KeyboardAwareScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, gap: 12 }}
         keyboardShouldPersistTaps="handled"
         bottomOffset={20}
