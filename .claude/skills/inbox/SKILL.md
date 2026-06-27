@@ -65,7 +65,8 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
    |---|---------------------|---------------|---------|------|
 
 7. **On confirm** (`all` / `1,3` / edits like `2→sheets`):
-   - add each item as a `- [ ]` line under its section, tagged `**[area]**`;
+   - add each item as a `- [ ]` line under its section, tagged `**[area]**`, **leading with a plain
+     one-liner** — see the rule below — then the technical detail;
    - package candidates → note "run `/package new <name>`";
    - **append an `ASKED` block to `context/done-log.md`** (newest on top): the batch's one-line
      title + where each item routed — that ledger is what `/wtf` reads, so a batch is never lost.
@@ -74,6 +75,11 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
    a `docs:` message — never ask, just do it. Local only: never push, never `main`.
 
 ## Rules
+- **Every item leads with a plain one-liner.** Format: `- [ ] **[area]** **<bold, jargon-free
+  sentence a non-technical person understands>** — <technical detail>`. The bold part answers
+  "what is this, in human words?" (no `accessibilityLabel`, no `Clipboard.setStringAsync`, no file
+  names) — the geek detail goes *after* the em-dash. Applies to **both** queues (roadmap +
+  `SKILLS_TODO`). Never write an item that's only code-speak.
 - **ASK before mapping** — the first code match is not automatically the right one.
 - **No app code, no scaffolding, no branch** — inbox only routes + auto-commits the doc edit.
 - One item lands in exactly one place; keep the kebab **slug == `[tag]`** convention.

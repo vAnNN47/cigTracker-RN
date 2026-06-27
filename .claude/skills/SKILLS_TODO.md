@@ -11,6 +11,10 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 > [`context/archive/skills-done.md`](../../context/archive/skills-done.md) (the skills "Fix log") +
 > a `SHIPPED` block in `context/done-log.md`. Don't accumulate a `## Done` section here.
 
+> **Plain-one-liner rule.** Every item leads with a **bold, jargon-free sentence a non-technical
+> reader understands**, then an em-dash, then the technical detail — same as `roadmap.md`. No item
+> is a wall of code-speak.
+
 > **Slug rule — every open item has a UNIQUE `[slug]` tag.** No two open items may share one
 > (so `[marketplace]` XYZ + `[marketplace]` ZXY is forbidden — split them into `[caveman]` +
 > `[skills-sh]`). This is the opposite of the app `roadmap.md`, where `[area]` tags repeat by
