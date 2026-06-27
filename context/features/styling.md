@@ -115,9 +115,10 @@ after device-verifying it** in light + dark + RTL against the original.
 - [x] `src/app/(tabs)/progress.tsx` — 29 (SVG `LineChart` colors via `useColors`; dynamic-height histogram bar stays inline) — 2026-06-27 ⚠️ device-eyeball pending
 - [x] `src/app/(tabs)/index.tsx` — 41 (Today — **RN** `Animated` ScrollView/View can't take className → hero/fab + their shadows stay inline; rest className) — 2026-06-27 ⚠️
 - [x] `src/app/(tabs)/calendar.tsx` — 43 (day grid: one class per property — selection>today>status — so conflicting border/bg utilities never stack) — 2026-06-27 ⚠️
-- [ ] **FINAL:** retire `src/theme`'s `makeUseStyles` (keep `useColors` for icon/SVG/safe-area),
-  then **flip the "no Tailwind/NativeWind, StyleSheet only" rule** in `coding-standards.md`,
-  `CLAUDE.md`, `project-overview.md`, and verify no skill names `StyleSheet` directly.
+- [x] **FINAL (2026-06-27):** retired `src/theme`'s `makeUseStyles` (kept `useColors`); flipped the
+  styling rule → NativeWind in `coding-standards.md`, `CLAUDE.md`, `project-overview.md`; verified no
+  project skill hardcodes the old `StyleSheet`-only rule (skills defer to `coding-standards.md`).
+  **Migration complete — all 20 screens className, old StyleSheet path retired.**
 
 ## Known issues / blockers (resolve as part of the loop)
 
@@ -179,3 +180,8 @@ after device-verifying it** in light + dark + RTL against the original.
   (verified: `p-4`=16, `w-8`=32, `mt-6`=24, `leading-6`=24). Also swapped the 2 rem-based `rounded-xl`
   (→ `rounded-[12px]`) in `index`. Corrected the now-false "spacing not redefined" claim in this doc.
   tsc clean. Needs a fresh device pass.
+- 2026-06-27 — **FINAL — migration complete.** User device-verified the spacing fix (calendar/Today/
+  sheets correct). Retired `makeUseStyles` from `src/theme` (zero references; `useColors` stays).
+  Flipped the "no Tailwind/NativeWind, `StyleSheet` only" rule → NativeWind in `coding-standards.md`,
+  `CLAUDE.md`, `project-overview.md`. Confirmed no project skill names the old rule. tsc + lint clean.
+  All 20 screens are now `className`; the `StyleSheet`/`makeUseStyles` path is gone.

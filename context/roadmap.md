@@ -31,35 +31,4 @@ _(none open — render audit drained; `app-ui-design` findings live as `[a11y]`;
 
 ## 🧹 Tech debt
 
-- [ ] **[styling]** **Change the way the app's styling is written (to Tailwind/NativeWind) without changing how anything looks — a big behind-the-scenes refactor.** — Migrate styling from React Native `StyleSheet` → **NativeWind v5 (Tailwind v4 syntax)**, preserving the current design exactly. Staged on branch `nativewindv5_migration_01`. **⏳ In progress** — setup + green-fill fix **done**; **ALL 20 screens converted** (pilot `community` + 16 mechanical + 3 special, all 2026-06-27; tsc/lint green + utilities compile-checked through the real pipeline). Only the **FINAL cleanup** (retire `makeUseStyles`, flip the "no Tailwind" rule in the standards docs) + the user's **device-eyeball** of everything remain. Full cheatsheet/details in [features/styling.md](features/styling.md).
-
-  **✅ Green-fill blocker RESOLVED (2026-06-27):** every themed `bg-*` rendered empty (looked green-specific only because the dark UI hid the missing card fills). Real cause: tokens used `light-dark()`, and metro runs react-native-css with `inlineVariables:false`, which **drops the dark branch of `light-dark()`** — compiling `global.css` showed ALL dark hex values ABSENT. (The earlier `--color-*: initial` palette theory was a red herring.) Fix: light palette in `@theme`, dark palette via `@media (prefers-color-scheme: dark)` var overrides; re-compiled → both branches survive. **Needs `expo start -c` to land on device.** Details in [features/styling.md](features/styling.md).
-
-  **▶️ Run model — all 20 screens converted (16 mechanical batched 2026-06-27, then the 3 special `progress`/`index`/`calendar`).** Conversion was gated by tsc/lint + a token compile-check, so only pixel-eyeball remains → **ONE device pass over the whole app** (light+dark+RTL vs original). Then the FINAL cleanup item can run.
-
-  **Per-screen steps:** (1) read the target's `StyleSheet`, keep original open to diff. (2) swap RN imports → `@/tw` (`View/Text/ScrollView/Pressable/TextInput`), `Image`→`@/tw/image`, `Animated.View`→`@/tw/animated`; **keep `useColors()`** for icon/SVG `color` props + non-CSS elements (`SafeAreaView` bg). (3) map styles → className (tokens: `text-text`/`text-text-dim`, `bg-card`/`bg-card-soft`/`bg-green`, `border border-border`, `font-bold`/`font-medium`/`font-semibold`/`font-regular`, `rounded-card`/`rounded-pill`/`rounded-button`; spacing rides Tailwind's 4px step `xs→1 … xxl→6`; use arbitrary `text-[15px]`/`leading-[21px]`/`rounded-[19px]`/`tracking-[1.2px]` for off-scale numbers). (4) **RTL:** keep `style={{ textAlign: textStart }}` inline (no direction-aware class); `flex-row` auto-flips. (5) lazy-load any native module a stale dev build lacks (see `src/lib/clipboard.ts`). (6) `tsc`+`lint`, then device-verify.
-
-  **Screens to migrate (run order):**
-  - [x] `src/app/(tabs)/community.tsx` — pilot; green-fill blocker fixed (2026-06-27); user device-eyeball left
-  - [x] `src/app/_layout.tsx` (2) — batch 2026-06-27 ⚠️ device-eyeball pending
-  - [x] `src/auth/SplashView.tsx` (2) — batch (kept light-only) ⚠️
-  - [x] `src/components/ui/TabHeader.tsx` (3) — batch ⚠️
-  - [x] `src/components/feedback/Toast.tsx` (5 — **RN** Animated, NOT `@/tw/animated`) — batch ⚠️
-  - [x] `src/auth/LegalFooter.tsx` (8) — batch ⚠️
-  - [x] `src/auth/LoginView.tsx` (9) — batch ⚠️
-  - [x] `src/auth/OnboardingView.tsx` (11) — batch ⚠️
-  - [x] `src/app/purchases.tsx` (15 — SectionList stays RN) — batch ⚠️
-  - [x] `src/components/sheets/AddPurchaseSheet.tsx` (15) — batch ⚠️
-  - [x] `src/components/drawers/MainDrawer.tsx` (18) — batch ⚠️
-  - [x] `src/auth/WelcomeView.tsx` (21) — batch ⚠️
-  - [x] `src/components/sheets/LogDetailSheet.tsx` (22) — batch ⚠️
-  - [x] `src/app/edit-log.tsx` (24) — batch ⚠️
-  - [x] `src/app/settings.tsx` (27) — batch ⚠️
-  - [x] `src/components/sheets/AddSmokeSheet.tsx` (27 — `SheetTextInput` input style stays inline) — batch ⚠️
-  - [x] `src/components/drawers/AccountDrawer.tsx` (28 — hairline dividers inline) — batch ⚠️
-  - [x] `src/app/(tabs)/progress.tsx` (29 — SVG colors via `useColors`; histogram bar inline) — 2026-06-27 ⚠️ device-eyeball pending
-  - [x] `src/app/(tabs)/index.tsx` (41 — Today; **RN** Animated hero/fab stay inline) — 2026-06-27 ⚠️
-  - [x] `src/app/(tabs)/calendar.tsx` (43 — day grid, one class per property) — 2026-06-27 ⚠️
-  - [ ] **FINAL:** retire `src/theme`'s `makeUseStyles` (keep `useColors`), then flip the "No Tailwind/NativeWind, `StyleSheet` only" rule in **`coding-standards.md`**, **`CLAUDE.md`**, **`project-overview.md`** (skills defer to `coding-standards.md`, so they follow automatically — verify none names `StyleSheet` after).
-
-  ⚠️ **Version note:** the `expo:expo-tailwind-setup` skill pins `react-native-css@0.0.0-nightly.5ce6396` + `nativewind@5.0.0-preview.2`, which peer on **Expo 54** — wrong for SDK 56; use `react-native-css@^3.0.1` + `nativewind@5.0.0-preview.4` (done on the branch).
+_(none open — the **[styling]** NativeWind v5 / Tailwind v4 migration shipped 2026-06-27: all 20 screens converted `StyleSheet` → `className`, `makeUseStyles` retired, the styling rule flipped to NativeWind in the standards docs. Full record + cheatsheet in [features/styling.md](features/styling.md).)

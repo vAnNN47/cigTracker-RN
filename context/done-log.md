@@ -24,6 +24,11 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 > Format: newest at the top. `ASKED` = an intake batch. `SHIPPED` = completed work.
 
+**SHIPPED — 2026-06-27 — `[styling]` NativeWind migration COMPLETE (FINAL) — branch `nativewindv5_migration_01_styling_01`**
+- Device finding fixed first: react-native-css resolves `rem` at 14px, so Tailwind's spacing step was 3.5px not 4 — every `p-/m-/gap-/w-/h-/leading-*` rendered ~12% small (cramped/broken on dense screens). Fixed with `--spacing: 4px` in `global.css` + 2 rem-based `rounded-xl` → `rounded-[12px]`. User device-verified calendar/Today/sheets correct.
+- FINAL: retired `makeUseStyles` from `src/theme` (zero references; `useColors` kept). Flipped the "no Tailwind/NativeWind, `StyleSheet` only" rule → NativeWind in `coding-standards.md`, `CLAUDE.md`, `project-overview.md`. Confirmed no project skill hardcodes the old rule.
+- **Whole `[styling]` tech-debt item closed: all 20 screens are `className`, the `StyleSheet`/`makeUseStyles` path is gone.** tsc + lint clean throughout. (Item removed from `roadmap.md`; full record in `features/styling.md`.)
+
 **SHIPPED — 2026-06-27 — `[styling]` convert the 3 special screens (all 20 now done) — branch `nativewindv5_migration_01_styling_01`**
 - `progress` (SVG `LineChart` keeps color props via `useColors`; dynamic-height histogram bar stays inline), `index`/Today (RN `Animated` ScrollView/View can't take className → hero ring + fab + their shadows stay inline objects; rest className), `calendar` (day grid — computes one class per property with selection>today>status precedence so conflicting `border-*`/`bg-*` never stack, since NativeWind resolves same-property conflicts by CSS order not className order).
 - Gate: tsc + lint clean; the 17 new utilities (`aspect-square`, `rounded-cell`, status tokens `bg-under-bg`/`text-over-text`/…, `border-[1.5px]`, `-bottom-1.5`, `gap-px`) compile-checked through the real pipeline. **All 20 screens are now className**; only the FINAL cleanup (retire `makeUseStyles` + flip the standards-doc rule) + the user's whole-app device-eyeball remain.

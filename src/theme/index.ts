@@ -9,10 +9,11 @@
  * Usage:
  *   import { colors, fonts, radius, spacing } from "@/theme";
  *
- * Dark theme: screens read their palette through `useColors()` (light `green`
- * or `dark`, resolved from the persisted theme mode + device scheme) and build
- * their StyleSheet via `makeUseStyles((green) => ...)`, so a single import
- * swap turns any screen theme-reactive without renaming every `green.x` ref.
+ * Styling is NativeWind/className (tokens in `src/global.css`); these JS tokens
+ * remain for the values that className can't reach — icon/SVG `color` props,
+ * non-CSS elements (`SafeAreaView`, RN `Animated`), and dynamic inline styles.
+ * Screens read the active palette through `useColors()` (light `green` or `dark`,
+ * resolved from the persisted theme mode + device scheme).
  */
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAppStore } from "@/store/useAppStore";
@@ -199,23 +200,3 @@ export function useColors(): Palette {
   return (useIsDark() ? dark : green) as Palette;
 }
 
-/**
- * Build a theme-reactive StyleSheet hook. The factory runs at most once per
- * palette (cached by the stable palette object), so calling the returned hook
- * from many components is cheap.
- *
- *   const useStyles = makeUseStyles((green) => StyleSheet.create({ ... }));
- *   function Screen() { const styles = useStyles(); ... }
- */
-export function makeUseStyles<T>(factory: (c: Palette) => T): () => T {
-  const cache = new WeakMap<Palette, T>();
-  return function useStyles(): T {
-    const c = useColors();
-    let built = cache.get(c);
-    if (!built) {
-      built = factory(c);
-      cache.set(c, built);
-    }
-    return built;
-  };
-}
