@@ -36,13 +36,84 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - **Icon colors:** `MaterialIcons` takes a `color` prop (not className), so screens still read
   `useColors()` for icon tints + the safe-area background.
 
-## Remaining for full cutover (item stays open)
+## Per-screen procedure (repeatable — do ONE screen per run)
 
-- Convert the other 20 `StyleSheet`/`makeUseStyles` files (screens, sheets, drawers, auth, Toast).
-- Once all screens are converted, retire `src/theme`'s `makeUseStyles` (keep `useColors` only if
-  still needed for icon/SVG props) and **flip the "no Tailwind/NativeWind, StyleSheet only" rule**
-  in `coding-standards.md`, `CLAUDE.md`, `project-overview.md` (per the roadmap item).
-- Device-verify pixel parity in light + dark + RTL.
+This is the exact recipe used for the `community.tsx` pilot. The infra (deps/config/tokens/
+wrappers) is already in place, so each remaining screen is just steps 1–5:
+
+1. **Restate + read** the target's `StyleSheet`. Keep the original open to diff against (the
+   `makeUseStyles((c) => …)` block is the source of truth for every value).
+2. **Swap imports:** RN `View/Text/ScrollView/Pressable/TextInput` → `@/tw`; `Image` (expo-image)
+   → `@/tw/image`; `Animated.View` → `@/tw/animated`. Drop `StyleSheet`/`makeUseStyles`/`fonts`/
+   `radius`/`spacing` imports once unused. **Keep `useColors()`** — still needed for icon `color`
+   props (MaterialIcons/SVG) and any non-CSS element (e.g. `SafeAreaView` background).
+3. **Map each style → className** (see the cheatsheet below). Use **arbitrary values**
+   (`text-[15px]`, `leading-[21px]`, `rounded-[19px]`, `tracking-[1.2px]`) for any number that
+   isn't on Tailwind's default 4px step, so it's pixel-exact — don't approximate to the nearest
+   preset.
+4. **RTL:** there's no writing-direction-aware `textAlign` class, so keep
+   `style={{ textAlign: textStart }}` inline on text that had it. `flex-row` auto-flips under RTL
+   (RN handles it) — leave it.
+5. **Verify:** `npx tsc --noEmit` + `npm run lint` clean (the automated gate) **then device-test in
+   light + dark + RTL and eyeball it against the original** — ⚠️ tsc+lint canNOT see a single pixel,
+   so the device compare is the real check and is **required** before ticking the screen off.
+6. **If the screen imports a native module** that older dev builds lack (e.g. `expo-clipboard`),
+   load it **lazily** (see `src/lib/clipboard.ts`) so a metro-only reload doesn't crash the app.
+
+### className cheatsheet (this app's tokens)
+
+| StyleSheet | className |
+|---|---|
+| `color: c.text` / `c.textDim` / `c.textSecondary` | `text-text` / `text-text-dim` / `text-text-secondary` |
+| `backgroundColor: c.bg`/`card`/`cardSoft`/`green`/`greenBright` | `bg-bg`/`bg-card`/`bg-card-soft`/`bg-green`/`bg-green-bright` |
+| `borderColor: c.border` (+`borderWidth:1`) | `border border-border` |
+| `fontFamily: fonts.regular/medium/semibold/bold` | `font-regular`/`font-medium`/`font-semibold`/`font-bold` |
+| `fontSize: 15` / `lineHeight: 21` | `text-[15px]` / `leading-[21px]` |
+| `borderRadius: radius.card`(13)/`pill`(20)/`button`(16) | `rounded-card` / `rounded-pill` / `rounded-button` |
+| `padding: spacing.lg`(16) / `gap: spacing.md`(12) | `p-4` / `gap-3` (4px step: xs→1 sm→2 md→3 lg→4 xl→5 xxl→6) |
+| `marginTop: 2` / `marginTop: 1` | `mt-0.5` / `mt-px` |
+| `textAlign: "center"` / `textTransform: "uppercase"` | `text-center` / `uppercase` |
+| `textAlign: textStart` (RTL) | keep inline `style={{ textAlign: textStart }}` |
+
+## Migration queue (simplest → hardest — run one per `/fire styling`)
+
+Order chosen by style-block count (smallest first) so each run stays small. Tick a screen **only
+after device-verifying it** in light + dark + RTL against the original.
+
+- [x] `src/app/(tabs)/community.tsx` — pilot (2026-06-27) ⚠️ device-verify still pending (green-fill bug, see below)
+- [ ] `src/app/_layout.tsx` — 2 styles (fill/overlay)
+- [ ] `src/auth/SplashView.tsx` — 2
+- [ ] `src/components/ui/TabHeader.tsx` — 3
+- [ ] `src/components/feedback/Toast.tsx` — 5 (Animated.View — use `@/tw/animated`)
+- [ ] `src/auth/LegalFooter.tsx` — 8
+- [ ] `src/auth/LoginView.tsx` — 9
+- [ ] `src/auth/OnboardingView.tsx` — 11
+- [ ] `src/app/purchases.tsx` — 15 (SectionList)
+- [ ] `src/components/sheets/AddPurchaseSheet.tsx` — 15
+- [ ] `src/components/drawers/MainDrawer.tsx` — 18
+- [ ] `src/auth/WelcomeView.tsx` — 21
+- [ ] `src/components/sheets/LogDetailSheet.tsx` — 22
+- [ ] `src/app/edit-log.tsx` — 24
+- [ ] `src/app/settings.tsx` — 27
+- [ ] `src/components/sheets/AddSmokeSheet.tsx` — 27
+- [ ] `src/components/drawers/AccountDrawer.tsx` — 28
+- [ ] `src/app/(tabs)/progress.tsx` — 29 (SVG charts — colors stay via `useColors`)
+- [ ] `src/app/(tabs)/index.tsx` — 41 (Today — Ring/FAB/pulse, Animated)
+- [ ] `src/app/(tabs)/calendar.tsx` — 43 (heaviest — day grid)
+- [ ] **FINAL:** retire `src/theme`'s `makeUseStyles` (keep `useColors` for icon/SVG/safe-area),
+  then **flip the "no Tailwind/NativeWind, StyleSheet only" rule** in `coding-standards.md`,
+  `CLAUDE.md`, `project-overview.md`, and verify no skill names `StyleSheet` directly.
+
+## Known issues / blockers (resolve as part of the loop)
+
+- ⚠️ **Green fills not painting in the pilot (OPEN).** In the `community.tsx` screenshots the share
+  button (`bg-green`) and the megaphone circle (`bg-green-bright`) don't visibly fill — in dark the
+  icon (dark glyph on the missing circle) disappears. The *compiled* CSS is correct
+  (`background-color: var(--color-green)`), and themed **text** colors (also `var()` + `light-dark`)
+  DO resolve, so it's narrower than "vars don't work". **First task before more screens:** repro +
+  root-cause (try `metro.config.js` `inlineVariables: true`; test a plain-hex bg vs a token bg vs a
+  `light-dark()` bg to isolate whether it's `var()` scope, `light-dark()`, or background-on-`<Text>`;
+  check react-native-css issues). Don't convert more screens until green/`bg-*` tokens paint.
 
 ## Fix log
 
