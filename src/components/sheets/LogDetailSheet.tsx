@@ -13,7 +13,6 @@
  * Imperative API: parent calls ref.present({ log, number, editable }).
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -22,6 +21,7 @@ import { useToast } from "@/components/feedback/Toast";
 import { formatTime } from "@/i18n/format";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
+import { copyToClipboard } from "@/lib/clipboard";
 import { LocationTag, SmokeLog } from "@/models";
 import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
 
@@ -81,9 +81,9 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
       const parts: string[] = [];
       if (comment) parts.push(comment);
       if (diary) parts.push(diary);
-      Clipboard.setStringAsync(parts.join("\n\n"))
-        .then(() => toast.show({ message: s.copiedToast }))
-        .catch(() => {});
+      void copyToClipboard(parts.join("\n\n")).then((ok) => {
+        if (ok) toast.show({ message: s.copiedToast });
+      });
     };
 
     return (
