@@ -27,6 +27,12 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 ---
 
 ## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
+Built via `/skill-forge one-line-restate` (doc-only, skills-system):
+- **[one-line-restate]** — Baked **restate-before-build** into both drainers: `/fire` step 3 + `/skill-forge` step 4 now lead with "restate each item in one sentence ('this item asks me to ___')" before any edit, pinning scope before code/docs. SKILLS_TODO Open → empty.
+
+---
+
+## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
 Built via `/skill-forge done-handling` (doc-only, skills-system):
 - **[done-handling]** Unified done-item handling into one documented model. `/skill-forge` now
   appends a `SHIPPED` block to **this ledger** like `/fire` does (it previously only moved the line

@@ -30,8 +30,10 @@ what `/inbox` writes. `<branch>` is the new working branch's name.
    are the work. None → say so and stop.
 2. **Branch.** Cut `<branch>` off the current branch (see Branching). No name given → auto-name
    `<current>_<area>_NN`.
-3. **Build all the items** for real, per `coding-standards.md`. Use the LSP tool to navigate.
-   Make every edit; **don't** verify per-file.
+3. **Restate, then build all the items** for real, per `coding-standards.md`. **First action of the
+   build, before any edit: restate each item in one sentence** — "this item asks me to ___" — to pin
+   scope before writing code. Then use the LSP tool to navigate and make every edit; **don't** verify
+   per-file.
 4. **Verify once, at the end** — `tsc --noEmit` then lint (PowerShell + fnm, see CLAUDE.md). Fix
    and re-run. That's the whole gate.
 5. **Close the loop.** For each finished item: remove it from `roadmap.md`, add a dated line to

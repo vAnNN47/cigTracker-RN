@@ -36,9 +36,11 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
 3. **Branch.** Cut a fresh branch off the current one, named `<current>_forge_<slug>` (or a name you
    pass). Skills-system edits this session may instead ride the current branch — match what the
    surrounding work is doing; never `main`.
-4. **Build it for real** — the whole item, following SKILLS_README's frontmatter rules (`name` ==
-   folder, `description`/`argument-hint` are strings, a bracketed hint is quoted) and the
-   three-verb-flow tone. Add a **"Not this skill's job"** footer to any new skill.
+4. **Restate, then build it for real.** **First action, before any edit: restate the item in one
+   sentence** — "this item asks me to ___" — to pin scope before writing docs. Then build the whole
+   item, following SKILLS_README's frontmatter rules (`name` == folder, `description`/`argument-hint`
+   are strings, a bracketed hint is quoted) and the three-verb-flow tone. Add a **"Not this skill's
+   job"** footer to any new skill.
 5. **Load-check (the gate).** Re-read the frontmatter of every `SKILL.md` you touched: it must load
    — `name` equals its folder, `description`/`argument-hint` are strings, bracketed `argument-hint`
    quoted. (No tsc — these are docs.) **Reload the VS Code window** note applies for the user to see
