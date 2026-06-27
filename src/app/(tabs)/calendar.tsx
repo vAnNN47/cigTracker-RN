@@ -9,7 +9,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
-import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { I18nManager } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
 
@@ -31,7 +31,8 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { LocationTag } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 import { MonthPager } from "../../../packages/month-pager";
 
 // Per-cigarette location icon (Home / Work / Car / Social).
@@ -62,7 +63,6 @@ function buildWeeks(monthFirst: Date): (Date | null)[][] {
 export default function HistoryScreen() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const router = useRouter();
   // Select only the slices this screen reads (shallow-compared) so an unrelated
   // store write doesn't re-render the whole calendar.
@@ -118,49 +118,58 @@ export default function HistoryScreen() {
   // One month's grid; reused by MonthPager for prev / current / next.
   const renderMonth = (monthFirst: Date) =>
     buildWeeks(monthFirst).map((week, wi) => (
-      <View key={wi} style={styles.weekRow}>
+      <View key={wi} className="flex-row">
         {week.map((day, di) => {
-          if (!day) return <View key={di} style={styles.cell} />;
+          if (!day) return <View key={di} className="flex-1 aspect-square p-[3px]" />;
           const future = keyOf(day) > today;
           const c = countByDay.get(dayKey(day)) ?? 0;
           const lim = limitForDay(limits, day, settings);
           const sel = isSameDay(day, selected);
           const isTodayCell = isSameDay(day, today);
           const status = future ? "future" : c === 0 ? "none" : c <= lim ? "under" : "over";
+          // One class per property (selection > today > status), so conflicting
+          // border/bg utilities never stack (NativeWind resolves same-property
+          // conflicts by CSS order, not className order).
+          const cellBg = sel
+            ? "bg-card-soft"
+            : status === "under"
+              ? "bg-under-bg"
+              : status === "over"
+                ? "bg-over-bg"
+                : status === "none"
+                  ? "bg-card-soft"
+                  : "";
+          const cellBorder = sel
+            ? "border-2 border-green-bright"
+            : isTodayCell
+              ? "border-[1.5px] border-green"
+              : status === "under"
+                ? "border border-under-border"
+                : status === "over"
+                  ? "border border-over-border"
+                  : status === "none"
+                    ? "border border-border"
+                    : "border border-transparent";
+          const numColor =
+            status === "under"
+              ? "text-green"
+              : status === "over"
+                ? "text-over-text"
+                : "text-text-dim";
           return (
             <Pressable
               key={di}
-              style={styles.cell}
+              className="flex-1 aspect-square p-[3px]"
               disabled={future}
               onPress={() => {
                 setSelected(keyOf(day));
                 setFocused(new Date(day.getFullYear(), day.getMonth(), 1));
               }}
             >
-              <View
-                style={[
-                  styles.dayBox,
-                  status === "under" && styles.dayUnder,
-                  status === "over" && styles.dayOver,
-                  status === "none" && styles.dayNone,
-                  isTodayCell && styles.dayToday,
-                  // Selection always wins over the today-ring, so the cell the
-                  // user actually picked is the one that reads as active.
-                  sel && styles.daySelected,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.dayNum,
-                    status === "under" && styles.dayNumUnder,
-                    status === "over" && styles.dayNumOver,
-                    (status === "none" || status === "future") && styles.dayNumFaint,
-                  ]}
-                >
-                  {day.getDate()}
-                </Text>
+              <View className={`flex-1 rounded-cell items-center justify-center gap-px ${cellBorder} ${cellBg}`}>
+                <Text className={`text-[11px] font-mono ${numColor}`}>{day.getDate()}</Text>
                 {!future && c > 0 && (
-                  <Text style={[styles.dayCount, status === "over" ? styles.dayCountOver : styles.dayCountUnder]}>
+                  <Text className={`text-[13px] font-semibold ${status === "over" ? "text-over-text" : "text-green"}`}>
                     {c}
                   </Text>
                 )}
@@ -175,37 +184,37 @@ export default function HistoryScreen() {
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <TabHeader />
       <ScrollView
-        style={{ flex: 1, backgroundColor: green.bg }}
-        contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
+        className="flex-1 bg-bg"
+        contentContainerClassName="pt-2 px-5 pb-6"
         alwaysBounceVertical
         overScrollMode="always"
       >
-        <Text style={styles.title}>{s.diaryTab}</Text>
+        <Text className="text-text text-[24px] font-bold mb-3" style={{ textAlign: textStart }}>{s.diaryTab}</Text>
 
         {/* Month nav */}
-        <View style={styles.monthHeader}>
+        <View className="flex-row items-center justify-between mb-2">
           <Pressable
             onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
             hitSlop={8}
-            style={styles.navBtn}
+            className="w-8 h-8 rounded-[9px] border border-border items-center justify-center"
           >
             <MaterialIcons name={prevArrow} size={20} color={green.textDim} />
           </Pressable>
-          <Text style={styles.monthGridTitle}>{monthGridTitle}</Text>
+          <Text className="text-text text-[15px] font-semibold">{monthGridTitle}</Text>
           <Pressable
             onPress={() => !atCurrentMonth && setFocused(new Date(focused.getFullYear(), focused.getMonth() + 1, 1))}
             hitSlop={8}
             disabled={atCurrentMonth}
-            style={styles.navBtn}
+            className="w-8 h-8 rounded-[9px] border border-border items-center justify-center"
           >
             <MaterialIcons name={nextArrow} size={20} color={atCurrentMonth ? green.border : green.textDim} />
           </Pressable>
         </View>
 
         {/* Weekday header */}
-        <View style={styles.weekdayRow}>
+        <View className="flex-row mb-1">
           {weekdays.map((w, i) => (
-            <Text key={i} style={styles.weekday}>
+            <Text key={i} className="flex-1 text-center text-text-dim text-[10px] font-medium">
               {w}
             </Text>
           ))}
@@ -224,55 +233,55 @@ export default function HistoryScreen() {
         />
 
         {/* Day summary */}
-        <View style={styles.summary}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.sumDate}>{formatWeekdayDate(selected, s.localeCode)}</Text>
-            <Text style={[styles.sumCount, { color: ringColor }]}>
+        <View className="flex-row items-center py-3 mt-3 border-t border-border">
+          <View className="flex-1">
+            <Text className="text-text text-[18px] font-bold" style={{ textAlign: textStart }}>{formatWeekdayDate(selected, s.localeCode)}</Text>
+            <Text className="text-[15px] font-semibold mt-1" style={{ textAlign: textStart, color: ringColor }}>
               {count} / {limit} {s.cigarettesSection.toLowerCase()}
             </Text>
           </View>
           <Ring size={56} strokeWidth={5} pct={pct} color={ringColor} track={green.border}>
-            <Text style={styles.ringPct}>{Math.round(pct * 100)}%</Text>
+            <Text className="text-text text-[13px] font-mono-medium">{Math.round(pct * 100)}%</Text>
           </Ring>
         </View>
-        <View style={styles.pillRow}>
-          <View style={styles.pill}>
+        <View className="flex-row gap-3 mt-2">
+          <View className="flex-1 flex-row items-center gap-1.5 py-1">
             <MaterialIcons name="attach-money" size={14} color={green.textDim} />
-            <Text style={styles.pillLabel}>{s.spentLabel}</Text>
-            <Text style={styles.pillValue}>{money(spent)}</Text>
+            <Text className="text-text-dim text-[12px] font-regular">{s.spentLabel}</Text>
+            <Text className="text-text text-[14px] font-bold">{money(spent)}</Text>
           </View>
-          <View style={styles.pill}>
+          <View className="flex-1 flex-row items-center gap-1.5 py-1">
             <MaterialIcons name="smoking-rooms" size={14} color={green.textDim} />
-            <Text style={styles.pillValue}>{s.loggedN(count)}</Text>
+            <Text className="text-text text-[14px] font-bold">{s.loggedN(count)}</Text>
           </View>
         </View>
 
         {/* Cigarettes */}
-        <Text style={styles.section}>{s.cigarettesSection}</Text>
+        <Text className="text-text-dim text-[12px] uppercase tracking-[1.2px] font-medium mt-6 mb-2" style={{ textAlign: textStart }}>{s.cigarettesSection}</Text>
         {selLogs.length === 0 ? (
-          <Text style={styles.empty}>{s.noLogsThisDay}</Text>
+          <Text className="text-text-dim font-regular py-3" style={{ textAlign: textStart }}>{s.noLogsThisDay}</Text>
         ) : (
           [...selLogs].reverse().map((log, i) => (
             <Pressable
               key={log.id}
-              style={styles.row}
+              className="flex-row items-center gap-3 border-b border-border py-3"
               onPress={() => detailRef.current?.present({ log, number: count - i, editable: isToday })}
             >
-              <View style={styles.rowIcon}>
+              <View className="w-9 h-9 rounded-[18px] bg-card-soft items-center justify-center">
                 <MaterialIcons name={TAG_ICON[log.tag]} size={18} color={green.textDim} />
               </View>
-              <View style={{ flex: 1 }}>
-                <View style={styles.rowTitleLine}>
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
                   {/* Diary indicator: green dot = has a journal note, gray = none */}
-                  <View style={[styles.diaryDot, !log.diary && styles.diaryDotMuted]} />
-                  <Text style={styles.rowTitle}>{s.cigNumber(count - i)}</Text>
+                  <View className={`w-2 h-2 rounded-full ${log.diary ? "bg-dot" : "bg-border"}`} />
+                  <Text className="text-text font-semibold text-[14px]">{s.cigNumber(count - i)}</Text>
                   {!!log.diary && (
-                    <View style={styles.diaryBadge}>
+                    <View className="w-5 h-5 rounded-full bg-under-bg items-center justify-center">
                       <MaterialIcons name="menu-book" size={11} color={green.green} />
                     </View>
                   )}
                 </View>
-                <Text style={styles.rowSub} numberOfLines={1}>
+                <Text className="text-text-dim text-[13px] font-regular mt-0.5" style={{ textAlign: textStart }} numberOfLines={1}>
                   {[formatTime(log.smokedAt), log.comment].filter(Boolean).join("  ·  ")}
                 </Text>
               </View>
@@ -282,31 +291,31 @@ export default function HistoryScreen() {
         )}
 
         {/* Purchases */}
-        <View style={styles.sectionRow}>
-          <Text style={[styles.section, { marginTop: 0, marginBottom: 0 }]}>{s.purchases}</Text>
+        <View className="flex-row items-center justify-between mt-6 mb-2">
+          <Text className="text-text-dim text-[12px] uppercase tracking-[1.2px] font-medium" style={{ textAlign: textStart }}>{s.purchases}</Text>
           {purchases.length > 0 && (
-            <Pressable style={styles.viewAll} onPress={() => router.push("/purchases")} hitSlop={8}>
-              <Text style={styles.viewAllText}>{s.viewAll}</Text>
+            <Pressable className="flex-row items-center gap-0.5" onPress={() => router.push("/purchases")} hitSlop={8}>
+              <Text className="text-green text-[13px] font-bold">{s.viewAll}</Text>
               <MaterialIcons name={nextArrow} size={16} color={green.green} />
             </Pressable>
           )}
         </View>
         {selPurchases.length === 0 ? (
-          <Text style={styles.empty}>{s.noPurchasesThisDay}</Text>
+          <Text className="text-text-dim font-regular py-3" style={{ textAlign: textStart }}>{s.noPurchasesThisDay}</Text>
         ) : (
           selPurchases.map((p) => (
-            <Pressable key={p.id} style={styles.row} onPress={() => purchaseRef.current?.present(p)}>
-              <View style={styles.rowIcon}>
+            <Pressable key={p.id} className="flex-row items-center gap-3 border-b border-border py-3" onPress={() => purchaseRef.current?.present(p)}>
+              <View className="w-9 h-9 rounded-[18px] bg-card-soft items-center justify-center">
                 <MaterialIcons name={p.unit === "carton" ? "inventory-2" : "receipt-long"} size={18} color={green.textDim} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.rowTitle}>
+              <View className="flex-1">
+                <Text className="text-text font-semibold text-[14px]">
                   {p.quantity} {p.unit === "carton" ? s.carton : s.pack}
                 </Text>
-                <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
+                <Text className="text-text-dim text-[13px] font-regular mt-0.5" style={{ textAlign: textStart }}>{formatTime(p.boughtAt)}</Text>
               </View>
-              <Text style={styles.price}>{money(p.price)}</Text>
-              <MaterialIcons name="edit" size={14} color={green.textDim} style={{ marginStart: spacing.sm }} />
+              <Text className="text-text font-mono-medium text-[15px]">{money(p.price)}</Text>
+              <MaterialIcons name="edit" size={14} color={green.textDim} style={{ marginStart: 8 }} />
             </Pressable>
           ))
         )}
@@ -318,113 +327,3 @@ export default function HistoryScreen() {
   );
 }
 
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  title: { color: green.text, fontSize: 24, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
-
-  monthHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: spacing.sm,
-  },
-  monthGridTitle: { color: green.text, fontSize: 15, fontFamily: fonts.semibold },
-  navBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
-    borderWidth: 1,
-    borderColor: green.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  weekdayRow: { flexDirection: "row", marginBottom: spacing.xs },
-  weekday: { flex: 1, textAlign: "center", color: green.textDim, fontSize: 10, fontFamily: fonts.medium },
-
-  weekRow: { flexDirection: "row" },
-  cell: { flex: 1, aspectRatio: 1, padding: 3 },
-  dayBox: {
-    flex: 1,
-    borderRadius: radius.cell,
-    borderWidth: 1,
-    borderColor: "transparent",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 1,
-  },
-  dayUnder: { backgroundColor: green.underBg, borderColor: green.underBorder },
-  dayOver: { backgroundColor: green.overBg, borderColor: green.overBorder },
-  dayNone: { backgroundColor: green.cardSoft, borderColor: green.border },
-  dayToday: { borderColor: green.green, borderWidth: 1.5 },
-  // Selected day reads as the active one: bright ring + faint accent wash.
-  daySelected: { borderColor: green.greenBright, borderWidth: 2, backgroundColor: green.cardSoft },
-  dayNum: { fontSize: 11, fontFamily: fonts.mono, color: green.text },
-  dayNumUnder: { color: green.green },
-  dayNumOver: { color: green.overText },
-  dayNumFaint: { color: green.textDim },
-  dayCount: { fontSize: 13, fontFamily: fonts.semibold },
-  dayCountUnder: { color: green.green },
-  dayCountOver: { color: green.overText },
-
-  summary: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: spacing.md,
-    marginTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: green.border,
-  },
-  sumDate: { color: green.text, fontSize: 18, fontFamily: fonts.bold, textAlign: textStart },
-  sumCount: { fontSize: 15, fontFamily: fonts.semibold, marginTop: spacing.xs, textAlign: textStart },
-  ringPct: { color: green.text, fontSize: 13, fontFamily: fonts.monoMedium },
-  pillRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.sm },
-  pill: { flex: 1, flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: spacing.xs },
-  pillLabel: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
-  pillValue: { color: green.text, fontSize: 14, fontFamily: fonts.bold },
-
-  section: {
-    color: green.textDim,
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    fontFamily: fonts.medium,
-    marginTop: spacing.xxl,
-    marginBottom: spacing.sm,
-    textAlign: textStart,
-  },
-  sectionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.xxl,
-    marginBottom: spacing.sm,
-  },
-  viewAll: { flexDirection: "row", alignItems: "center", gap: 2 },
-  viewAllText: { color: green.green, fontSize: 13, fontFamily: fonts.bold },
-  empty: { color: green.textDim, fontFamily: fonts.regular, paddingVertical: spacing.md, textAlign: textStart },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: green.border,
-    paddingVertical: spacing.md,
-  },
-  rowIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: green.cardSoft, alignItems: "center", justifyContent: "center" },
-  rowTitleLine: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  diaryDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: green.dot },
-  diaryDotMuted: { backgroundColor: green.border },
-  rowTitle: { color: green.text, fontFamily: fonts.semibold, fontSize: 14 },
-  diaryBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: green.underBg,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rowSub: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  price: { color: green.text, fontFamily: fonts.monoMedium, fontSize: 15 },
-  }),
-);

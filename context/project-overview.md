@@ -73,7 +73,7 @@ Product constants: 20 cigarettes/pack, 10 packs/carton (200/carton). `dayStartHo
 | Local storage | `@react-native-async-storage/async-storage` |
 | Cloud backend | Supabase (`@supabase/supabase-js`) |
 | Auth | Supabase + Google Sign-In (`expo-auth-session`, `@react-native-google-signin`) |
-| Styling | React Native `StyleSheet` + central theme tokens (**no Tailwind/NativeWind**) |
+| Styling | **NativeWind v5 / Tailwind v4** (`className` via `react-native-css`); tokens in `src/global.css` + `@/tw` wrappers |
 | Charts/graphics | `react-native-svg` |
 | Animation/gestures | `react-native-reanimated`, `react-native-gesture-handler` |
 | i18n | Custom strings + RTL (`src/i18n/`), `expo-localization` |

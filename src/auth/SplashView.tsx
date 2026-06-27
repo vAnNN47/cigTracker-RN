@@ -4,8 +4,7 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect } from "react";
-import { StyleSheet, View } from "react-native";
-import Animated, {
+import {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -14,6 +13,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { green } from "@/theme";
+import { View } from "@/tw";
+import { Animated } from "@/tw/animated";
 
 /** Boot splash: logo fades/scales in, then breathes while the app loads. */
 export function SplashView() {
@@ -36,22 +37,13 @@ export function SplashView() {
   }));
 
   return (
-    <View style={styles.center}>
-      <Animated.View style={[styles.logo, style]}>
+    <View className="flex-1 items-center justify-center" style={{ backgroundColor: green.bg }}>
+      <Animated.View
+        className="w-[120px] h-[120px] rounded-[28px] items-center justify-center"
+        style={[{ backgroundColor: green.cardSoft }, style]}
+      >
         <MaterialIcons name="insights" size={64} color={green.green} />
       </Animated.View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
-  logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 28,
-    backgroundColor: green.cardSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

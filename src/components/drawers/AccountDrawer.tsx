@@ -10,7 +10,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { ReactNode, useEffect, useState } from "react";
-import { Alert, I18nManager, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, I18nManager, Linking, Share, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SettingsView } from "@/app/settings";
@@ -20,7 +20,8 @@ import { useStrings } from "@/i18n/useStrings";
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/useAppStore";
 import { useDrawerStore } from "@/store/useDrawerStore";
-import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 const FEEDBACK_EMAIL = "leetbeck@gmail.com";
 const LOREM =
@@ -32,7 +33,6 @@ type Sub = "none" | "language" | "theme" | "settings" | "faq" | "privacy" | "ter
 export function AccountDrawer() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const open = useDrawerStore((st) => st.open) === "account";
   const hide = useDrawerStore((st) => st.hide);
   const dataMode = useAppStore((st) => st.dataMode);
@@ -80,41 +80,41 @@ export function AccountDrawer() {
 
   return (
     <SlideDrawer open={open} side="end" widthPct={1} onClose={hide}>
-      <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-        <View style={styles.header}>
-          <Pressable onPress={hide} hitSlop={8} style={styles.iconBtn}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: green.bg, paddingHorizontal: 16 }} edges={["top", "bottom"]}>
+        <View className="flex-row items-center py-2">
+          <Pressable onPress={hide} hitSlop={8} className="w-8 h-8 items-center justify-center">
             <MaterialIcons name={backIcon} size={26} color={green.text} />
           </Pressable>
-          <Text style={styles.headerTitle}>{s.account}</Text>
-          <View style={styles.iconBtn} />
+          <Text className="flex-1 text-text text-[18px] font-bold text-center">{s.account}</Text>
+          <View className="w-8 h-8 items-center justify-center" />
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }} alwaysBounceVertical>
+        <ScrollView contentContainerClassName="px-4 pb-6" alwaysBounceVertical>
           {/* Account status */}
-          <View style={styles.accountCard}>
-            <View style={styles.avatar}>
+          <View className="flex-row items-center gap-3 bg-card border border-border rounded-[16px] p-4 mt-2">
+            <View className="w-14 h-14 rounded-[28px] items-center justify-center">
               <MaterialIcons name="account-circle" size={48} color={green.green} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.accountName}>{signedIn ? s.signedIn : s.guest}</Text>
-              <Text style={styles.accountSub}>{signedIn ? email ?? s.signedIn : s.notSignedIn}</Text>
+            <View className="flex-1">
+              <Text className="text-text text-[16px] font-bold" style={{ textAlign: textStart }}>{signedIn ? s.signedIn : s.guest}</Text>
+              <Text className="text-text-dim text-[13px] font-regular mt-0.5" style={{ textAlign: textStart }}>{signedIn ? email ?? s.signedIn : s.notSignedIn}</Text>
             </View>
             {!signedIn && (
               <Pressable
-                style={styles.signInBtn}
+                className="bg-green rounded-[14px] px-4 py-2"
                 onPress={() => {
                   hide();
                   setDataMode(null);
                 }}
               >
-                <Text style={styles.signInText}>{s.signedIn}</Text>
+                <Text className="text-on-green text-[13px] font-bold">{s.signedIn}</Text>
               </Pressable>
             )}
           </View>
 
           {/* Settings — opens as a panel from the drawer's own edge, so it
               slides from the same side as the drawer in both languages. */}
-          <View style={styles.settingsCard}>
+          <View className="bg-card border border-border rounded-[14px] overflow-hidden mt-4">
             <Row icon="settings" label={s.settings} onPress={() => openSub("settings")} />
           </View>
 
@@ -164,21 +164,21 @@ export function AccountDrawer() {
         {shownSub === "settings" ? (
           <SettingsView onClose={() => setSub("none")} />
         ) : (
-          <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-            <View style={styles.header}>
-              <Pressable onPress={() => setSub("none")} hitSlop={8} style={styles.iconBtn}>
+          <SafeAreaView style={{ flex: 1, backgroundColor: green.bg, paddingHorizontal: 16 }} edges={["top", "bottom"]}>
+            <View className="flex-row items-center py-2">
+              <Pressable onPress={() => setSub("none")} hitSlop={8} className="w-8 h-8 items-center justify-center">
                 <MaterialIcons name={backIcon} size={26} color={green.text} />
               </Pressable>
-              <Text style={styles.headerTitle}>{subTitle}</Text>
-              <View style={styles.iconBtn} />
+              <Text className="flex-1 text-text text-[18px] font-bold text-center">{subTitle}</Text>
+              <View className="w-8 h-8 items-center justify-center" />
             </View>
             {shownSub === "language" ? (
               <LanguageList onDone={() => setSub("none")} />
             ) : shownSub === "theme" ? (
               <ThemeList onDone={() => setSub("none")} />
             ) : (
-              <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}>
-                <Text style={styles.doc}>{LOREM}</Text>
+              <ScrollView contentContainerClassName="px-5 pb-6">
+                <Text className="text-text-secondary text-[15px] font-regular leading-6 pt-2" style={{ textAlign: textStart }}>{LOREM}</Text>
               </ScrollView>
             )}
           </SafeAreaView>
@@ -191,7 +191,6 @@ export function AccountDrawer() {
 function LanguageList({ onDone }: { onDone: () => void }) {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const locale = useAppStore((st) => st.locale);
   const setLocale = useAppStore((st) => st.setLocale);
 
@@ -206,28 +205,34 @@ function LanguageList({ onDone }: { onDone: () => void }) {
   const soon: { label: string }[] = [{ label: s.russian }, { label: s.arabic }, { label: s.spanish }];
 
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
-      <View style={styles.sectionBody}>
+    <ScrollView contentContainerClassName="px-4 pb-6">
+      <View className="bg-card border border-border rounded-[14px] overflow-hidden mt-2">
         {orderedReady.map((l) => {
           const selected = effective === l.key;
           return (
             <Pressable
               key={l.key}
-              style={styles.langRow}
+              className="flex-row items-center justify-between px-4 py-3"
+              style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: green.border }}
               onPress={() => {
                 setLocale(l.key);
                 onDone();
               }}
             >
-              <Text style={[styles.langLabel, selected && styles.langLabelSel]}>{l.label}</Text>
+              <Text className={`text-[16px] ${selected ? "text-green font-bold" : "text-text font-semibold"}`} style={{ textAlign: textStart }}>{l.label}</Text>
               {selected ? <MaterialIcons name="check" size={20} color={green.green} /> : null}
             </Pressable>
           );
         })}
         {soon.map((l) => (
-          <Pressable key={l.label} style={styles.langRow} onPress={() => Alert.alert(s.language, s.comingSoon)}>
-            <Text style={[styles.langLabel, styles.langLabelMuted]}>{l.label}</Text>
-            <Text style={styles.soon}>{s.comingSoon}</Text>
+          <Pressable
+            key={l.label}
+            className="flex-row items-center justify-between px-4 py-3"
+            style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: green.border }}
+            onPress={() => Alert.alert(s.language, s.comingSoon)}
+          >
+            <Text className="text-[16px] text-text-dim font-semibold" style={{ textAlign: textStart }}>{l.label}</Text>
+            <Text className="text-text-dim text-[12px] font-regular">{s.comingSoon}</Text>
           </Pressable>
         ))}
       </View>
@@ -238,7 +243,6 @@ function LanguageList({ onDone }: { onDone: () => void }) {
 function ThemeList({ onDone }: { onDone: () => void }) {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const themeMode = useAppStore((st) => st.themeMode);
   const setThemeMode = useAppStore((st) => st.setThemeMode);
   const opts: { key: "device" | "light" | "dark"; label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
@@ -247,22 +251,23 @@ function ThemeList({ onDone }: { onDone: () => void }) {
     { key: "dark", label: s.themeDark, icon: "dark-mode" },
   ];
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
-      <View style={styles.sectionBody}>
+    <ScrollView contentContainerClassName="px-4 pb-6">
+      <View className="bg-card border border-border rounded-[14px] overflow-hidden mt-2">
         {opts.map((o) => {
           const selected = themeMode === o.key;
           return (
             <Pressable
               key={o.key}
-              style={styles.langRow}
+              className="flex-row items-center justify-between px-4 py-3"
+              style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: green.border }}
               onPress={() => {
                 setThemeMode(o.key);
                 onDone();
               }}
             >
-              <View style={styles.themeLeft}>
+              <View className="flex-row items-center gap-3">
                 <MaterialIcons name={o.icon} size={20} color={selected ? green.green : green.textDim} />
-                <Text style={[styles.langLabel, selected && styles.langLabelSel]}>{o.label}</Text>
+                <Text className={`text-[16px] ${selected ? "text-green font-bold" : "text-text font-semibold"}`} style={{ textAlign: textStart }}>{o.label}</Text>
               </View>
               {selected ? <MaterialIcons name="check" size={20} color={green.green} /> : null}
             </Pressable>
@@ -274,11 +279,10 @@ function ThemeList({ onDone }: { onDone: () => void }) {
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  const styles = useStyles();
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionBody}>{children}</View>
+    <View className="mt-5">
+      <Text className="text-text-dim text-[12px] font-medium uppercase tracking-[1.2px] mb-2 ms-1" style={{ textAlign: textStart }}>{title}</Text>
+      <View className="bg-card border border-border rounded-[14px] overflow-hidden mt-2">{children}</View>
     </View>
   );
 }
@@ -295,98 +299,19 @@ function Row({
   onPress?: () => void;
 }) {
   const green = useColors();
-  const styles = useStyles();
   return (
-    <Pressable style={styles.row} onPress={onPress} disabled={!onPress}>
-      <View style={styles.rowIcon}>
+    <Pressable
+      className="flex-row items-center gap-3 px-3 py-3"
+      style={{ borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: green.border }}
+      onPress={onPress}
+      disabled={!onPress}
+    >
+      <View className="w-8 h-8 rounded-[16px] bg-card-soft items-center justify-center">
         <MaterialIcons name={icon} size={20} color={green.green} />
       </View>
-      <Text style={styles.rowLabel}>{label}</Text>
-      {value ? <Text style={styles.rowValue}>{value}</Text> : null}
+      <Text className="flex-1 text-text text-[15px] font-regular" style={{ textAlign: textStart }}>{label}</Text>
+      {value ? <Text className="text-text-dim text-[14px] font-mono-medium">{value}</Text> : null}
       {onPress ? <MaterialIcons name="chevron-right" size={20} color={green.textDim} /> : null}
     </Pressable>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  safe: { flex: 1, backgroundColor: green.bg, paddingHorizontal: spacing.lg },
-  header: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.sm },
-  iconBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
-  headerTitle: { flex: 1, color: green.text, fontSize: 18, fontFamily: fonts.bold, textAlign: "center" },
-
-  accountCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: 16,
-    padding: spacing.lg,
-    marginTop: spacing.sm,
-  },
-  avatar: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
-  accountName: { color: green.text, fontSize: 16, fontFamily: fonts.bold, textAlign: textStart },
-  accountSub: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  signInBtn: { backgroundColor: green.green, borderRadius: 14, paddingHorizontal: spacing.lg, paddingVertical: 8 },
-  signInText: { color: green.onGreen, fontSize: 13, fontFamily: fonts.bold },
-
-  settingsCard: {
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: 14,
-    overflow: "hidden",
-    marginTop: spacing.lg,
-  },
-  section: { marginTop: spacing.xl },
-  sectionTitle: {
-    color: green.textDim,
-    fontSize: 12,
-    fontFamily: fonts.medium,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: spacing.sm,
-    marginStart: spacing.xs,
-    textAlign: textStart,
-  },
-  sectionBody: {
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: 14,
-    overflow: "hidden",
-    marginTop: spacing.sm,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: green.border,
-  },
-  rowIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: green.cardSoft, alignItems: "center", justifyContent: "center" },
-  rowLabel: { flex: 1, color: green.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
-  rowValue: { color: green.textDim, fontSize: 14, fontFamily: fonts.monoMedium },
-
-  langRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: green.border,
-  },
-  langLabel: { color: green.text, fontSize: 16, fontFamily: fonts.semibold, textAlign: textStart },
-  langLabelSel: { color: green.green, fontFamily: fonts.bold },
-  themeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  langLabelMuted: { color: green.textDim },
-  soon: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
-
-  doc: { color: green.textSecondary, fontSize: 15, fontFamily: fonts.regular, lineHeight: 24, textAlign: textStart, paddingTop: spacing.sm },
-  }),
-);

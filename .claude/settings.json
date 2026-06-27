@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(node -e ' *)",
-      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Host \"=== TSC CLEAN ===\" }; npm run lint 2>&1 | Select-Object -Last 5)"
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Host \"=== TSC CLEAN ===\" }; npm run lint 2>&1 | Select-Object -Last 5)",
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Host \"=== TSC CLEAN ===\" })"
     ],
     "deny": [
       "PowerShell(rm *)",

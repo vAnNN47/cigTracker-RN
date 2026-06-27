@@ -6,41 +6,29 @@
  * open from the correct side in both Hebrew (RTL) and English (LTR).
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useDrawerStore } from "@/store/useDrawerStore";
-import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, Text, View } from "@/tw";
 
 /** Shared tab top bar: burger (main drawer) + optional title + avatar (account drawer). */
 export function TabHeader({ title }: { title?: string }) {
   const green = useColors();
-  const styles = useStyles();
   const showDrawer = useDrawerStore((st) => st.show);
 
   return (
-    <View style={styles.bar}>
-      <Pressable onPress={() => showDrawer("main")} hitSlop={8} style={styles.icon}>
+    <View className="flex-row justify-between items-center px-[22px] py-1">
+      <Pressable onPress={() => showDrawer("main")} hitSlop={8} className="w-10 h-10 items-center justify-center">
         <MaterialIcons name="menu" size={26} color={green.green} />
       </Pressable>
-      {title ? <Text style={styles.title}>{title}</Text> : <View style={{ flex: 1 }} />}
-      <Pressable onPress={() => showDrawer("account")} hitSlop={8} style={styles.icon}>
+      {title ? (
+        <Text className="flex-1 text-text text-[16px] font-semibold text-center">{title}</Text>
+      ) : (
+        <View className="flex-1" />
+      )}
+      <Pressable onPress={() => showDrawer("account")} hitSlop={8} className="w-10 h-10 items-center justify-center">
         <MaterialIcons name="account-circle" size={28} color={green.green} />
       </Pressable>
     </View>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    bar: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingHorizontal: 22,
-      paddingTop: spacing.xs,
-      paddingBottom: spacing.xs,
-    },
-    icon: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
-    title: { flex: 1, color: green.text, fontSize: 16, fontFamily: fonts.semibold, textAlign: "center" },
-  }),
-);

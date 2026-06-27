@@ -32,9 +32,18 @@ export function Toast({ ... }) { ... }
 ```
 
 ## Styling
-- React Native `StyleSheet.create` only. **No Tailwind, no NativeWind, no inline style objects** for anything reusable.
-- All colors/fonts/spacing come from the **theme** (`useColors()`, `fonts`, spacing from `@/theme`). No hardcoded hex colors or magic spacing numbers in screens.
-- Support **light and dark** by reading theme tokens, never literal colors.
+- **NativeWind / Tailwind (`className`) is the styling system.** Import `View/Text/ScrollView/`
+  `Pressable/TextInput/Link` from `@/tw`, `Image` from `@/tw/image`, `Animated.View` from
+  `@/tw/animated`. Tokens live in `src/global.css` (`@theme`); the cheatsheet + token map are in
+  [features/styling.md](features/styling.md). **No `StyleSheet.create` / `makeUseStyles`.**
+- **Inline `style={{…}}` only where className can't reach:** icon/SVG `color` props (via `useColors()`),
+  non-CSS or non-`@/tw`-wrapped elements (`SafeAreaView`, `SectionList`, `KeyboardAwareScrollView`,
+  RN `Animated`, `SheetTextInput`), shadows, and genuinely dynamic values (computed height/color).
+- All colors/fonts/spacing come from **tokens** — className (`bg-card`, `text-text-dim`, `p-4`,
+  `font-bold`) or, for inline cases, `useColors()`/`fonts` from `@/theme`. No hardcoded hex or magic
+  spacing numbers in screens.
+- **RTL:** keep `style={{ textAlign: textStart }}` inline (no writing-direction class); `flex-row`
+  auto-flips. Support **light and dark** via tokens (they flip automatically), never literal colors.
 
 ## State & data
 - **Zustand** (`src/store/`) is the single source of truth. UI reads/writes through the store.

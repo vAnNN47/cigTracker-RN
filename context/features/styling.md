@@ -12,6 +12,8 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - [x] NativeWind v5 / Tailwind v4 setup — deps, metro/postcss, token map, `tw` wrappers, color-scheme bridge — 2026-06-27
 - [x] Pilot screen converted: `community.tsx` (StyleSheet → className), gate green — 2026-06-27
 - [x] Green-fill blocker root-caused + fixed — real cause was `light-dark()` losing its dark branch under metro's `inlineVariables:false`, dropping ALL themed backgrounds; replaced with `@media (prefers-color-scheme: dark)` var overrides — 2026-06-27
+- [x] Batch-converted 16 mechanical screens (the simple + medium tiers) StyleSheet → className in one run; tsc + lint clean + all novel utilities compile-checked through the real react-native-css pipeline — 2026-06-27 (device-eyeball pending)
+- [x] Converted the 3 special screens — `progress` (SVG), `index` (Today, RN Animated), `calendar` (day grid) — 2026-06-27. **All 20 screens now className.** Only the FINAL cleanup (retire `makeUseStyles` + flip the docs rule) + the user's device-eyeball remain. (device-eyeball pending)
 
 ## How it's wired (so the next screens follow the same pattern)
 
@@ -22,14 +24,22 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - **Config:** `metro.config.js` (`withNativewind`, `inlineVariables:false`,
   `globalClassNamePolyfill:false`), `postcss.config.mjs`. No `babel.config.js`, no
   `tailwind.config.js` (Tailwind v4 is CSS-first).
+- **⚠️ Spacing base pinned to 4px:** Tailwind's numeric scale (`p-4`, `gap-3`, `w-8`, `mt-6`,
+  `leading-5`…) is `calc(var(--spacing) * N)`. react-native-css defaults **rem to 14px**, so the
+  default `0.25rem` step is **3.5px**, not 4 — which silently shrank every spacing/size/line-height
+  ~12% (cramped, visibly broken on dense screens like calendar/Today). `src/global.css` sets
+  `--spacing: 4px` so the scale matches the app's 4/8/12/16/20/24 tokens exactly (`p-4` == `spacing.lg`
+  == 16, `w-8` == 32). Tailwind-default **radii** (`rounded-xl`…) stay rem-based → use our `rounded-card`
+  /`rounded-cell`/… tokens or arbitrary `rounded-[12px]`, never `rounded-xl`.
 - **Tokens → CSS:** `src/global.css` `@theme` holds the **light** palette; the **dark** palette
   overrides the same `--color-*` vars in an `@media (prefers-color-scheme: dark)` block. ⚠️ Do
   **NOT** use `light-dark()` — metro runs react-native-css with `inlineVariables:false`, and in that
   mode the dark branch of `light-dark()` is dropped, so every themed background renders empty (the
   original green-fill blocker). The media-query override carries both branches through the var.
-  Spacing is *not* redefined — the app scale
-  (4/8/12/16/20/24) equals Tailwind's default `1–6` step (`p-4` == `spacing.lg`). Fonts are
-  per-weight families (`font-bold` → `HankenGrotesk_700Bold`) because RN can't synthesize weight.
+  Spacing base `--spacing` is pinned to **4px** (see the ⚠️ note above — react-native-css's rem
+  default of 14px made the scale 3.5px), so the app scale (4/8/12/16/20/24) equals Tailwind's `1–6`
+  step (`p-4` == `spacing.lg` == 16). Fonts are per-weight families (`font-bold` →
+  `HankenGrotesk_700Bold`) because RN can't synthesize weight.
 - **Color scheme:** the app forces light/dark from the store (`themeMode`), not the OS. NativeWind
   keys off RN `Appearance`, so `src/tw/ColorSchemeBridge` pushes `themeMode` →
   `Appearance.setColorScheme('light'|'dark'|'unspecified')`. Rendered once at the app root.
@@ -86,28 +96,29 @@ Order chosen by style-block count (smallest first) so each run stays small. Tick
 after device-verifying it** in light + dark + RTL against the original.
 
 - [x] `src/app/(tabs)/community.tsx` — pilot (2026-06-27); green-fill blocker fixed (2026-06-27) ⚠️ device-eyeball still the user's final check
-- [ ] `src/app/_layout.tsx` — 2 styles (fill/overlay)
-- [ ] `src/auth/SplashView.tsx` — 2
-- [ ] `src/components/ui/TabHeader.tsx` — 3
-- [ ] `src/components/feedback/Toast.tsx` — 5 (Animated.View — use `@/tw/animated`)
-- [ ] `src/auth/LegalFooter.tsx` — 8
-- [ ] `src/auth/LoginView.tsx` — 9
-- [ ] `src/auth/OnboardingView.tsx` — 11
-- [ ] `src/app/purchases.tsx` — 15 (SectionList)
-- [ ] `src/components/sheets/AddPurchaseSheet.tsx` — 15
-- [ ] `src/components/drawers/MainDrawer.tsx` — 18
-- [ ] `src/auth/WelcomeView.tsx` — 21
-- [ ] `src/components/sheets/LogDetailSheet.tsx` — 22
-- [ ] `src/app/edit-log.tsx` — 24
-- [ ] `src/app/settings.tsx` — 27
-- [ ] `src/components/sheets/AddSmokeSheet.tsx` — 27
-- [ ] `src/components/drawers/AccountDrawer.tsx` — 28
-- [ ] `src/app/(tabs)/progress.tsx` — 29 (SVG charts — colors stay via `useColors`)
-- [ ] `src/app/(tabs)/index.tsx` — 41 (Today — Ring/FAB/pulse, Animated)
-- [ ] `src/app/(tabs)/calendar.tsx` — 43 (heaviest — day grid)
-- [ ] **FINAL:** retire `src/theme`'s `makeUseStyles` (keep `useColors` for icon/SVG/safe-area),
-  then **flip the "no Tailwind/NativeWind, StyleSheet only" rule** in `coding-standards.md`,
-  `CLAUDE.md`, `project-overview.md`, and verify no skill names `StyleSheet` directly.
+- [x] `src/app/_layout.tsx` — 2 styles (fill/overlay) — batch 2026-06-27 ⚠️ device-eyeball pending
+- [x] `src/auth/SplashView.tsx` — 2 (kept light-only via inline static `green`; layout→className) — batch 2026-06-27 ⚠️
+- [x] `src/components/ui/TabHeader.tsx` — 3 — batch 2026-06-27 ⚠️
+- [x] `src/components/feedback/Toast.tsx` — 5 (uses **RN** `Animated`, NOT reanimated — kept RN `Animated.View` inline, the roadmap's `@/tw/animated` note was wrong) — batch 2026-06-27 ⚠️
+- [x] `src/auth/LegalFooter.tsx` — 8 — batch 2026-06-27 ⚠️
+- [x] `src/auth/LoginView.tsx` — 9 — batch 2026-06-27 ⚠️
+- [x] `src/auth/OnboardingView.tsx` — 11 — batch 2026-06-27 ⚠️
+- [x] `src/app/purchases.tsx` — 15 (SectionList stays RN, inline `contentContainerStyle`) — batch 2026-06-27 ⚠️
+- [x] `src/components/sheets/AddPurchaseSheet.tsx` — 15 — batch 2026-06-27 ⚠️
+- [x] `src/components/drawers/MainDrawer.tsx` — 18 — batch 2026-06-27 ⚠️
+- [x] `src/auth/WelcomeView.tsx` — 21 — batch 2026-06-27 ⚠️
+- [x] `src/components/sheets/LogDetailSheet.tsx` — 22 — batch 2026-06-27 ⚠️
+- [x] `src/app/edit-log.tsx` — 24 (TextInput keeps `inputAlign` inline for RTL writing-direction) — batch 2026-06-27 ⚠️
+- [x] `src/app/settings.tsx` — 27 (dropped dead unused `title` style) — batch 2026-06-27 ⚠️
+- [x] `src/components/sheets/AddSmokeSheet.tsx` — 27 (`SheetTextInput` isn't tw-wrappable → input style stays a token-built inline object; dropped dead `feelChip*`) — batch 2026-06-27 ⚠️
+- [x] `src/components/drawers/AccountDrawer.tsx` — 28 (`StyleSheet.hairlineWidth` dividers kept inline — `border-b` is 2× thicker) — batch 2026-06-27 ⚠️
+- [x] `src/app/(tabs)/progress.tsx` — 29 (SVG `LineChart` colors via `useColors`; dynamic-height histogram bar stays inline) — 2026-06-27 ⚠️ device-eyeball pending
+- [x] `src/app/(tabs)/index.tsx` — 41 (Today — **RN** `Animated` ScrollView/View can't take className → hero/fab + their shadows stay inline; rest className) — 2026-06-27 ⚠️
+- [x] `src/app/(tabs)/calendar.tsx` — 43 (day grid: one class per property — selection>today>status — so conflicting border/bg utilities never stack) — 2026-06-27 ⚠️
+- [x] **FINAL (2026-06-27):** retired `src/theme`'s `makeUseStyles` (kept `useColors`); flipped the
+  styling rule → NativeWind in `coding-standards.md`, `CLAUDE.md`, `project-overview.md`; verified no
+  project skill hardcodes the old `StyleSheet`-only rule (skills defer to `coding-standards.md`).
+  **Migration complete — all 20 screens className, old StyleSheet path retired.**
 
 ## Known issues / blockers (resolve as part of the loop)
 
@@ -143,3 +154,34 @@ after device-verifying it** in light + dark + RTL against the original.
   through `@tailwindcss/postcss` → react-native-css with `inlineVariables:false`: every token now
   carries both light + dark (`vr color-green = [["#3ba55d",[dark]],["#006d37"]]`). tsc + lint clean.
   Needs a cache-cleared reload (`expo start -c`) to land on device; eyeball left to user.
+- 2026-06-27 — Batch-migrated 16 screens (simple + medium tiers) `StyleSheet` → `className` in one
+  run (the green-fill blocker being fixed made the conversion mechanical + safe to batch). Per-screen
+  notes captured in the queue above. Conventions held: icon/SVG colors + non-CSS elements
+  (`SafeAreaView`, `SectionList`, `KeyboardAwareScrollView`, `DateTimePicker`, `SheetTextInput`, RN
+  `Animated`, `Switch`) keep `useColors`/inline; RTL `textStart`/`textEnd`/`inputAlign` stay inline;
+  off-scale numbers use arbitrary values. Gate: `tsc` + `lint` clean, and all 30 novel utility classes
+  compile-checked through the real `@tailwindcss/postcss` → react-native-css pipeline (incl. `ms-*` →
+  `marginInlineStart`, RTL-aware + RN-0.85-supported). 3 special screens (`progress` SVG, `index`
+  Animated, `calendar` grid) deliberately left for solo runs. Device-eyeball pending.
+- 2026-06-27 — Converted the 3 special screens, completing all 20. `progress`: SVG `LineChart` keeps
+  color props via `useColors`, the dynamic-height histogram bar stays inline. `index` (Today): uses
+  **RN** `Animated` (not reanimated) — `Animated.ScrollView`/`Animated.View` can't take className, so
+  the hero ring, fab, and their shadow styles stay inline objects; everything else className. `calendar`:
+  the day grid computes **one class per property** (selection > today > status precedence) instead of
+  stacking conflicting `border-*`/`bg-*` utilities, because NativeWind resolves same-property conflicts
+  by CSS source order, not className order. Gate: `tsc` + `lint` clean; the 17 new utilities
+  (`aspect-square`, `rounded-cell`, `bg-under-bg`/`text-over-text`/… status tokens, `border-[1.5px]`,
+  `-bottom-1.5`, `gap-px`) compile-checked through the real pipeline. Device-eyeball pending.
+- 2026-06-27 — **Spacing scale fix (device finding).** First device pass showed dense screens
+  (calendar, Today) cramped/broken while sparse ones (progress) "looked original". Root cause:
+  react-native-css defaults **rem = 14px**, so Tailwind's `0.25rem` spacing step rendered **3.5px**,
+  not 4 — every `p-*`/`m-*`/`gap-*`/`w-*`/`h-*`/`leading-*` (all `calc(var(--spacing)*N)` in TW v4) was
+  ~12% small. Fix: `--spacing: 4px` in `global.css` `@theme` → the whole scale snaps to 4/8/12/16/20/24
+  (verified: `p-4`=16, `w-8`=32, `mt-6`=24, `leading-6`=24). Also swapped the 2 rem-based `rounded-xl`
+  (→ `rounded-[12px]`) in `index`. Corrected the now-false "spacing not redefined" claim in this doc.
+  tsc clean. Needs a fresh device pass.
+- 2026-06-27 — **FINAL — migration complete.** User device-verified the spacing fix (calendar/Today/
+  sheets correct). Retired `makeUseStyles` from `src/theme` (zero references; `useColors` stays).
+  Flipped the "no Tailwind/NativeWind, `StyleSheet` only" rule → NativeWind in `coding-standards.md`,
+  `CLAUDE.md`, `project-overview.md`. Confirmed no project skill names the old rule. tsc + lint clean.
+  All 20 screens are now `className`; the `StyleSheet`/`makeUseStyles` path is gone.
