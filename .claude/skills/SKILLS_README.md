@@ -90,14 +90,18 @@ this table is just arg shapes, not a second copy of the prose.
 | `/skill-doctor` | `audit` \| `fix` | Audit/score (/10) the skill set itself. `audit`=read-only. |
 | `/skill-forge` | `<todo-item>` | Drain one `SKILLS_TODO` item → build → load-check → move to Done. The `/fire` twin. |
 
-> **Marketplace add-ons** (layered under the flow, don't replace it): `skill-creator` — authors
-> skills + empirical eval/trigger-rate (the measured score `/skill-doctor` can't give);
-> `caveman` — output-prose compressor (`/caveman`, "stop caveman" to exit);
-> `expo-react-native-performance` — 42-rule Expo/RN perf guide (lists, animations, images, memo,
-> profiler); **auto-triggers** when writing/reviewing RN components — this is our **render-audit**;
-> `app-ui-design` — mobile UI design (iOS HIG + Material 3, a11y, color/type), for the dark-mode
-> redesign. These are **capability** skills (do a job) — they sit *under* our workflow verbs
-> (`/inbox`→`/fire`→`/polish`), never replace them.
+### Marketplace add-ons
+
+**Capability** skills (they do a job) — layered *under* the workflow verbs (`/inbox`→`/fire`→`/polish`), never replacing them. One line each, what it is + when it fires:
+
+| Skill | What it is | When it fires |
+|-------|-----------|---------------|
+| `skill-creator` | Authors skills + runs **empirical** eval / trigger-rate (the measured score `/skill-doctor` can't give) | Hand it a skill to author or measure-improve |
+| `caveman` | Output-**prose** compressor — strips articles/filler (~75% on prose), code + tech terms untouched | `/caveman` / "less tokens" on; "stop caveman" off |
+| `expo-react-native-performance` | 42-rule Expo/RN perf guide (lists, animations, images, memo, profiler) — **our render-audit** | **Auto** when writing/reviewing RN components |
+| `app-ui-design` | Mobile UI design — iOS HIG + Material 3, a11y, color/type — for the dark-mode redesign | Designing/auditing screen UI |
+
+> `/wtf <skill>` reads each one's `SKILL.md` **live** — this table is the at-a-glance index, the deep-dive is one command away.
 
 ## A normal day
 

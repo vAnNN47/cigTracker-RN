@@ -16,9 +16,11 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 
 ## Open
 
-- [ ] **[skills-explainer]** Write a persistent explainer doc (cheat-sheet) for the newly-added skills — **`expo-react-native-performance`**, **`app-ui-design`**, **`caveman`**, plus the in-house **`/wtf`**, **`/skill-forge`**, **`/skill-doctor`** — one line each: what it is, when it fires, what it touches. `/wtf <skill>` already explains them live from `SKILL.md`; decide if a static doc earns its keep vs. just pointing at `/wtf`, then either write it or close with that rationale.
+_(empty)_
 
 ## Done
+
+- [x] 2026-06-27 — **[skills-explainer]** Decided **NO static explainer doc** — it'd be a stale third copy. The one-line-each cheat-sheet already exists twice in `SKILLS_README`: the **Skill signatures** table (in-house) + the **marketplace add-ons** block, and **`/wtf <skill>`** reads each `SKILL.md` **live**. Instead made the close real: converted the dense marketplace-add-ons **prose wall → a scannable table** (`skill-creator` / `caveman` / `expo-react-native-performance` / `app-ui-design`, each with *what it is* + *when it fires*) — the exact format the item asked for, in the canonical place, no new file. All six named skills now covered at a glance; deep-dive stays one `/wtf <skill>` away.
 
 - [x] 2026-06-26 — **[archive-tracking]** Built the ledger-archive mechanism (folded into existing skills, **no new skill**). Decided **archive = move, never delete; no `/bobcat` cloud-push** (commit = shipped-only; the ledger is the only record of what was *asked* + how categorized). Trigger = **size, not age**: when `context/done-log.md` > ~150 lines, the oldest `ASKED`/`SHIPPED` batches roll to **`context/archive/done-log-<year>.md`** (newest-on-top, whole blocks), hot file kept to ~newest 15 / ~120 lines + a pointer. **Simplified the original spec** — dropped per-category `archive/<cat>/<date>/<batch>` folders (batches are mixed-category; pinned context-cost ~0 → over-engineering) for one file-per-year. **Wiring:** the roll lives in **`/polish run` Phase 1** (size-gated, doc-only — `/wtf` stays read-only so it couldn't host a writer); **`/wtf`** now also reads the archive for `since <old-date>` + the Unaccounted reconcile (nothing vanishes). Created `context/archive/README.md` (format + who-reads/writes) + added an Archiving note to the `done-log.md` header. Open queues already self-prune by status → no change there.
 
