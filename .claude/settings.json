@@ -3,7 +3,19 @@
     "allow": [
       "Bash(node -e ' *)",
       "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Host \"=== TSC CLEAN ===\" }; npm run lint 2>&1 | Select-Object -Last 5)",
-      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Host \"=== TSC CLEAN ===\" })"
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Host \"=== TSC CLEAN ===\" })",
+      "Edit(/.claude/skills/advisor/**)",
+      "Edit(/.claude/skills/inbox/**)",
+      "Edit(/.claude/skills/fire/**)",
+      "Edit(/.claude/skills/skill-forge/**)",
+      "Edit(/.claude/skills/wtf/**)",
+      "Edit(/.claude/skills/polish/**)",
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npm run lint 2>&1 | Select-Object -Last 60)",
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npm run lint 2>&1 | Out-String)",
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit 2>&1 | Out-String; \"EXIT=$LASTEXITCODE\")",
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { npm run lint })",
+      "PowerShell(git add .claude/settings.json)",
+      "PowerShell(git commit -m \"chore: prune one-off permission entries, keep durable verify/skill-edit perms\")"
     ],
     "deny": [
       "PowerShell(rm *)",
@@ -11,6 +23,9 @@
     ],
     "ask": [
       "PowerShell(git push *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\vAnN47\\DEV\\CigTrackerRN\\.claude\\skills"
     ]
   },
   "enabledPlugins": {
