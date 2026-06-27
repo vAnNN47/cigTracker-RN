@@ -21,8 +21,13 @@
   `savingsSeries`, and `hourlyHistogram` (each an O(logs) sweep) on every render; wrapped them in
   `useMemo` keyed on their real inputs (`logs`/`limits`/`settings`/`dsh`/`range`).
 
+- 2026-06-27 — **`app-ui-design` cross-check done.** Surfaced findings (filed to roadmap, not fixed
+  here): icon-only `Pressable`s lack `accessibilityLabel`/role (only Today's hero+FAB have them);
+  calendar day status is color-alone (WCAG 1.4.1); a few sub-44pt touch targets → roadmap `[a11y]`.
+  Error/status/shadow colors are hardcoded hex across ≥6 files (`#C0392B` in 4) → tech-debt `[theme]`
+  token-extraction item.
+
 ## Follow-ups (still open — see roadmap `[perf]`)
-- `app-ui-design` design cross-check over sheets/drawers/screens — not yet done.
 - `purchases.tsx` history is an unbounded `ScrollView` + `.map`; consider `FlashList`/`SectionList`
   if histories get long (`list-use-flashlist`).
 - `calendar.tsx` `renderMonth` runs `countForDay`/`limitForDay` for 42 cells × 3 month slots, each
