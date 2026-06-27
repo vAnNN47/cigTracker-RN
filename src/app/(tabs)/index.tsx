@@ -12,7 +12,16 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Animated, RefreshControl } from "react-native";
+import { NativeScrollEvent, NativeSyntheticEvent, RefreshControl } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
 
@@ -28,7 +37,7 @@ import { useStrings } from "@/i18n/useStrings";
 import { SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
 import { useColors } from "@/theme";
-import { Pressable, Text, View } from "@/tw";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 const HOUR = 60 * 60 * 1000;
 
@@ -48,6 +57,19 @@ export default function TodayScreen() {
   const deleteLog = useAppStore((st) => st.deleteLog);
   const refresh = useAppStore((st) => st.refresh);
 
+  // Pull-to-refresh. RefreshControl must be passed to the ScrollView as a *direct*
+  // <RefreshControl> element — wrapping it in a custom component makes Android drop
+  // all ScrollView children (see rn-debug KI-1).
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const addRef = useRef<AddSmokeSheetRef>(null);
   const purchaseRef = useRef<AddPurchaseSheetRef>(null);
   const detailRef = useRef<LogDetailSheetRef>(null);
@@ -65,31 +87,32 @@ export default function TodayScreen() {
   const heroSub = settings.countDown ? s.smokedTodayN(count) : s.leftTodayN(left);
 
   // Gentle pulse so the circle reads as tappable.
-  const [pulse] = useState(() => new Animated.Value(1));
+  const pulse = useSharedValue(1);
   useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.03, duration: 1000, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1, duration: 1000, useNativeDriver: true }),
-      ]),
+    pulse.value = withRepeat(
+      withSequence(withTiming(1.03, { duration: 1000 }), withTiming(1, { duration: 1000 })),
+      -1,
+      false,
     );
-    loop.start();
-    return () => loop.stop();
   }, [pulse]);
+  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
 
   // Floating add button: fades in once the hero circle has scrolled away, so the
   // user never has to scroll back up to log (task: pinned add button).
-  const [scrollY] = useState(() => new Animated.Value(0));
+  const scrollY = useSharedValue(0);
   const [fabShown, setFabShown] = useState(false);
-  useEffect(() => {
-    const id = scrollY.addListener(({ value }) => {
-      const v = value > 300;
-      setFabShown((prev) => (prev === v ? prev : v));
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    scrollY.value = y;
+    setFabShown((prev) => {
+      const v = y > 300;
+      return prev === v ? prev : v;
     });
-    return () => scrollY.removeListener(id);
-  }, [scrollY]);
-  const fabOpacity = scrollY.interpolate({ inputRange: [240, 320], outputRange: [0, 1], extrapolate: "clamp" });
-  const fabScale = scrollY.interpolate({ inputRange: [240, 320], outputRange: [0.8, 1], extrapolate: "clamp" });
+  };
+  const fabStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [240, 320], [0, 1], Extrapolation.CLAMP),
+    transform: [{ scale: interpolate(scrollY.value, [240, 320], [0.8, 1], Extrapolation.CLAMP) }],
+  }));
 
   // Weekly savings (matches the "חיסכון שבועי" card).
   const cur = settings.currencySymbol;
@@ -122,13 +145,15 @@ export default function TodayScreen() {
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <TabHeader title={s.appTitle} />
 
-      <Animated.ScrollView
-        style={{ flex: 1, backgroundColor: green.bg }}
-        contentContainerStyle={{ paddingTop: 16, paddingHorizontal: 22, paddingBottom: 24 }}
+      <ScrollView
+        className="flex-1 bg-bg"
+        contentContainerClassName="pt-4 px-[22px] pb-6"
         alwaysBounceVertical
         scrollEventThrottle={16}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
-        refreshControl={<RefreshSpinner onRefresh={refresh} tint={green.green} />}
+        onScroll={onScroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={green.green} colors={[green.green]} />
+        }
       >
         {/* Header (scrolls with the page) */}
         <Text className="text-green text-[22px] font-bold text-center">{s.reduceTitle}</Text>
@@ -139,22 +164,24 @@ export default function TodayScreen() {
         <View className="items-center mt-5">
           <Pressable onPress={() => addRef.current?.present()} accessibilityLabel={s.addCigarette}>
             <Animated.View
-              style={{
-                width: 220,
-                height: 220,
-                borderRadius: 110,
-                backgroundColor: green.ring,
-                borderWidth: 1,
-                borderColor: green.ringStroke,
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: green.shadow,
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                shadowOffset: { width: 0, height: 6 },
-                elevation: 3,
-                transform: [{ scale: pulse }],
-              }}
+              style={[
+                {
+                  width: 220,
+                  height: 220,
+                  borderRadius: 110,
+                  backgroundColor: green.ring,
+                  borderWidth: 1,
+                  borderColor: green.ringStroke,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  shadowColor: green.shadow,
+                  shadowOpacity: 0.12,
+                  shadowRadius: 16,
+                  shadowOffset: { width: 0, height: 6 },
+                  elevation: 3,
+                },
+                pulseStyle,
+              ]}
             >
               <Text className="text-green text-[44px] font-mono-semibold">{heroCount}</Text>
               <Text className="text-green text-[14px] font-medium mt-1">{heroLabel}</Text>
@@ -241,12 +268,12 @@ export default function TodayScreen() {
             <MaterialIcons name="lightbulb-outline" size={20} color={green.green} />
           </View>
         </View>
-      </Animated.ScrollView>
+      </ScrollView>
 
       {/* Floating add button (appears when the hero is scrolled away) */}
       <Animated.View
         pointerEvents={fabShown ? "box-none" : "none"}
-        style={{ position: "absolute", end: 22, bottom: insets.bottom + 76, opacity: fabOpacity, transform: [{ scale: fabScale }] }}
+        style={[{ position: "absolute", end: 22, bottom: insets.bottom + 76 }, fabStyle]}
       >
         <Pressable
           className="w-[58px] h-[58px] rounded-[29px] bg-green items-center justify-center"
@@ -263,18 +290,4 @@ export default function TodayScreen() {
       <LogDetailSheet ref={detailRef} />
     </SafeAreaView>
   );
-}
-
-// Pull-to-refresh control (kept separate so the spinner owns its own state).
-function RefreshSpinner({ onRefresh, tint }: { onRefresh: () => void | Promise<void>; tint: string }) {
-  const [refreshing, setRefreshing] = useState(false);
-  const handle = async () => {
-    setRefreshing(true);
-    try {
-      await onRefresh();
-    } finally {
-      setRefreshing(false);
-    }
-  };
-  return <RefreshControl refreshing={refreshing} onRefresh={handle} tintColor={tint} colors={[tint]} />;
 }
