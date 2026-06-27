@@ -2,6 +2,9 @@
 
 <!-- Shipped this month, newest day on top. Format + rules → context/archive/README.md -->
 
+## 2026-06-28
+- [app][edit-log] Edit-screen iOS clock RTL fix — same as the AddSmokeSheet fix: dropped the `w-[112px] items-end` wrapper around the `@expo/ui` compact `DateTimePicker` and snugged its style to `84×44`, so the leading-aligned time pill no longer leaves trailing dead-space ("pushed too far right") in RTL; 44pt min touch target.
+
 ## 2026-06-27
 - [app][sheets] AddSmokeSheet time picker RTL fix — iOS compact picker frame snugged (112→84px) so the leading-aligned pill no longer leaves trailing dead-space (the red artifact) in RTL; picker bumped to 44pt min touch target.
 - [app][styling] NativeWind v5 / Tailwind v4 migration COMPLETE — all 20 screens `StyleSheet` → `className`, `makeUseStyles` retired, `--spacing` pinned 4px, styling rule flipped to NativeWind in the standards docs.
