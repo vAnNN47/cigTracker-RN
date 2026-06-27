@@ -6,7 +6,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useMemo, useRef } from "react";
-import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { I18nManager, Pressable, SectionList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
 
@@ -23,7 +23,7 @@ interface DayGroup {
   key: string;
   date: Date;
   total: number;
-  items: Purchase[];
+  data: Purchase[]; // SectionList reads each section's rows from `data`
 }
 
 /** Read-only purchase history grouped by day, with per-day and grand totals. */
@@ -49,11 +49,11 @@ export default function PurchasesScreen() {
       const k = dayKey(p.boughtAt);
       let g = map.get(k);
       if (!g) {
-        g = { key: k, date: keyOf(p.boughtAt), total: 0, items: [] };
+        g = { key: k, date: keyOf(p.boughtAt), total: 0, data: [] };
         map.set(k, g);
         out.push(g);
       }
-      g.items.push(p);
+      g.data.push(p);
       g.total += p.price;
     }
     return { groups: out, grandTotal: sorted.reduce((a, p) => a + p.price, 0) };
@@ -68,49 +68,47 @@ export default function PurchasesScreen() {
         <Text style={styles.title}>{s.purchaseHistory}</Text>
       </View>
 
-      <ScrollView
+      <SectionList
+        sections={groups}
+        keyExtractor={(p) => p.id}
         contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
         alwaysBounceVertical
-      >
-        {groups.length === 0 ? (
-          <Text style={styles.empty}>{s.noPurchasesYet}</Text>
-        ) : (
-          <>
+        stickySectionHeadersEnabled={false}
+        ListEmptyComponent={<Text style={styles.empty}>{s.noPurchasesYet}</Text>}
+        ListHeaderComponent={
+          groups.length > 0 ? (
             <View style={styles.totalCard}>
               <Text style={styles.totalLabel}>{s.totalSpentLabel}</Text>
               <Text style={styles.totalValue}>{money(grandTotal)}</Text>
             </View>
-
-            {groups.map((g) => (
-              <View key={g.key} style={styles.group}>
-                <View style={styles.groupHead}>
-                  <Text style={styles.groupDate}>{formatWeekdayDate(g.date, s.localeCode)}</Text>
-                  <Text style={styles.groupTotal}>{money(g.total)}</Text>
-                </View>
-                {g.items.map((p) => (
-                  <Pressable key={p.id} style={styles.row} onPress={() => purchaseRef.current?.present(p)}>
-                    <View style={styles.rowIcon}>
-                      <MaterialIcons
-                        name={p.unit === "carton" ? "inventory-2" : "receipt-long"}
-                        size={18}
-                        color={green.textDim}
-                      />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.rowTitle}>
-                        {p.quantity} {p.unit === "carton" ? s.carton : s.pack}
-                      </Text>
-                      <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
-                    </View>
-                    <Text style={styles.price}>{money(p.price)}</Text>
-                    <MaterialIcons name="edit" size={14} color={green.textDim} style={{ marginStart: spacing.sm }} />
-                  </Pressable>
-                ))}
-              </View>
-            ))}
-          </>
+          ) : null
+        }
+        renderSectionHeader={({ section }) => (
+          <View style={styles.groupHead}>
+            <Text style={styles.groupDate}>{formatWeekdayDate(section.date, s.localeCode)}</Text>
+            <Text style={styles.groupTotal}>{money(section.total)}</Text>
+          </View>
         )}
-      </ScrollView>
+        renderItem={({ item: p }) => (
+          <Pressable style={styles.row} onPress={() => purchaseRef.current?.present(p)}>
+            <View style={styles.rowIcon}>
+              <MaterialIcons
+                name={p.unit === "carton" ? "inventory-2" : "receipt-long"}
+                size={18}
+                color={green.textDim}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>
+                {p.quantity} {p.unit === "carton" ? s.carton : s.pack}
+              </Text>
+              <Text style={styles.rowSub}>{formatTime(p.boughtAt)}</Text>
+            </View>
+            <Text style={styles.price}>{money(p.price)}</Text>
+            <MaterialIcons name="edit" size={14} color={green.textDim} style={{ marginStart: spacing.sm }} />
+          </Pressable>
+        )}
+      />
       <AddPurchaseSheet ref={purchaseRef} />
     </SafeAreaView>
   );
@@ -137,16 +135,17 @@ const useStyles = makeUseStyles((green) =>
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     marginTop: spacing.sm,
-    marginBottom: spacing.lg,
   },
   totalLabel: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
   totalValue: { color: green.text, fontSize: 28, fontFamily: fonts.monoSemibold, marginTop: 2, textAlign: textStart },
 
-  group: { marginBottom: spacing.lg },
+  // Each section's day header; top margin recreates the per-group gap the old
+  // wrapper View used to provide (SectionList renders sections flat).
   groupHead: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginTop: spacing.lg,
     marginBottom: spacing.xs,
   },
   groupDate: { color: green.text, fontSize: 15, fontFamily: fonts.bold, textAlign: textStart },

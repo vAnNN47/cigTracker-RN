@@ -8,7 +8,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
@@ -17,10 +17,10 @@ import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/sheets/AddPu
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/sheets/LogDetailSheet";
 import { Ring } from "@/components/charts/Ring";
 import { TabHeader } from "@/components/ui/TabHeader";
-import { isSameDay, keyOf } from "@/domain/day";
+import { dayKey, isSameDay, keyOf } from "@/domain/day";
 import {
-  countForDay,
   limitForDay,
+  logicalDay,
   logicalToday,
   logsForDay,
   purchasesForDay,
@@ -78,6 +78,17 @@ export default function HistoryScreen() {
   );
   const dsh = settings.dayStartHour;
 
+  // Per-day counts in one pass over logs, so the 42-cell × 3-month grid can look
+  // each day up O(1) instead of re-scanning every log per cell (countForDay).
+  const countByDay = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const l of logs) {
+      const k = dayKey(logicalDay(l.smokedAt, dsh));
+      m.set(k, (m.get(k) ?? 0) + 1);
+    }
+    return m;
+  }, [logs, dsh]);
+
   const today = logicalToday(dsh);
   const [selected, setSelected] = useState<Date>(today);
   const [focused, setFocused] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -118,7 +129,7 @@ export default function HistoryScreen() {
         {week.map((day, di) => {
           if (!day) return <View key={di} style={styles.cell} />;
           const future = keyOf(day) > today;
-          const c = countForDay(logs, day, dsh);
+          const c = countByDay.get(dayKey(day)) ?? 0;
           const lim = limitForDay(limits, day, settings);
           const sel = isSameDay(day, selected);
           const isTodayCell = isSameDay(day, today);

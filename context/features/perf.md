@@ -8,6 +8,7 @@
 ## Done
 
 - [x] Every screen subscribes to the store via a **selector** (`useShallow`), not the whole store — 2026-06-27
+- [x] Long history lists are virtualized; calendar grid looks up day counts O(1) — 2026-06-27
 
 ## Fix log
 
@@ -27,8 +28,13 @@
   Error/status/shadow colors are hardcoded hex across ≥6 files (`#C0392B` in 4) → tech-debt `[theme]`
   token-extraction item.
 
-## Follow-ups (still open — see roadmap `[perf]`)
-- `purchases.tsx` history is an unbounded `ScrollView` + `.map`; consider `FlashList`/`SectionList`
-  if histories get long (`list-use-flashlist`).
-- `calendar.tsx` `renderMonth` runs `countForDay`/`limitForDay` for 42 cells × 3 month slots, each
-  scanning all logs — memoize per-month if it shows up on a profiler with large datasets.
+- 2026-06-27 — **Virtualized the purchase history.** `purchases.tsx` rendered every row inside a
+  `ScrollView` + nested `.map` (no recycling). Converted to a built-in **`SectionList`** (sections =
+  day groups, day total in `renderSectionHeader`, grand total as `ListHeaderComponent`) — RN now
+  recycles offscreen rows. Kept SectionList built-in rather than add `@shopify/flash-list` (no dep
+  in the project; coding-standards prefers existing libs). Spacing preserved via a header top-margin
+  since the per-group wrapper `View` is gone.
+- 2026-06-27 — **Calendar grid no longer re-scans logs per cell.** `renderMonth` called
+  `countForDay` (a filter+sort over all logs) for each of 42 cells × 3 month slots. Replaced with a
+  single `useMemo` `Map<dayKey, count>` built in one pass over `logs`, looked up O(1) per cell.
+  Selection/today highlighting stays in the (cheap) cell JSX, so tapping a day is unaffected.

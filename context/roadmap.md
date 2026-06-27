@@ -21,7 +21,7 @@ _(none open)_
 
 ## 🔍 Audits
 
-- [ ] **[perf]** Render-audit follow-ups (store-subscription storm + Stats memoization **done**; `app-ui-design` cross **done** → findings filed as `[a11y]` + the tech-debt token item — see [features/perf.md](features/perf.md)). Still open: (1) `purchases.tsx` history is an unbounded `ScrollView`+`.map` → `FlashList`/`SectionList` if histories get long; (2) `calendar.tsx` `renderMonth` scans all logs per cell × 42 cells × 3 month slots — memoize per-month if a profiler flags it on large data. (אודיט רינדור — נשאר וירטואליזציה)
+_(none open — render audit drained; `app-ui-design` findings live as `[a11y]` + the `[theme]` token item)_
 
 ## 🧹 Tech debt
 

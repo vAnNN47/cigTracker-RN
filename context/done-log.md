@@ -21,6 +21,16 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+## 2026-06-27 — SHIPPED (branch: `perf-virtualization`)
+Built via `/fire perf` — drains the last `[perf]` audit items:
+- **[perf]** Virtualized `purchases.tsx` history: `ScrollView`+nested `.map` → built-in
+  `SectionList` (no new dep; FlashList not in project). Rows now recycle.
+- **[perf]** `calendar.tsx` grid: replaced per-cell `countForDay` (filter+sort over all logs, 42×3
+  cells) with one memoized `Map<dayKey,count>` looked up O(1). Selection JSX untouched.
+- `[perf]` audit now fully drained; `app-ui-design` findings remain as `[a11y]` + `[theme]`.
+
+---
+
 ## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
 Built via `/fire perf` (partial — render-storm + memoization done; item stays open for the rest):
 - **[perf]** Killed the whole-app render-storm: 5 screens (`index`, `calendar`, `progress`,
