@@ -6,17 +6,19 @@
  *  - A long diary is collapsed to a few lines with a "read all" toggle; expanded
  *    it scrolls inside a capped height so the sheet never runs off-screen
  *    (task: tap to open the full text / expand to show everything).
- *  - "Copy text" shares the whole entry as text (the OS sheet's Copy action),
- *    so the user can grab all of it at once (task: copy all text).
+ *  - "Copy text" copies the entry's notes (comment + diary) straight to the
+ *    clipboard and shows a "Copied" toast — no OS share sheet (task: copy all text).
  * When the log is editable (today) a pencil opens the full-screen edit modal.
  *
  * Imperative API: parent calls ref.present({ log, number, editable }).
  */
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { useToast } from "@/components/feedback/Toast";
 import { formatTime } from "@/i18n/format";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
@@ -43,6 +45,7 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
     const green = useColors();
     const styles = useStyles();
     const router = useRouter();
+    const toast = useToast();
     const sheetRef = useRef<KeyboardSheetRef>(null);
 
     const [log, setLog] = useState<SmokeLog | null>(null);
@@ -75,10 +78,12 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
     };
 
     const copyAll = () => {
-      const parts = [`${s.cigNumber(number)} · ${time}`];
+      const parts: string[] = [];
       if (comment) parts.push(comment);
-      if (diary) parts.push("", diary);
-      Share.share({ message: parts.join("\n") }).catch(() => {});
+      if (diary) parts.push(diary);
+      Clipboard.setStringAsync(parts.join("\n\n"))
+        .then(() => toast.show({ message: s.copiedToast }))
+        .catch(() => {});
     };
 
     return (

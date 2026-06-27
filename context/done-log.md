@@ -26,6 +26,11 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+**SHIPPED — 2026-06-27 — log copy → clipboard + toast (branch: `perf-render-audit_theme_01_sheets_01`)**
+- `[sheets]` (🧩 Improvements) — `LogDetailSheet` **Copy text** now copies straight to the clipboard with a "Copied to clipboard" toast instead of opening the OS share sheet. `copyAll`: `Share.share` → `expo-clipboard` `setStringAsync` + `useToast()`; copied text = **comment + diary only** (dropped the `cigNumber · time` header). New `copiedToast` string (he/en); added `expo-clipboard ~56.0.4`. Side-fix: restored `eslint`/`eslint-config-expo` as devDeps (extraneous → pruned by the install; lint gate needs them). tsc + lint clean.
+
+---
+
 **SHIPPED — 2026-06-27 — Discord dark redesign + semantic color tokens (branch: `perf-render-audit_theme_01`)**
 - `[theme]` (🧩 Improvements) — Discord-style dark mode: retuned the `dark` palette to neutral-gray surfaces + forest-green accent; flips the whole app through `useColors()`. Light palette untouched. User picked "Discord gray + forest green" from previews.
 - `[theme]` (🧹 Tech debt) — semantic tokens `error` / status (`underBg/underBorder/overBg/overBorder/overText`) / `histSoft` / `feelChipSel` / `shadow` added to both palettes; replaced hardcoded literals across calendar, progress, settings, AddPurchaseSheet, AddSmokeSheet, Login/Welcome, index, Toast. Savings-card `#FFFFFF` + `AVATAR_TINTS` left intentionally (see `features/theme.md` Fix log). tsc + lint clean.

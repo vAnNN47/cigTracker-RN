@@ -268,6 +268,7 @@ export function makeStrings(he: boolean) {
     deletePurchaseTitle: he ? "למחוק את הקנייה?" : "Delete purchase?",
     deletePurchaseBody: he ? "לא ניתן לבטל פעולה זו." : "This can't be undone.",
     purchaseDeletedToast: he ? "הקנייה נמחקה" : "Purchase deleted",
+    copiedToast: he ? "הועתק ללוח" : "Copied to clipboard",
 
     // Login
     appName: he ? "מעקב סיגריות" : "Cigarette Tracker",
