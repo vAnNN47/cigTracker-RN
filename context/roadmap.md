@@ -4,10 +4,13 @@ Global list of everything open across the app. Each item is tagged by feature an
 where one exists, links to its doc in [features/](features/). When something is
 fixed it moves to that feature's **Fix log** (with a date) and leaves this list.
 
-> This is the single open queue. Add items by sorting a brain-dump with `/inbox`; build + clear
-> an area's items with `/fire <area>` (it moves each done item to that area's Fix log). Drain the
-> **🧹 Tech debt** section with `/polish`. **🔍 Audits** = skill-driven sweeps (render-perf,
-> ui-design, rtl/a11y) that surface findings — run the named skill, then file the fixes it finds.
+> This is the open queue for **app** work. (Skills/workflow-system tweaks have their own queue —
+> `.claude/skills/SKILLS_TODO.md`, drained by `/skill-forge`; `/inbox` routes each item to the
+> right one.) Add items by sorting a brain-dump with `/inbox`; build + clear an area's items with
+> `/fire <area>` (it moves each done item to that area's Fix log + the `done-log.md` ledger, and the
+> item leaves this list). Drain the **🧹 Tech debt** section with `/polish`. **🔍 Audits** =
+> skill-driven sweeps (render-perf, ui-design, rtl/a11y) that surface findings — run the named
+> skill, then file the fixes it finds.
 
 
 ## 🐞 Bugs

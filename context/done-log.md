@@ -27,6 +27,12 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 ---
 
 ## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
+User correction (doc-only, skills-system):
+- **[done-store-split]** Made `SKILLS_TODO.md` **open-only like `roadmap.md`** — drained its growing inline `## Done` pile into a new done-store **`context/archive/skills-done.md`** (the skills "Fix log"). Reverses the `[done-handling]` inline-`## Done` decision (user's call). Rewired `/skill-forge` step 6 (archive the line, never keep a `## Done` section), the `SKILLS_README` Done-handling table, the `archive/README.md`, and added a sibling-queue + done-store pointer to `roadmap.md`'s header (it claimed to be "the single open queue" but `SKILLS_TODO` is a second one).
+
+---
+
+## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
 Built via `/skill-forge one-line-restate` (doc-only, skills-system):
 - **[one-line-restate]** — Baked **restate-before-build** into both drainers: `/fire` step 3 + `/skill-forge` step 4 now lead with "restate each item in one sentence ('this item asks me to ___')" before any edit, pinning scope before code/docs. SKILLS_TODO Open → empty.
 

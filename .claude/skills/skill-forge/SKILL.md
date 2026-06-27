@@ -46,10 +46,12 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
    quoted. (No tsc — these are docs.) **Reload the VS Code window** note applies for the user to see
    a new skill.
 6. **Close the loop** — the **same close as `/fire`** (see *Done-handling* in SKILLS_README):
-   - **Done store** — move the item's `- [ ]` line to `## Done` in `SKILLS_TODO.md` as
-     `- [x] <date> — …` describing what shipped. This inline `## Done` **is** the skills equivalent
-     of a roadmap item's `features/<area>.md` Fix log (skills have no per-area doc — same model,
-     different home).
+   - **Done store (archive it — don't leave it in the queue)** — **delete** the item's `- [ ]` line
+     from `SKILLS_TODO.md` and append it to the done-store **`context/archive/skills-done.md`**
+     (newest on top) as `- [x] <date> — …` describing what shipped. `SKILLS_TODO.md` stays
+     **OPEN-only**, exactly like `roadmap.md` — **never** grow a `## Done` section in it. That
+     archive file **is** the skills equivalent of a roadmap item's `features/<area>.md` Fix log
+     (skills have no per-area doc — same model, different home).
    - **Shared ledger** — append a `SHIPPED` block to `context/done-log.md` (newest on top) listing
      what closed + the branch, **exactly as `/fire` does**, so the one chronological ledger indexes
      skills-work too (it claims to index *all* of it — `/wtf` reads it).
