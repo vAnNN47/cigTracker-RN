@@ -25,8 +25,8 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 > Format: newest at the top. `ASKED` = an intake batch. `SHIPPED` = completed work.
 
 **SHIPPED — 2026-06-27 — `[styling]` green-fill blocker (community pilot) — branch `nativewindv5_migration_01`**
-- Green-fill blocker root-caused + fixed: Tailwind v4's default `green-50…950` palette made react-native-css treat `green` as a color family, dropping our family-less `bg-green`/`bg-green-bright`. Fix `--color-*: initial` in `global.css` drops the default palette (committed `71bd951`). Proven by compiling `global.css` through `@tailwindcss/postcss` (`.bg-green` → `var(--color-green)`, `green-500` gone).
-- Re-checked the `community.tsx` className conversion against the original `makeUseStyles` block — every value pixel-exact. tsc + lint clean. Device-eyeball left to the user.
+- Green-fill blocker fixed at the real root: tokens used `light-dark()`, but metro runs react-native-css with `inlineVariables:false`, which drops the dark branch of `light-dark()` → ALL themed `bg-*` rendered empty (looked green-only because the dark UI hid the missing card fills; avatars worked as inline style). Proven by compiling the real pipeline: every token's dark hex was ABSENT. Fix: rewrote `global.css` to light palette in `@theme` + dark via `@media (prefers-color-scheme: dark)` var overrides; re-compile shows both branches (`vr color-green = [["#3ba55d",[dark]],["#006d37"]]`). The earlier `--color-*: initial` palette theory (`71bd951`) was a red herring, kept as harmless.
+- Re-checked the `community.tsx` className conversion against the original `makeUseStyles` block — every value pixel-exact. tsc + lint clean. Needs `expo start -c` + reload to land on device; eyeball left to the user.
 
 ---
 

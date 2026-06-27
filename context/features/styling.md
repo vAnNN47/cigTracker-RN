@@ -11,7 +11,7 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 
 - [x] NativeWind v5 / Tailwind v4 setup — deps, metro/postcss, token map, `tw` wrappers, color-scheme bridge — 2026-06-27
 - [x] Pilot screen converted: `community.tsx` (StyleSheet → className), gate green — 2026-06-27
-- [x] Green-fill blocker root-caused + fixed (`--color-*: initial` drops Tailwind's default palette so the `green` family no longer shadows our `bg-green`/`bg-green-bright`) — 2026-06-27
+- [x] Green-fill blocker root-caused + fixed — real cause was `light-dark()` losing its dark branch under metro's `inlineVariables:false`, dropping ALL themed backgrounds; replaced with `@media (prefers-color-scheme: dark)` var overrides — 2026-06-27
 
 ## How it's wired (so the next screens follow the same pattern)
 
@@ -22,8 +22,12 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - **Config:** `metro.config.js` (`withNativewind`, `inlineVariables:false`,
   `globalClassNamePolyfill:false`), `postcss.config.mjs`. No `babel.config.js`, no
   `tailwind.config.js` (Tailwind v4 is CSS-first).
-- **Tokens → CSS:** `src/global.css` `@theme` ports `src/theme` exactly. Both palettes map via
-  `light-dark(<green>, <dark>)` (identical keys). Spacing is *not* redefined — the app scale
+- **Tokens → CSS:** `src/global.css` `@theme` holds the **light** palette; the **dark** palette
+  overrides the same `--color-*` vars in an `@media (prefers-color-scheme: dark)` block. ⚠️ Do
+  **NOT** use `light-dark()` — metro runs react-native-css with `inlineVariables:false`, and in that
+  mode the dark branch of `light-dark()` is dropped, so every themed background renders empty (the
+  original green-fill blocker). The media-query override carries both branches through the var.
+  Spacing is *not* redefined — the app scale
   (4/8/12/16/20/24) equals Tailwind's default `1–6` step (`p-4` == `spacing.lg`). Fonts are
   per-weight families (`font-bold` → `HankenGrotesk_700Bold`) because RN can't synthesize weight.
 - **Color scheme:** the app forces light/dark from the store (`themeMode`), not the OS. NativeWind
@@ -108,16 +112,19 @@ after device-verifying it** in light + dark + RTL against the original.
 ## Known issues / blockers (resolve as part of the loop)
 
 - ✅ **Green fills not painting in the pilot (RESOLVED 2026-06-27).** Share button (`bg-green`) +
-  megaphone circle (`bg-green-bright`) rendered empty. **Root cause:** Tailwind v4's default color
-  palette ships a `green-50…950` family; react-native-css treats `green` as a known color *family*,
-  so `bg-green` / `bg-green-bright` parsed as `family green, shade {none|bright}` → invalid shade →
-  dropped. Tokens whose name isn't a default family (`card-soft`, `text`, …) were unaffected, which
-  is why only the greens failed while text colors resolved. **Fix:** `--color-*: initial` at the top
-  of the `@theme` block in `src/global.css` drops the entire default palette, so `green` is no longer
-  a family and `bg-green`/`bg-green-bright` resolve as plain single-name colors. Proven by compiling
-  `global.css` through `@tailwindcss/postcss`: `.bg-green { background-color: var(--color-green) }`,
-  `.bg-green-bright { background-color: var(--color-green-bright) }`, and `--color-green-500` is gone.
-  Committed in `71bd951`.
+  megaphone circle (`bg-green-bright`) rendered empty on device. **Real root cause** (an earlier
+  `--color-*: initial` palette-collision theory was a red herring — kept since it's harmless, but it
+  was NOT the fix): the tokens used `light-dark(<light>, <dark>)`, and metro runs react-native-css
+  with **`inlineVariables:false`** (set on purpose to keep `var()` PlatformColor-safe). In that mode
+  react-native-css **drops the dark branch of `light-dark()`** — proven by compiling `global.css`
+  through the real pipeline: with `inlineVariables:false`, EVERY token's dark hex (`#3ba55d`,
+  `#2b2d31`, `#1e1f22`, …) was **ABSENT** from the output, not just green. The themed backgrounds
+  resolved to vars with no dark value and didn't paint; avatars (inline `backgroundColor`) were fine
+  because they bypass vars. Why it looked green-specific: it wasn't — all `bg-*` tokens were dead;
+  the dark UI just made the missing card/card-soft fills hard to spot. **Fix:** drop `light-dark()`,
+  put the light palette in `@theme` and override each `--color-*` in an
+  `@media (prefers-color-scheme: dark)` block. Re-compiled the edited file: `vr color-green` now =
+  `[["#3ba55d",[dark]],["#006d37"]]` — both branches survive, dark conditioned.
 
 ## Fix log
 
@@ -128,8 +135,11 @@ after device-verifying it** in light + dark + RTL against the original.
   + `ColorSchemeBridge` (store `themeMode` → RN `Appearance`), imported `global.css` in the root
   layout. Converted the pilot screen `community.tsx` from `StyleSheet` → `className`, pixel-faithful
   (RTL alignment kept inline, icon colors via `useColors`). tsc + lint clean.
-- 2026-06-27 — Green-fill blocker resolved: `--color-*: initial` in `global.css` drops Tailwind's
-  default palette so the `green` family stops shadowing our `bg-green`/`bg-green-bright`. Verified by
-  compiling `global.css` (`.bg-green` → `var(--color-green)`, default `green-500` gone). Re-checked the
-  pilot conversion against the original `makeUseStyles` block — every value pixel-exact (gap-3=12,
-  mt-6=24, py-3=12, mt-px=1, tracking-[1.2px], px-[22px]). tsc + lint clean. Device-eyeball left to user.
+- 2026-06-27 — Green-fill blocker resolved (real fix). The `--color-*: initial` attempt (palette
+  collision) was a red herring; the actual cause was `light-dark()` losing its dark branch under
+  metro's `inlineVariables:false`, which killed ALL themed `bg-*` (only looked green-specific because
+  the dark UI hid the missing card fills). Rewrote `global.css`: light palette in `@theme`, dark
+  palette via `@media (prefers-color-scheme: dark)` var overrides. Proven by compiling the edited file
+  through `@tailwindcss/postcss` → react-native-css with `inlineVariables:false`: every token now
+  carries both light + dark (`vr color-green = [["#3ba55d",[dark]],["#006d37"]]`). tsc + lint clean.
+  Needs a cache-cleared reload (`expo start -c`) to land on device; eyeball left to user.

@@ -4,9 +4,14 @@
 
 /*
  * CigTracker design tokens, ported from src/theme/index.ts.
- * Colors use light-dark(<light `green` palette>, <`dark` palette>) — the two
- * palettes share identical keys, so each token is one variable that flips with
- * the active color scheme (driven from the store, see src/tw/ColorSchemeBridge).
+ * Light values live in @theme; the dark palette overrides the same CSS variables
+ * under @media (prefers-color-scheme: dark). We do NOT use light-dark(): metro
+ * runs react-native-css with inlineVariables:false (to keep the var() indirection
+ * PlatformColor-safe), and in that mode react-native-css drops the dark branch of
+ * light-dark(), so every themed background renders empty. A media-query override
+ * carries both branches through the variable. The active scheme is driven from the
+ * store (not the OS) — see src/tw/ColorSchemeBridge, which pushes themeMode into RN
+ * Appearance, which is what prefers-color-scheme matches against.
  * Spacing is intentionally NOT redefined: the app scale (4/8/12/16/20/24) equals
  * Tailwind's default 1–6 step, so p-4 == spacing.lg, etc.
  */
@@ -36,33 +41,68 @@
      * collision left `bg-green`/`bg-green-bright` unresolved at runtime. */
     --color-*: initial;
 
-    /* Colors — light-dark(green, dark) */
-    --color-bg: light-dark(#f7f9ff, #1e1f22);
-    --color-card: light-dark(#ffffff, #2b2d31);
-    --color-card-soft: light-dark(#e3efff, #313338);
-    --color-border: light-dark(rgba(187, 203, 187, 0.3), rgba(255, 255, 255, 0.07));
+    /* Colors — light palette (dark overrides in the @media block below) */
+    --color-bg: #f7f9ff;
+    --color-card: #ffffff;
+    --color-card-soft: #e3efff;
+    --color-border: rgba(187, 203, 187, 0.3);
 
-    --color-text: light-dark(#091d2e, #f2f3f5);
-    --color-text-secondary: light-dark(#3d4a3e, #b5bac1);
-    --color-text-dim: light-dark(#6c7b6d, #949ba4);
+    --color-text: #091d2e;
+    --color-text-secondary: #3d4a3e;
+    --color-text-dim: #6c7b6d;
 
-    --color-green: light-dark(#006d37, #3ba55d);
-    --color-green-bright: light-dark(#2ecc71, #4fcc7e);
-    --color-green-deep: light-dark(#005027, #0a2e1a);
-    --color-on-green: light-dark(#ffffff, #06231a);
-    --color-dot: light-dark(#4ae183, #4fcc7e);
+    --color-green: #006d37;
+    --color-green-bright: #2ecc71;
+    --color-green-deep: #005027;
+    --color-on-green: #ffffff;
+    --color-dot: #4ae183;
 
-    --color-ring: light-dark(#d1e4fb, #232529);
-    --color-ring-stroke: light-dark(#c9dcf3, #2e4d3a);
+    --color-ring: #d1e4fb;
+    --color-ring-stroke: #c9dcf3;
 
-    --color-error: light-dark(#c0392b, #ed7373);
-    --color-under-bg: light-dark(rgba(46, 204, 113, 0.15), rgba(79, 204, 126, 0.16));
-    --color-under-border: light-dark(rgba(46, 204, 113, 0.4), rgba(79, 204, 126, 0.4));
-    --color-over-bg: light-dark(rgba(192, 57, 43, 0.12), rgba(237, 115, 115, 0.14));
-    --color-over-border: light-dark(rgba(192, 57, 43, 0.35), rgba(237, 115, 115, 0.38));
-    --color-over-text: light-dark(#c0392b, #ed7373);
-    --color-hist-soft: light-dark(rgba(46, 204, 113, 0.3), rgba(79, 204, 126, 0.28));
-    --color-feel-chip-sel: light-dark(rgba(46, 204, 113, 0.15), rgba(79, 204, 126, 0.16));
-    --color-shadow: light-dark(#1b2a4a, #000000);
+    --color-error: #c0392b;
+    --color-under-bg: rgba(46, 204, 113, 0.15);
+    --color-under-border: rgba(46, 204, 113, 0.4);
+    --color-over-bg: rgba(192, 57, 43, 0.12);
+    --color-over-border: rgba(192, 57, 43, 0.35);
+    --color-over-text: #c0392b;
+    --color-hist-soft: rgba(46, 204, 113, 0.3);
+    --color-feel-chip-sel: rgba(46, 204, 113, 0.15);
+    --color-shadow: #1b2a4a;
+  }
+}
+
+/* Dark palette — overrides the same variables; matched against RN Appearance,
+ * which ColorSchemeBridge drives from the store's themeMode. Unlayered so it wins
+ * the cascade over the @theme (layered) light defaults. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1e1f22;
+    --color-card: #2b2d31;
+    --color-card-soft: #313338;
+    --color-border: rgba(255, 255, 255, 0.07);
+
+    --color-text: #f2f3f5;
+    --color-text-secondary: #b5bac1;
+    --color-text-dim: #949ba4;
+
+    --color-green: #3ba55d;
+    --color-green-bright: #4fcc7e;
+    --color-green-deep: #0a2e1a;
+    --color-on-green: #06231a;
+    --color-dot: #4fcc7e;
+
+    --color-ring: #232529;
+    --color-ring-stroke: #2e4d3a;
+
+    --color-error: #ed7373;
+    --color-under-bg: rgba(79, 204, 126, 0.16);
+    --color-under-border: rgba(79, 204, 126, 0.4);
+    --color-over-bg: rgba(237, 115, 115, 0.14);
+    --color-over-border: rgba(237, 115, 115, 0.38);
+    --color-over-text: #ed7373;
+    --color-hist-soft: rgba(79, 204, 126, 0.28);
+    --color-feel-chip-sel: rgba(79, 204, 126, 0.16);
+    --color-shadow: #000000;
   }
 }
