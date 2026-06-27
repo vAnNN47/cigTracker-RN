@@ -203,7 +203,7 @@ export default function TodayScreen() {
         </View>
 
         {/* Recent log */}
-        <View className="bg-card rounded-xl border border-border p-4 mt-4">
+        <View className="bg-card rounded-[12px] border border-border p-4 mt-4">
           <Text className="text-text text-[16px] font-bold mb-2" style={{ textAlign: textStart }}>{s.recentLogTitle}</Text>
           {recent.length === 0 ? (
             <Text className="text-text-dim text-[13px] font-regular py-2" style={{ textAlign: textStart }}>{s.nothingToday}</Text>
@@ -232,7 +232,7 @@ export default function TodayScreen() {
         </View>
 
         {/* Momentum quote */}
-        <View className="flex-row items-center gap-3 bg-card-soft rounded-xl border border-border p-4 mt-4">
+        <View className="flex-row items-center gap-3 bg-card-soft rounded-[12px] border border-border p-4 mt-4">
           <View className="flex-1">
             <Text className="text-text text-[15px] font-bold" style={{ textAlign: textStart }}>{s.gainingMomentum}</Text>
             <Text className="text-text-dim text-[13px] font-regular mt-1" style={{ textAlign: textStart }}>{quote}</Text>

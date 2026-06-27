@@ -26,6 +26,13 @@
     --font-mono-medium: "JetBrainsMono_500Medium";
     --font-mono-semibold: "JetBrainsMono_600SemiBold";
 
+    /* Spacing base. Tailwind's numeric scale (p-4, gap-3, w-8, mt-6, leading-5…)
+     * is calc(var(--spacing) * N). react-native-css defaults rem to 14px, so the
+     * default 0.25rem step would be 3.5px — making every spacing/size/line-height
+     * ~12% too small. Pin it to 4px so the scale matches the app's 4/8/12/16/20/24
+     * tokens exactly (p-4 == spacing.lg == 16, gap-3 == spacing.md == 12, w-8 == 32). */
+    --spacing: 4px;
+
     /* Corner radii (radius tokens) */
     --radius-input: 16px;
     --radius-button: 16px;

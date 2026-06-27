@@ -24,14 +24,22 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - **Config:** `metro.config.js` (`withNativewind`, `inlineVariables:false`,
   `globalClassNamePolyfill:false`), `postcss.config.mjs`. No `babel.config.js`, no
   `tailwind.config.js` (Tailwind v4 is CSS-first).
+- **⚠️ Spacing base pinned to 4px:** Tailwind's numeric scale (`p-4`, `gap-3`, `w-8`, `mt-6`,
+  `leading-5`…) is `calc(var(--spacing) * N)`. react-native-css defaults **rem to 14px**, so the
+  default `0.25rem` step is **3.5px**, not 4 — which silently shrank every spacing/size/line-height
+  ~12% (cramped, visibly broken on dense screens like calendar/Today). `src/global.css` sets
+  `--spacing: 4px` so the scale matches the app's 4/8/12/16/20/24 tokens exactly (`p-4` == `spacing.lg`
+  == 16, `w-8` == 32). Tailwind-default **radii** (`rounded-xl`…) stay rem-based → use our `rounded-card`
+  /`rounded-cell`/… tokens or arbitrary `rounded-[12px]`, never `rounded-xl`.
 - **Tokens → CSS:** `src/global.css` `@theme` holds the **light** palette; the **dark** palette
   overrides the same `--color-*` vars in an `@media (prefers-color-scheme: dark)` block. ⚠️ Do
   **NOT** use `light-dark()` — metro runs react-native-css with `inlineVariables:false`, and in that
   mode the dark branch of `light-dark()` is dropped, so every themed background renders empty (the
   original green-fill blocker). The media-query override carries both branches through the var.
-  Spacing is *not* redefined — the app scale
-  (4/8/12/16/20/24) equals Tailwind's default `1–6` step (`p-4` == `spacing.lg`). Fonts are
-  per-weight families (`font-bold` → `HankenGrotesk_700Bold`) because RN can't synthesize weight.
+  Spacing base `--spacing` is pinned to **4px** (see the ⚠️ note above — react-native-css's rem
+  default of 14px made the scale 3.5px), so the app scale (4/8/12/16/20/24) equals Tailwind's `1–6`
+  step (`p-4` == `spacing.lg` == 16). Fonts are per-weight families (`font-bold` →
+  `HankenGrotesk_700Bold`) because RN can't synthesize weight.
 - **Color scheme:** the app forces light/dark from the store (`themeMode`), not the OS. NativeWind
   keys off RN `Appearance`, so `src/tw/ColorSchemeBridge` pushes `themeMode` →
   `Appearance.setColorScheme('light'|'dark'|'unspecified')`. Rendered once at the app root.
@@ -163,3 +171,11 @@ after device-verifying it** in light + dark + RTL against the original.
   by CSS source order, not className order. Gate: `tsc` + `lint` clean; the 17 new utilities
   (`aspect-square`, `rounded-cell`, `bg-under-bg`/`text-over-text`/… status tokens, `border-[1.5px]`,
   `-bottom-1.5`, `gap-px`) compile-checked through the real pipeline. Device-eyeball pending.
+- 2026-06-27 — **Spacing scale fix (device finding).** First device pass showed dense screens
+  (calendar, Today) cramped/broken while sparse ones (progress) "looked original". Root cause:
+  react-native-css defaults **rem = 14px**, so Tailwind's `0.25rem` spacing step rendered **3.5px**,
+  not 4 — every `p-*`/`m-*`/`gap-*`/`w-*`/`h-*`/`leading-*` (all `calc(var(--spacing)*N)` in TW v4) was
+  ~12% small. Fix: `--spacing: 4px` in `global.css` `@theme` → the whole scale snaps to 4/8/12/16/20/24
+  (verified: `p-4`=16, `w-8`=32, `mt-6`=24, `leading-6`=24). Also swapped the 2 rem-based `rounded-xl`
+  (→ `rounded-[12px]`) in `index`. Corrected the now-false "spacing not redefined" claim in this doc.
+  tsc clean. Needs a fresh device pass.
