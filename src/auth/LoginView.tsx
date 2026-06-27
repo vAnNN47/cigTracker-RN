@@ -15,8 +15,6 @@ import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme"
 
 import { LegalFooter } from "./LegalFooter";
 
-const BAD = "#C0392B";
-
 /** Signed-out screen with native Google sign-in; the root gate re-renders on success. */
 export function LoginView() {
   const s = useStrings();
@@ -99,6 +97,6 @@ const useStyles = makeUseStyles((green) =>
   },
   btnDisabled: { opacity: 0.6 },
   btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-  err: { color: BAD, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
+  err: { color: green.error, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
   }),
 );

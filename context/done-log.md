@@ -26,6 +26,10 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+**SHIPPED — 2026-06-27 — Discord dark redesign + semantic color tokens (branch: `perf-render-audit_theme_01`)**
+- `[theme]` (🧩 Improvements) — Discord-style dark mode: retuned the `dark` palette to neutral-gray surfaces + forest-green accent; flips the whole app through `useColors()`. Light palette untouched. User picked "Discord gray + forest green" from previews.
+- `[theme]` (🧹 Tech debt) — semantic tokens `error` / status (`underBg/underBorder/overBg/overBorder/overText`) / `histSoft` / `feelChipSel` / `shadow` added to both palettes; replaced hardcoded literals across calendar, progress, settings, AddPurchaseSheet, AddSmokeSheet, Login/Welcome, index, Toast. Savings-card `#FFFFFF` + `AVATAR_TINTS` left intentionally (see `features/theme.md` Fix log). tsc + lint clean.
+
 ## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
 User correction (doc-only, skills-system):
 - **[done-store-split]** Made `SKILLS_TODO.md` **open-only like `roadmap.md`** — drained its growing inline `## Done` pile into a new done-store **`context/archive/skills-done.md`** (the skills "Fix log"). Reverses the `[done-handling]` inline-`## Done` decision (user's call). Rewired `/skill-forge` step 6 (archive the line, never keep a `## Done` section), the `SKILLS_README` Done-handling table, the `archive/README.md`, and added a sibling-queue + done-store pointer to `roadmap.md`'s header (it claimed to be "the single open queue" but `SKILLS_TODO` is a second one).

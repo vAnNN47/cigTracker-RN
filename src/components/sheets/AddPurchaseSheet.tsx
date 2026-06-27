@@ -21,8 +21,6 @@ import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme"
 import { KeyboardSheet, KeyboardSheetRef } from "../../../packages/keyboard-sheet";
 import { NumberPad, NumberPadRef } from "../../../packages/number-pad";
 
-const BAD = "#C0392B";
-
 export interface AddPurchaseSheetRef {
   // Pass an existing purchase to edit it; omit to add a new one.
   present: (purchase?: Purchase) => void;
@@ -126,7 +124,7 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
             <Text style={styles.title}>{editing ? s.editPurchase : s.addPurchase}</Text>
             {editing && (
               <Pressable onPress={remove} hitSlop={8} style={styles.deleteBtn}>
-                <MaterialIcons name="delete-outline" size={22} color={BAD} />
+                <MaterialIcons name="delete-outline" size={22} color={green.error} />
               </Pressable>
             )}
           </View>

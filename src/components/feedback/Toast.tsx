@@ -100,7 +100,7 @@ const useStyles = makeUseStyles((green) =>
       paddingVertical: spacing.md,
       paddingLeft: spacing.lg,
       paddingRight: spacing.sm,
-      shadowColor: "#1B2A4A",
+      shadowColor: green.shadow,
       shadowOpacity: 0.18,
       shadowRadius: 14,
       shadowOffset: { width: 0, height: 4 },

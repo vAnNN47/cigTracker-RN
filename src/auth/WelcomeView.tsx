@@ -23,8 +23,6 @@ import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme"
 
 import { LegalFooter } from "./LegalFooter";
 
-const BAD = "#C0392B";
-
 /** First-run chooser: continue with Google (cloud) or without an account (local). */
 export function WelcomeView() {
   const s = useStrings();
@@ -178,6 +176,6 @@ const useStyles = makeUseStyles((green) =>
     line: { flex: 1, height: 1, backgroundColor: green.border },
     or: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
 
-    err: { color: BAD, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
+    err: { color: green.error, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
   }),
 );

@@ -42,13 +42,6 @@ const TAG_ICON: Record<LocationTag, keyof typeof MaterialIcons.glyphMap> = {
   social: "groups",
 };
 
-// Day-cell status tints (light theme).
-const UNDER_BG = "rgba(46,204,113,0.15)";
-const UNDER_BORDER = "rgba(46,204,113,0.4)";
-const OVER_TEXT = "#C0392B";
-const OVER_BG = "rgba(192,57,43,0.12)";
-const OVER_BORDER = "rgba(192,57,43,0.35)";
-
 // Calendar grid for a month, padded to a fixed 6 weeks (42 cells) so every month
 // is the same height — keeps the swipe between months smooth.
 function buildWeeks(monthFirst: Date): (Date | null)[][] {
@@ -105,7 +98,7 @@ export default function HistoryScreen() {
   const limit = limitForDay(limits, selected, settings);
   const within = count <= limit;
   const pct = limit === 0 ? 1 : Math.min(1, count / limit);
-  const ringColor = within ? green.green : OVER_TEXT;
+  const ringColor = within ? green.green : green.overText;
   const spent = spentForDay(purchases, selected, dsh);
   const isToday = isSameDay(selected, today);
 
@@ -360,19 +353,19 @@ const useStyles = makeUseStyles((green) =>
     justifyContent: "center",
     gap: 1,
   },
-  dayUnder: { backgroundColor: UNDER_BG, borderColor: UNDER_BORDER },
-  dayOver: { backgroundColor: OVER_BG, borderColor: OVER_BORDER },
+  dayUnder: { backgroundColor: green.underBg, borderColor: green.underBorder },
+  dayOver: { backgroundColor: green.overBg, borderColor: green.overBorder },
   dayNone: { backgroundColor: green.cardSoft, borderColor: green.border },
   dayToday: { borderColor: green.green, borderWidth: 1.5 },
   // Selected day reads as the active one: bright ring + faint accent wash.
   daySelected: { borderColor: green.greenBright, borderWidth: 2, backgroundColor: green.cardSoft },
   dayNum: { fontSize: 11, fontFamily: fonts.mono, color: green.text },
   dayNumUnder: { color: green.green },
-  dayNumOver: { color: OVER_TEXT },
+  dayNumOver: { color: green.overText },
   dayNumFaint: { color: green.textDim },
   dayCount: { fontSize: 13, fontFamily: fonts.semibold },
   dayCountUnder: { color: green.green },
-  dayCountOver: { color: OVER_TEXT },
+  dayCountOver: { color: green.overText },
 
   summary: {
     flexDirection: "row",
@@ -427,7 +420,7 @@ const useStyles = makeUseStyles((green) =>
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: UNDER_BG,
+    backgroundColor: green.underBg,
     alignItems: "center",
     justifyContent: "center",
   },

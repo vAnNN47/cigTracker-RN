@@ -29,9 +29,6 @@ import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
 import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
 
-const BAD = "#C0392B";
-const HIST_SOFT = "rgba(46,204,113,0.3)";
-
 const RANGES: { key: string; value: number | null }[] = [
   { key: "7d", value: 7 },
   { key: "30d", value: 30 },
@@ -69,7 +66,7 @@ export default function ProgressScreen() {
   // Only compare when the previous week actually had tracked data.
   const showDelta = weekPrev > 0;
   const delta = weekNow - weekPrev;
-  const deltaColor = delta < 0 ? green.green : delta > 0 ? BAD : green.textDim;
+  const deltaColor = delta < 0 ? green.green : delta > 0 ? green.error : green.textDim;
   const deltaText = delta < 0 ? s.fewerThanLast(-delta) : delta > 0 ? s.moreThanLast(delta) : s.sameAsLast;
   const deltaIcon = delta < 0 ? "trending-down" : delta > 0 ? "trending-up" : "trending-flat";
 
@@ -142,7 +139,7 @@ export default function ProgressScreen() {
                 { points: stats.map((st) => st.limit), color: green.textDim, dashed: true },
               ]}
               overMask={stats.map((st) => st.count > st.limit)}
-              overColor={BAD}
+              overColor={green.error}
               xLabels={stats.map((st) => `${st.day.getDate()}/${st.day.getMonth() + 1}`)}
               formatY={(v) => String(Math.round(v))}
               gridColor={green.border}
@@ -152,7 +149,7 @@ export default function ProgressScreen() {
           <View style={styles.legend}>
             <Legend color={green.green} label={s.smoked} />
             <Legend color={green.textDim} label={s.limitLabel} />
-            <Legend color={BAD} label={s.over} />
+            <Legend color={green.error} label={s.over} />
           </View>
         </Section>
 
@@ -170,7 +167,7 @@ export default function ProgressScreen() {
                     marginHorizontal: 1,
                     height: 4 + frac * 48,
                     borderRadius: 3,
-                    backgroundColor: isPeak ? green.green : HIST_SOFT,
+                    backgroundColor: isPeak ? green.green : green.histSoft,
                   }}
                 />
               );

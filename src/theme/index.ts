@@ -85,31 +85,54 @@ export const green = {
 
   ring: "#D1E4FB", // hero circle fill
   ringStroke: "#C9DCF3",
+
+  // Semantic — error + count-status tints + shadow (themed per palette so
+  // screens stop hardcoding hex). Status tints follow each theme's accent.
+  error: "#C0392B", // destructive / over-limit text + icons
+  underBg: "rgba(46,204,113,0.15)", // calendar day under limit — fill
+  underBorder: "rgba(46,204,113,0.4)", // calendar day under limit — border
+  overBg: "rgba(192,57,43,0.12)", // calendar day over limit — fill
+  overBorder: "rgba(192,57,43,0.35)", // calendar day over limit — border
+  overText: "#C0392B", // calendar over-limit number
+  histSoft: "rgba(46,204,113,0.3)", // progress histogram non-peak bar
+  feelChipSel: "rgba(46,204,113,0.15)", // selected feeling chip fill
+  shadow: "#1B2A4A", // elevation shadow color
 } as const;
 
 /**
  * Dark counterpart of the `green` palette — identical keys, so any screen that
- * reads its colors through `useColors()` flips cleanly. Tuned to the same calm
- * mint-green character: vivid accent on deep, faintly-green near-black surfaces.
+ * reads its colors through `useColors()` flips cleanly. Discord-style: neutral
+ * gray surfaces (no green tint) with a forest-green accent for pop.
  */
 export const dark = {
-  bg: "#0E1411", // app surface
-  card: "#161D18", // raised cards
-  cardSoft: "#1C2620", // soft cards (quote, pills, buttons-in-card)
-  border: "rgba(173,200,180,0.16)", // hairline card border
+  bg: "#1E1F22", // app surface — Discord darkest
+  card: "#2B2D31", // raised cards
+  cardSoft: "#313338", // soft cards (quote, pills, buttons-in-card)
+  border: "rgba(255,255,255,0.07)", // hairline card border
 
-  text: "#EAF1EC", // primary
-  textSecondary: "#BCC8BF",
-  textDim: "#7C887F", // muted
+  text: "#F2F3F5", // primary
+  textSecondary: "#B5BAC1",
+  textDim: "#949BA4", // muted
 
-  green: "#46D17F", // accent — titles, numbers, icons, primary button
-  greenBright: "#2ECC71", // bright green — savings card, active tab
-  greenDeep: "#062B1A", // text/icon on bright green
-  onGreen: "#04231A", // text on the (light) accent button
-  dot: "#4AE183", // recent-entry dot
+  green: "#3BA55D", // accent — titles, numbers, icons, primary button
+  greenBright: "#4FCC7E", // bright green — savings card, active tab
+  greenDeep: "#0A2E1A", // text/icon on bright green
+  onGreen: "#FFFFFF", // text on the (forest) accent button
+  dot: "#4FCC7E", // recent-entry dot
 
-  ring: "#15241C", // hero circle fill
-  ringStroke: "#284536",
+  ring: "#232529", // hero circle fill — elevated gray
+  ringStroke: "#2E4D3A",
+
+  // Semantic — themed to the forest-green accent + a softer dark-mode red.
+  error: "#ED7373", // destructive / over-limit text + icons
+  underBg: "rgba(79,204,126,0.16)", // calendar day under limit — fill
+  underBorder: "rgba(79,204,126,0.4)", // calendar day under limit — border
+  overBg: "rgba(237,115,115,0.14)", // calendar day over limit — fill
+  overBorder: "rgba(237,115,115,0.38)", // calendar day over limit — border
+  overText: "#ED7373", // calendar over-limit number
+  histSoft: "rgba(79,204,126,0.28)", // progress histogram non-peak bar
+  feelChipSel: "rgba(79,204,126,0.16)", // selected feeling chip fill
+  shadow: "#000000", // elevation shadow color
 } as const;
 
 /** A theme palette — light (`green`) and `dark` share this shape. */

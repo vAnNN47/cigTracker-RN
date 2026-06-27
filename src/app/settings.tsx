@@ -22,7 +22,6 @@ import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme"
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 const COMMIT_MS = 400;
-const BAD = "#C0392B";
 
 /**
  * Settings body. Rendered both as the /settings route AND as a panel inside the
@@ -298,7 +297,7 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
 
         {dataMode === "supabase" ? (
           <Pressable style={styles.signOut} onPress={confirmSignOut}>
-            <MaterialIcons name="logout" size={18} color={BAD} />
+            <MaterialIcons name="logout" size={18} color={green.error} />
             <Text style={styles.signOutText}>{s.signOut}</Text>
           </Pressable>
         ) : (
@@ -451,7 +450,7 @@ const useStyles = makeUseStyles((green) =>
     borderTopWidth: 1,
     borderTopColor: green.border,
   },
-  signOutText: { color: BAD, fontFamily: fonts.semibold },
+  signOutText: { color: green.error, fontFamily: fonts.semibold },
   localNote: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
   switchBtn: {
     flexDirection: "row",

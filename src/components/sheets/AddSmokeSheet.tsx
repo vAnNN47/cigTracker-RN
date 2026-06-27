@@ -240,7 +240,7 @@ const useStyles = makeUseStyles((green) =>
     paddingVertical: 8,
     paddingHorizontal: 14,
   },
-  feelChipSel: { backgroundColor: "rgba(46,204,113,0.15)", borderColor: green.greenBright },
+  feelChipSel: { backgroundColor: green.feelChipSel, borderColor: green.greenBright },
   feelChipText: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.medium },
   feelChipTextSel: { color: green.green },
 
