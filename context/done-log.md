@@ -21,6 +21,16 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+## 2026-06-27 — SHIPPED (branch: `input-fast-type-fix`)
+Built via `/fire inputs`. Closed:
+- **[inputs]** iOS cursor-jumps-backwards-on-fast-typing bug. Made all four free-text fields
+  (edit-log comment/diary, AddSmokeSheet feeling/notes) **uncontrolled** (`defaultValue` + ref
+  capture) — kills the per-keystroke re-render that fed a stale `value` back and bounced the caret.
+  Audit note: settings price/baseline + add-purchase use NumberPad, not `TextInput`, so the
+  roadmap's mention of them didn't apply. See `context/features/inputs.md`.
+
+---
+
 ## 2026-06-26 — ASKED (batch: "/bobcat or delete done-logs entirely? commit enough?")
 Routed via `/inbox` → **no new item** — folded as pinned decisions into existing SKILLS_TODO `[archive-tracking]`.
 Best-practice answer: keep the ledger (commit = shipped-only, captures no ASKED side), no cloud-push, archive-move not delete; strip trigger = status (open queues self-prune) + size roll (done-log > ~150 lines → `archive/<cat>/<year>/`); maintenance pass not per-session; context-cost ~0 (done-log is on-demand, not auto-loaded).

@@ -12,7 +12,7 @@ import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { formatTime } from "@/i18n/format";
 import { inputAlign, textStart } from "@/i18n/rtl";
@@ -44,8 +44,13 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
     const sheetRef = useRef<KeyboardSheetRef>(null);
 
     const [tag, setTag] = useState<LocationTag>(DEFAULT_TAG);
-    const [comment, setComment] = useState(""); // the feeling value
-    const [diary, setDiary] = useState("");
+    // Uncontrolled: native owns the caret (a controlled value re-set on iOS jumps
+    // it backwards on fast typing). Captured in refs, read only at save; the input
+    // refs let present() clear the fields since the sheet stays mounted across opens.
+    const commentRef = useRef(""); // the feeling value
+    const diaryRef = useRef("");
+    const commentInput = useRef<TextInput>(null);
+    const diaryInput = useRef<TextInput>(null);
     const [smokedAt, setSmokedAt] = useState<Date>(new Date());
     const [expanded, setExpanded] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
@@ -61,8 +66,10 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
     useImperativeHandle(ref, () => ({
       present: () => {
         setTag(DEFAULT_TAG);
-        setComment("");
-        setDiary("");
+        commentRef.current = "";
+        diaryRef.current = "";
+        commentInput.current?.clear();
+        diaryInput.current?.clear();
         setSmokedAt(new Date());
         setExpanded(false);
         setShowPicker(false);
@@ -75,7 +82,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
       setSaving(true);
       try {
         // Any time is allowed, including the future (logging a smoke you're about to have).
-        const log = await addSmoke({ tag, comment: comment.trim(), diary: diary.trim(), smokedAt });
+        const log = await addSmoke({ tag, comment: commentRef.current.trim(), diary: diaryRef.current.trim(), smokedAt });
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         sheetRef.current?.dismiss();
         onLogged(log);
@@ -117,11 +124,12 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
           {/* 2. How did it feel? — free text, the user types it themselves. */}
           <Text style={styles.label}>{s.howDidItFeel}</Text>
           <SheetTextInput
+            ref={commentInput}
             style={[styles.input, inputAlign]}
             placeholder={s.feelingHint}
             placeholderTextColor={green.textDim}
-            value={comment}
-            onChangeText={setComment}
+            defaultValue=""
+            onChangeText={(t) => (commentRef.current = t)}
           />
 
           {/* 3. More details ▾ */}
@@ -170,11 +178,12 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
 
               <Text style={[styles.label, { marginTop: spacing.md }]}>{s.anythingElse}</Text>
               <SheetTextInput
+                ref={diaryInput}
                 style={[styles.input, styles.notes, inputAlign]}
                 placeholder={s.diaryHint}
                 placeholderTextColor={green.textDim}
-                value={diary}
-                onChangeText={setDiary}
+                defaultValue=""
+                onChangeText={(t) => (diaryRef.current = t)}
                 multiline
                 scrollEnabled
               />

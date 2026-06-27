@@ -7,7 +7,7 @@
 import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -35,8 +35,10 @@ export default function EditLogModal() {
   const log = useMemo(() => logs.find((l) => l.id === id) ?? null, [logs, id]);
 
   const [tag, setTag] = useState<LocationTag>(log?.tag ?? "home");
-  const [comment, setComment] = useState(log?.comment ?? "");
-  const [diary, setDiary] = useState(log?.diary ?? "");
+  // Uncontrolled: native owns the caret (controlled value re-set on iOS jumps it
+  // backwards on fast typing). Read at save time only — never displayed elsewhere.
+  const commentRef = useRef(log?.comment ?? "");
+  const diaryRef = useRef(log?.diary ?? "");
   const [smokedAt, setSmokedAt] = useState<Date>(log?.smokedAt ?? new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -54,7 +56,7 @@ export default function EditLogModal() {
     setSaving(true);
     try {
       // Any time is allowed, including the future (logging a smoke you're about to have).
-      await editLog(log.id, { tag, comment: comment.trim(), diary: diary.trim(), smokedAt });
+      await editLog(log.id, { tag, comment: commentRef.current.trim(), diary: diaryRef.current.trim(), smokedAt });
       close();
     } catch (e) {
       Alert.alert(`${s.couldNotSave}: ${e}`);
@@ -144,8 +146,8 @@ export default function EditLogModal() {
             style={[styles.input, inputAlign]}
             placeholder={s.commentHint}
             placeholderTextColor={green.textDim}
-            value={comment}
-            onChangeText={setComment}
+            defaultValue={log?.comment ?? ""}
+            onChangeText={(t) => (commentRef.current = t)}
           />
         </View>
 
@@ -155,8 +157,8 @@ export default function EditLogModal() {
             style={[styles.input, styles.diary, inputAlign]}
             placeholder={s.diaryHint}
             placeholderTextColor={green.textDim}
-            value={diary}
-            onChangeText={setDiary}
+            defaultValue={log?.diary ?? ""}
+            onChangeText={(t) => (diaryRef.current = t)}
             multiline
             textAlignVertical="top"
           />
