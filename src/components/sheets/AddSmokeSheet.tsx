@@ -157,17 +157,18 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
               <View className="flex-row items-center justify-between">
                 <Text className="text-text-secondary text-[13px] font-semibold">{s.whenQ}</Text>
                 {Platform.OS === "ios" ? (
-                  <View className="w-[112px] h-9 overflow-hidden justify-center items-end">
-                    <DateTimePicker
-                      mode="time"
-                      value={smokedAt}
-                      display="compact"
-                      accentColor={green.green}
-                      themeVariant={isDark ? "dark" : "light"}
-                      onValueChange={(_e, d) => setSmokedAt(d)}
-                      style={{ width: 112, height: 36 }}
-                    />
-                  </View>
+                  // Keep the frame snug to the compact picker's content: a wider frame
+                  // leaves trailing dead-space the native control fills with an artifact
+                  // in RTL (the time pill is leading-aligned). 44pt tall = min touch target.
+                  <DateTimePicker
+                    mode="time"
+                    value={smokedAt}
+                    display="compact"
+                    accentColor={green.green}
+                    themeVariant={isDark ? "dark" : "light"}
+                    onValueChange={(_e, d) => setSmokedAt(d)}
+                    style={{ width: 84, height: 44 }}
+                  />
                 ) : (
                   <Pressable className="flex-row items-center gap-1.5 bg-card-soft rounded-chip px-2 py-1" onPress={() => setShowPicker(true)}>
                     <MaterialIcons name="schedule" size={15} color={green.green} />

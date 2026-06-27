@@ -15,7 +15,10 @@
       "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit 2>&1 | Out-String; \"EXIT=$LASTEXITCODE\")",
       "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { npm run lint })",
       "PowerShell(git add .claude/settings.json)",
-      "PowerShell(git commit -m \"chore: prune one-off permission entries, keep durable verify/skill-edit perms\")"
+      "PowerShell(git commit -m \"chore: prune one-off permission entries, keep durable verify/skill-edit perms\")",
+      "PowerShell(git add context/roadmap.md .claude/skills/SKILLS_TODO.md)",
+      "PowerShell(git checkout -b nativewindv5_migration_01_polish_01_sheets_01)",
+      "PowerShell(fnm env --use-on-cd | Out-String | Invoke-Expression; npx tsc --noEmit; if \\($?\\) { Write-Output \"TSC_OK\" })"
     ],
     "deny": [
       "PowerShell(rm *)",

@@ -10,7 +10,6 @@ OPEN queue, not a tombstone wall.
 
 ## 🐞 Bugs
 
-- [ ] **[sheets]** **The time/clock on the "more details" screen when adding a cigarette is pushed too far to the right and looks off.** — Time-picker (שעון) misaligned in the AddSmokeSheet detail view — sits too far right in RTL. Check the row's start/end alignment vs `textStart` and `flex-row` flipping. (שעון בפרטים נוספים — ימינה מדי)
 - [ ] **[edit-log]** **The clock on the edit-cigarette screen is also pushed too far right.** — Same time-picker RTL misalignment as the add-smoke detail, on the edit screen. (שעון במסך עריכה — ימינה מדי)
 - [ ] **[inputs]** **Copying text from the edit screen threw a "can't find native module" error — but works fine in the release build, so watch it.** — Clipboard copy raised a "cannot find native (expo)" exception in dev; verified working in the release build. Keep as a watch item — confirm it stays fixed, then archive. (העתקת טקסט ממסך עריכה — דב-אונלי?)
 - [ ] **[edit-log]** **When a late-logged cigarette has a note, the note text doesn't line up with the time next to it.** — On the edit screen, the comment/note text isn't aligned against the time (`align` off). Check the row alignment for the note-vs-time layout. (הערה לא מיושרת מול השעה)

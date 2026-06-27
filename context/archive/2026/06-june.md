@@ -3,6 +3,7 @@
 <!-- Shipped this month, newest day on top. Format + rules → context/archive/README.md -->
 
 ## 2026-06-27
+- [app][sheets] AddSmokeSheet time picker RTL fix — iOS compact picker frame snugged (112→84px) so the leading-aligned pill no longer leaves trailing dead-space (the red artifact) in RTL; picker bumped to 44pt min touch target.
 - [app][styling] NativeWind v5 / Tailwind v4 migration COMPLETE — all 20 screens `StyleSheet` → `className`, `makeUseStyles` retired, `--spacing` pinned 4px, styling rule flipped to NativeWind in the standards docs.
 - [app][sheets] Log copy → clipboard + toast (was OS share sheet); copies comment + diary only.
 - [app][theme] Discord-style dark redesign + semantic color tokens (error/status/histSoft/feelChip/shadow) across the app.
