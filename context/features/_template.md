@@ -1,16 +1,16 @@
 <!-- Copy this for a new feature/component. File name: context/features/<kebab-name>.md -->
-<!-- Open work does NOT live here — it lives in context/roadmap.md, tagged [this-slug].
-     This doc holds context + history: What/where, what's Done, and a dated Fix log.
-     /fire moves finished roadmap items into the Fix log below. -->
+<!-- Open work does NOT live here — it's in context/roadmap.md, tagged [this-slug].
+     Shipped work goes to the monthly archive (context/archive/YYYY/MM-month.md), NOT here.
+     This doc holds CONTEXT + GOTCHAS only: what it is, how it's wired, lessons worth keeping. -->
 # <Feature / component name>
 
 **What / where:** <one line — what it is + main source files, e.g. `src/app/settings.tsx`>
 
-## Done
+## How it's wired
 
-- [x] <thing that already works> — <YYYY-MM-DD>
+<the durable stuff: architecture, conventions, non-obvious decisions a future reader needs>
 
-## Fix log
+## Gotchas / lessons
 
-<!-- newest at the bottom; one line each: date — what changed -->
-- <YYYY-MM-DD> — <what was fixed / changed>
+<!-- the traps worth remembering — not a done-list, just the landmines -->
+- <e.g. "don't use light-dark() — metro drops the dark branch under inlineVariables:false">

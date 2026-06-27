@@ -60,25 +60,22 @@ remember — they may have changed while you were gone):
 2. `.claude/skills/SKILLS_README.md` — the flow diagram + House rules (the shape of the system).
 3. `context/roadmap.md` — the open queue: every app bug/idea/tech-debt, tagged `[area]`.
 4. `.claude/skills/SKILLS_TODO.md` — the open *skills-system* queue (separate from the app).
-5. `context/done-log.md` — the ledger: what you ASKED for + what SHIPPED (kept by `/inbox`+`/fire`).
-6. `context/archive/done-log-<year>.md` — older ledger batches rolled out of the hot file by
-   `/polish` (only read for `/wtf since <old-date>` + the ⚠️ Unaccounted reconcile, so nothing vanishes).
-7. `context/features/<area>.md` **Fix log** — per-room dated history (only when you scope to an area).
+5. `context/archive/YYYY/MM-month.md` — the **monthly done-store**: what shipped, newest day on top
+   (moved here by `/fire` + `/skill-forge`). Current month = "recently done"; older months for old dates.
+6. `context/features/<area>.md` — per-area **context + gotchas** (only when you scope to an area).
 
 ---
 
 ## 🪜 Steps — what I actually do
 
 ### `/wtf` (no argument) — the full catch-up
-1. **Read** sources 1–5 above (live).
+1. **Read** sources 1–6 above (live).
 2. **Print, in this order, scannable (counts + one line per item):**
    - **🧭 Your flow** — the one-paragraph map: `/inbox` (dump ideas) → `/fire <area>` (build a room)
      → `/polish` (tidy before release). Plus the helpers list. So you remember *how you work*.
-   - **🟢 Shipped recently** — from `done-log.md` SHIPPED blocks, newest first.
+   - **🟢 Done recently** — from the newest `context/archive/YYYY/MM-month.md`, newest day first.
    - **🟡 Open — app** — unchecked `- [ ]` lines in `roadmap.md`, grouped by `[area]`.
    - **🔵 Open — skills/workflow** — unchecked lines in `SKILLS_TODO.md`.
-   - **⚠️ Unaccounted** — anything ASKED in the ledger that's neither open nor shipped (so nothing
-     silently vanishes).
 3. **End with one nudge:** "Pick a room → `/fire <area>`. Forgot a command → `/wtf <command>`."
 
 ### `/wtf <skill>` — explain one command
@@ -89,8 +86,8 @@ every command form with a real example. No folder matches that word? Say so, lis
 Filter the open work + the Fix log to that one `[area]` slug. Show its open items + its recent fixes.
 
 ### `/wtf since <date>` — recent only
-Same as the full catch-up, but only ledger activity on/after `YYYY-MM-DD`. For an old date, also
-read `context/archive/done-log-<year>.md` so rolled-out batches still show.
+Same as the full catch-up, but only archive entries on/after `YYYY-MM-DD` — read the relevant
+`context/archive/YYYY/MM-month.md` month file(s).
 
 ---
 

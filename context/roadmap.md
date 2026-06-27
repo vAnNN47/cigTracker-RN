@@ -1,20 +1,11 @@
-# Roadmap — all open bugs & problems
+# Roadmap — app open queue
 
-Global list of everything open across the app. Each item is tagged by feature and,
-where one exists, links to its doc in [features/](features/). When something is
-fixed it moves to that feature's **Fix log** (with a date) and leaves this list.
+Open app bugs / improvements / tech-debt, tagged `[area]`. Shipped items **leave** for the monthly
+archive (`context/archive/YYYY/MM-month.md`); a drained section reads exactly `_(none open)_` — this is the
+OPEN queue, not a tombstone wall.
 
-> **Every item leads with a plain one-liner** — a **bold, jargon-free sentence a non-technical
-> person understands** ("what is this, in human words?"), then an em-dash, then the technical
-> detail. No item is just a wall of code-speak.
-
-> This is the open queue for **app** work. (Skills/workflow-system tweaks have their own queue —
-> `.claude/skills/SKILLS_TODO.md`, drained by `/skill-forge`; `/inbox` routes each item to the
-> right one.) Add items by sorting a brain-dump with `/inbox`; build + clear an area's items with
-> `/fire <area>` (it moves each done item to that area's Fix log + the `done-log.md` ledger, and the
-> item leaves this list). Drain the **🧹 Tech debt** section with `/polish`. **🔍 Audits** =
-> skill-driven sweeps (render-perf, ui-design, rtl/a11y) that surface findings — run the named
-> skill, then file the fixes it finds.
+> **Item format:** a **plain one-liner** anyone gets, then `—`, then the technical detail.
+> How the flow works (`/inbox` → `/fire` → `/polish`) → `.claude/skills/SKILLS_README.md`.
 
 
 ## 🐞 Bugs
@@ -27,8 +18,8 @@ _(none open)_
 
 ## 🔍 Audits
 
-_(none open — render audit drained; `app-ui-design` findings live as `[a11y]`; the `[theme]` redesign + token items shipped 2026-06-27)_
+_(none open)_
 
 ## 🧹 Tech debt
 
-_(none open — the **[styling]** NativeWind v5 / Tailwind v4 migration shipped 2026-06-27: all 20 screens converted `StyleSheet` → `className`, `makeUseStyles` retired, the styling rule flipped to NativeWind in the standards docs. Full record + cheatsheet in [features/styling.md](features/styling.md).)
+_(none open)_

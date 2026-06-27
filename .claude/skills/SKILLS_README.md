@@ -36,6 +36,7 @@ The whole loop is three skills, one verb each:
 
 Plus helpers: **`/wtf`** (the one "catch me up" button — open-vs-shipped work **+** how your
 commands work, read live; the only refresher you need to remember),
+**`/advisor <area>`** (counsel on one area — drift-check with a built-in קונטרה / devil's-advocate, read-only),
 **`/package`** (reuse-first widgets),
 **`/skill-doctor`** (audits + scores the skill set itself), and
 **`/skill-forge`** (the `/fire`-for-skills drainer — builds one `SKILLS_TODO` item to Done).
@@ -86,6 +87,7 @@ this table is just arg shapes, not a second copy of the prose.
 | `/fire` | `<area> <branch>` · `<area> merge` | Branch → build all open `[area]` items → verify once (`tsc`+lint) → move to Fix log. |
 | `/polish` | `check [file]` \| `run` | Pre-release: Phase 1 small mess + Phase 2 drain 🧹 tech-debt. `check`=report **+ queue** (doc-only commit); `check <file>` scopes the scan; skills-system findings route to `SKILLS_TODO.md`, app findings to `roadmap.md`. |
 | `/wtf` | `[skill` \| `area` \| `since <date>]` | The "catch me up" button: open-vs-shipped work **+** how a command/area works. Read-only. No arg = full refresh. |
+| `/advisor` | `<area> [what to weigh]` | Counsel on one area: scan docs vs reality, **Advisor + קונטרה** counter-voice, verdict per finding (✅ real / ❌ false alarm / ⚠️ call). Read-only — advises, doesn't fix. |
 | `/package` | `list` \| `check <need>` \| `new <name>` | Reuse-first workflow for `packages/` (app-agnostic widgets). |
 | `/skill-doctor` | `audit` \| `fix` | Audit/score (/10) the skill set itself. `audit`=read-only. |
 | `/skill-forge` | `<todo-item>` | Drain one `SKILLS_TODO` item → build → load-check → move to Done. The `/fire` twin. |
@@ -116,39 +118,36 @@ this table is just arg shapes, not a second copy of the prose.
 
 | File | Purpose |
 |------|---------|
-| `context/roadmap.md` | **The single open queue** — ALL open bugs/improvements/tech-debt, tagged `[area]` |
-| `context/features/<area>.md` | Per-area **context + dated Fix log** — *not* open items (those live in the roadmap) |
+| `context/roadmap.md` | **App open queue** — open bugs/improvements/tech-debt, tagged `[area]` (repeat) |
+| `.claude/skills/SKILLS_TODO.md` | **Skills open queue** — open skills/workflow items, unique `[slug]` |
+| `context/archive/YYYY/MM-month.md` | **The one done-store** — shipped items, one file per month, newest day on top |
+| `context/features/<area>.md` | Per-area **context + gotchas** (how it's wired, lessons) — not open items, not a done-list |
 | `context/features/_template.md` | Copy this to start a new feature doc |
 | `context/current-feature.md` | Optional "working on this right now" pointer |
 
-**One source of truth:** an item is **open in the roadmap**, then `/fire` **moves it to the
-area doc's Fix log** when done. It is never in two places at once.
+**One source of truth:** an item is **open in its queue** (`roadmap.md` app / `SKILLS_TODO.md`
+skills), then its drainer **moves it to the monthly archive** when done. Never in two places at once.
 
 **Typical flow:** `/inbox` your notes → scan `roadmap.md` → `/fire <area>` to build + close its
 items → `/polish` before you device-test or release.
 
-### Done-handling (roadmap & SKILLS_TODO close the same way)
+### Done-handling (one flow, both scopes)
 
-Both queues use **one model**: each has an *open store* (kept **open-only**) and a separate *done
-store*, and **both drainers also write the one shared chronological ledger** (`context/done-log.md`).
-Neither open queue ever grows a `## Done` section — finished items **leave** for the done store:
+Dead simple. Two open queues, **one done-store**. A finished item **moves** from its queue to the
+monthly archive and is **removed** from the queue — never in two places, never a `## Done` pile.
 
 | | App work | Skills/workflow work |
 |---|---|---|
 | **Drainer** | `/fire <area>` | `/skill-forge <item>` |
-| **Open store** (open-only) | `context/roadmap.md` (`[area]` tags repeat) | `SKILLS_TODO.md` **Open** (slugs unique) |
-| **Done store** | `context/features/<area>.md` **Fix log** (per-area) | `context/archive/skills-done.md` (one shared skills "Fix log") |
-| **Shared ledger** | `context/done-log.md` `SHIPPED` block | `context/done-log.md` `SHIPPED` block |
+| **Open queue** (open-only) | `context/roadmap.md` (`[area]` tags repeat) | `SKILLS_TODO.md` (slugs unique) |
+| **Done-store** | `context/archive/YYYY/MM-month.md` → `- [app][area] …` | `context/archive/YYYY/MM-month.md` → `- [skills][slug] …` |
 
-- **Where does a done roadmap item go?** Out of `roadmap.md` → into its `features/<area>.md` **Fix
-  log** (dated), **plus** a `SHIPPED` block in `done-log.md`. It leaves the open queue entirely.
-- **Where does a done skills item go?** Out of `SKILLS_TODO.md` → into `context/archive/skills-done.md`
-  (dated), **plus** a `SHIPPED` block in `done-log.md`. Same shape as roadmap.
-- **`done-log.md` is the single chronological index over *both* queues** — that's why `/skill-forge`
-  appends a `SHIPPED` block just like `/fire`, so skills-completions aren't missing from `/wtf`.
-- The only asymmetry left (roadmap done → **per-area** file; skills done → **one shared**
-  `skills-done.md`) is **by design**: roadmap items map to areas that own a doc; skills items are
-  one-off with nowhere to scatter to, so they share one Fix log. Same model, different home.
+- **Where does a done item go?** Out of its queue → one line in `context/archive/<this-month>.md`
+  under today's `## YYYY-MM-DD` header, tagged `[app]` or `[skills]`. That's the whole record.
+- **No `done-log.md`, no per-area Fix log, no `SHIPPED`/`ASKED` blocks.** `git log` stays code-only
+  (heavy branch-cutting makes it a poor tracker), so the archive is the human "what did I do" log.
+- **`/wtf` reads the current month** for "recently done"; `context/features/<area>.md` keeps only
+  **context + gotchas** (wiring notes, lessons), never a done-list.
 
 ### Naming convention (kebab area-tags)
 
@@ -157,7 +156,7 @@ Neither open queue ever grows a `## Done` section — finished items **leave** f
 - **The tag is a kebab-case slug** you type (`today`, `settings`, `sheets`, `slide-drawer`). It's
   a handle, not a filename — the `# H1` inside the doc is the pretty label (`today.md` → `# Today tab`).
 - **The roadmap `[tag]` equals the doc slug.** `[sheets]` ↔ `sheets.md`. That one-word match is
-  the glue: `/fire <slug>` reads the `[slug]` roadmap lines and writes the `<slug>.md` Fix log.
+  the glue: `/fire <slug>` reads the `[slug]` roadmap lines (and, if a gotcha's worth keeping, updates `<slug>.md`).
 - **Add the *kind* to the slug only when it disambiguates** (`edit-log-sheet`, `slide-drawer`).
 - Granularity test: *"Would I open a branch for this thing?"* Yes → its own slug/doc. No → a
   roadmap line under the bigger thing's tag.

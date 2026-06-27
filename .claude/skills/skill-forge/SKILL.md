@@ -45,18 +45,12 @@ real**, load-checks it, and **moves the line to Done with a date**. No "shall I 
    — `name` equals its folder, `description`/`argument-hint` are strings, bracketed `argument-hint`
    quoted. (No tsc — these are docs.) **Reload the VS Code window** note applies for the user to see
    a new skill.
-6. **Close the loop** — the **same close as `/fire`** (see *Done-handling* in SKILLS_README):
-   - **Done store (archive it — don't leave it in the queue)** — **delete** the item's `- [ ]` line
-     from `SKILLS_TODO.md` and append it to the done-store **`context/archive/skills-done.md`**
-     (newest on top) as `- [x] <date> — …` describing what shipped. `SKILLS_TODO.md` stays
-     **OPEN-only**, exactly like `roadmap.md` — **never** grow a `## Done` section in it. That
-     archive file **is** the skills equivalent of a roadmap item's `features/<area>.md` Fix log
-     (skills have no per-area doc — same model, different home).
-   - **Shared ledger** — append a `SHIPPED` block to `context/done-log.md` (newest on top) listing
-     what closed + the branch, **exactly as `/fire` does**, so the one chronological ledger indexes
-     skills-work too (it claims to index *all* of it — `/wtf` reads it).
-   - If a new skill landed, also add its row to the **Skill signatures** table in `SKILLS_README.md`.
-   - An item lives in exactly one place — open, then Done.
+6. **Close the loop** — the **same close as `/fire`**: **move the item's `- [ ]` line out of
+   `SKILLS_TODO.md` into the monthly archive** `context/archive/YYYY/MM-month.md` (create the month file if
+   missing) under today's `## YYYY-MM-DD` header, as `- [skills][<slug>] what shipped` (newest day on
+   top). `SKILLS_TODO.md` stays **OPEN-only** — never grow a `## Done` section. That archive line is
+   the whole record (no `done-log.md`, no Fix log). If a new skill landed, also add its row to the
+   **Skill signatures** table in `SKILLS_README.md`. An item lives in exactly one place — open, then archived.
 7. **Report + commit** — what you built, the load-check result, anything left open; auto-commit on
    the working branch (local only, never push/main).
 

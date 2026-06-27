@@ -36,11 +36,12 @@ what `/inbox` writes. `<branch>` is the new working branch's name.
    per-file.
 4. **Verify once, at the end** — `tsc --noEmit` then lint (PowerShell + fnm, see CLAUDE.md). Fix
    and re-run. That's the whole gate.
-5. **Close the loop.** For each finished item: remove it from `roadmap.md`, add a dated line to
-   the area doc's **Fix log** (+ a `- [x]` under **Done** if it's a lasting capability), then
-   append a `SHIPPED` block to `context/done-log.md` (newest on top) listing the closed items +
-   branch — that ledger is what `/wtf` reads. Unfinished items **stay** open; never tick what
-   you didn't do.
+5. **Close the loop.** For each finished item: **move its line out of `roadmap.md` into the monthly
+   archive** `context/archive/YYYY/MM-month.md` (create the month file if missing) under today's
+   `## YYYY-MM-DD` header, as `- [app][<area>] what shipped` (newest day on top). That's the whole
+   record — no Fix log, no ledger. If the work left a durable gotcha/wiring note worth keeping, add it
+   to `context/features/<area>.md` (context + gotchas only, not a done-list). Unfinished items
+   **stay** open; never move what you didn't finish.
 6. **Report** what was built, the verify result, and anything left open. Don't auto-run `/polish`.
 7. **Commit** automatically on the working branch.
 

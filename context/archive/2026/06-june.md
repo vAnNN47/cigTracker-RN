@@ -1,0 +1,32 @@
+# Archive — June 2026
+
+<!-- Shipped this month, newest day on top. Format + rules → context/archive/README.md -->
+
+## 2026-06-27
+- [app][styling] NativeWind v5 / Tailwind v4 migration COMPLETE — all 20 screens `StyleSheet` → `className`, `makeUseStyles` retired, `--spacing` pinned 4px, styling rule flipped to NativeWind in the standards docs.
+- [app][sheets] Log copy → clipboard + toast (was OS share sheet); copies comment + diary only.
+- [app][theme] Discord-style dark redesign + semantic color tokens (error/status/histSoft/feelChip/shadow) across the app.
+- [app][perf] Render-storm killed (screens subscribe via `useShallow` selectors); Stats series memoized; `purchases` SectionList-virtualized; `calendar` O(1) day-count map.
+- [app][inputs] iOS caret-jump fixed — free-text fields made uncontrolled (`defaultValue` + ref).
+- [skills][advisor] Authored `/advisor` — area counselor with a two-voice (Advisor + קונטרה) drift check; registered in SKILLS_README.
+- [skills][done-store-split] Made `SKILLS_TODO.md` open-only; drained its inline `## Done` to a separate done-store.
+- [skills][one-line-restate] Baked restate-before-build into `/fire` + `/skill-forge`.
+- [skills][done-handling] Unified done-item handling into one documented model.
+
+## 2026-06-26
+- [skills][archive-tracking] Built the ledger-archive mechanism (move-never-delete; size-gated roll).
+- [skills][render-audit][app-ui-design] Adopted marketplace `expo-react-native-performance` + `app-ui-design`; layered under the flow.
+- [skills][caveman] Adopted marketplace `caveman` output-prose compressor.
+- [skills][wtf] Authored `/wtf` catch-up button; folded in `/recall` + `/skills-help`.
+- [skills][skill-forge] Authored `/skill-forge` — the SKILLS_TODO drainer (the `/fire` twin).
+- [skills][skill-creator] Adopted marketplace `skill-creator`; added a /10 score to `/skill-doctor`; ditched `/list-components`.
+- [skills][unique-slugs] Made every open SKILLS_TODO item carry a unique `[slug]`.
+- [skills][polish-check] `/polish check` forced to LSP-for-symbols + documented `check [file]` scope + queue routing.
+
+## 2026-06-25
+- [skills][tracking] Task-tracking loop v1 (ledger + digest skill).
+- [skills][refactor] Slimmed the SKILL.md files — house-rules collapsed into one SKILLS_README section.
+- [skills][lsp] Code-touching skills prefer the LSP tool; STOP (no grep fallback) if LSP is down.
+- [skills][no-any] "Never `any`" baked into the skills + coding-standards.
+- [skills][autocommit] Every skill auto-commits on its own fresh branch (no push/main); report-only runs don't.
+- [skills][inbox-ask] `/inbox` must ask before mapping ambiguous items.

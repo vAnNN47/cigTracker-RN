@@ -28,8 +28,9 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
 - **App** bugs/features/refactors → `context/roadmap.md` (the single app queue), tagged `[area]`.
 - **Skills / workflow** tweaks (the `.claude/skills/*` system, the `context/` flow) →
   `.claude/skills/SKILLS_TODO.md` — kept separate so process notes don't pollute the app roadmap.
-- `context/features/<area>.md` holds **context + Fix log only**, never open items — `/fire` moves a
-  done item there. An item is open in exactly **one** queue, then moves to a Fix log when shipped.
+- `context/features/<area>.md` holds **context + gotchas only** (how an area is wired, lessons
+  learned) — never open items, never a done-list. An item is open in exactly **one** queue, then
+  **moves to the monthly archive** (`context/archive/YYYY/MM-month.md`) when it ships.
 
 ## Steps
 1. **Split** the batch (by number/newline). Keep original wording; add a short English gloss in `()`.
@@ -67,11 +68,9 @@ Text in `$ARGUMENTS` **is** the batch (any language, numbered or not). Empty →
 7. **On confirm** (`all` / `1,3` / edits like `2→sheets`):
    - add each item as a `- [ ]` line under its section, tagged `**[area]**`, **leading with a plain
      one-liner** — see the rule below — then the technical detail;
-   - package candidates → note "run `/package new <name>`";
-   - **append an `ASKED` block to `context/done-log.md`** (newest on top): the batch's one-line
-     title + where each item routed — that ledger is what `/wtf` reads, so a batch is never lost.
+   - package candidates → note "run `/package new <name>`".
 8. If the batch came from `context/inbox.md`, **remove the triaged lines** from it.
-9. **Commit** the roadmap / `SKILLS_TODO` / `done-log` (+ `inbox.md`) edit on the current branch with
+9. **Commit** the roadmap / `SKILLS_TODO` (+ `inbox.md`) edit on the current branch with
    a `docs:` message — never ask, just do it. Local only: never push, never `main`.
 
 ## Rules
