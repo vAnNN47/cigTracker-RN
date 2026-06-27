@@ -30,3 +30,11 @@ periwinkle) survives only for the two SVG charts' neutral track/grid defaults
   bright-green in both themes; documented inline) and `community` `AVATAR_TINTS` (a decorative
   per-author color *array* — can't be a single-string palette token). Charts' legacy `colors`
   track/grid defaults untouched (theme-agnostic; out of the two items' scope).
+- 2026-06-27 — **`/app-ui-design` audit of the new dark palette** (WCAG 2.2 AA contrast).
+  One critical fix: dark `onGreen` was white on the `#3BA55D` accent = **3.1:1** (fails AA for
+  button text). Flipped to dark `#06231A` = **5.3:1** ✅ (accent stays forest for icons/numbers).
+  Known marginals left for the `[a11y]` pass: small *colored* text on cards (`green` on `card` ≈
+  4.4:1, `streakText`/`recentNote`) is just under 4.5 for ≤13pt regular — fixing means either
+  brightening the accent (changes the chosen forest look) or darkening cards, a design call the
+  `[a11y]` item owns. Everything else (primary text 14.8:1, `textDim` 4.5–5.9:1, `error` 5.7:1,
+  savings-card text 7.2:1) passes AA.

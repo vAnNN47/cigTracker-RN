@@ -117,7 +117,7 @@ export const dark = {
   green: "#3BA55D", // accent — titles, numbers, icons, primary button
   greenBright: "#4FCC7E", // bright green — savings card, active tab
   greenDeep: "#0A2E1A", // text/icon on bright green
-  onGreen: "#FFFFFF", // text on the (forest) accent button
+  onGreen: "#06231A", // dark text on the (light forest) accent button — white on #3BA55D is only 3.1:1
   dot: "#4FCC7E", // recent-entry dot
 
   ring: "#232529", // hero circle fill — elevated gray
