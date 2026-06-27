@@ -12,6 +12,11 @@ Open work still lives in `context/roadmap.md` + `.claude/skills/SKILLS_TODO.md`;
 stays in each `context/features/<area>.md` **Fix log**. This ledger is the chronological index
 over all of it — never delete entries, only add.
 
+**ASKED — 2026-06-27 — done-handling + one-line-restate + log-copy-to-clipboard**
+- Item 1+2 (where does a done roadmap item go; SKILLS_TODO done-items should behave like the roadmap) → `SKILLS_TODO.md` Open · `[done-handling]`.
+- Item 4 (before building any roadmap/SKILLS_TODO item, restate in one sentence what it requires) → `SKILLS_TODO.md` Open · `[one-line-restate]`.
+- Item 3 (log copy: replace OS share with clipboard + native snackbar; copy comment + diary only) → `roadmap.md` 🧩 Improvements · `[sheets]`.
+
 **Archiving (keeps this file scannable):** when this file passes **~150 lines**, `/polish run`
 offers to **move** (never delete) the oldest batches into `context/archive/done-log-<year>.md`,
 leaving the newest ~15 batches here plus a pointer. `/wtf since <old-date>` reads the archive too,

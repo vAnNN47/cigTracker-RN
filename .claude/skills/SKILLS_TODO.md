@@ -16,7 +16,8 @@ this file is the separate queue so process-tweaks don't get mis-routed by
 
 ## Open
 
-_(empty)_
+- [ ] **[done-handling]** Make SKILLS_TODO finished-item handling **consistent with the roadmap's**. The roadmap moves a shipped `[area]` item out to its `context/features/<area>.md` **Fix log** (with a date); SKILLS_TODO instead keeps finished items inline in its own **Done** section. Decide the one model and apply it both ways — incl. answering item-1's question: *where does a done roadmap item actually land* (Fix log + the `done-log.md` SHIPPED ledger). Document the chosen flow in `SKILLS_README` so `/skill-forge` + `/fire` close items the same way.
+- [ ] **[one-line-restate]** Before building **any** roadmap or SKILLS_TODO item, the drainer must **restate in one sentence what the item requires** before writing code/docs. Bake into `/fire` (roadmap items) + `/skill-forge` (SKILLS_TODO items): first action of a build = a one-line "this item asks me to ___" so scope is pinned before work starts.
 
 ## Done
 
