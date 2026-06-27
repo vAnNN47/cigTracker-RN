@@ -4,6 +4,10 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 # npx expo start --dev-client
 
+push to testflight
+## eas build --profile production --platform ios
+## eas submit --profile production --platform ios --latest
+
 ## Get started
 
 1. Install dependencies
