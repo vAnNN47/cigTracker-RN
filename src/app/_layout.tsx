@@ -18,6 +18,8 @@ import {
   JetBrainsMono_500Medium,
   JetBrainsMono_600SemiBold,
 } from "@expo-google-fonts/jetbrains-mono";
+import "@/global.css";
+
 import { Session } from "@supabase/supabase-js";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -40,6 +42,7 @@ import { USE_SUPABASE } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/useAppStore";
 import { useColors } from "@/theme";
+import { ColorSchemeBridge } from "@/tw";
 import { PortalHost } from "../../packages/keyboard-sheet";
 
 SplashScreen.preventAutoHideAsync();
@@ -159,6 +162,7 @@ export default function RootLayout() {
       <KeyboardProvider>
         <SafeAreaProvider>
           <ToastProvider>
+            <ColorSchemeBridge />
             <ThemedStatusBar />
             <Gate />
             <PortalHost />

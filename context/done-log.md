@@ -26,6 +26,18 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+**SHIPPED (partial) — 2026-06-27 — NativeWind v5 setup + 1 pilot screen (branch: `nativewindv5_migration_01`)**
+- `[styling]` (🧹 Tech debt) — **stays open.** Stood up NativeWind v5 / Tailwind v4 (SDK-56-correct
+  versions — the setup skill's nightly pins peer on Expo 54): deps + `metro.config.js`/`postcss.config.mjs`,
+  ported all `src/theme` tokens to `src/global.css` `@theme` (both palettes via `light-dark()`, spacing
+  rides Tailwind's default scale, per-weight fonts), `src/tw/` CSS wrappers + `ColorSchemeBridge`
+  (store `themeMode` → RN `Appearance`, so forced light/dark still works). Converted the **pilot**
+  screen `community.tsx` StyleSheet → className, pixel-faithful (RTL alignment inline, icon colors via
+  `useColors`). Remaining: the other 20 styled files + the 3-doc rule-flip. tsc + lint clean.
+  See [features/styling.md](../context/features/styling.md).
+
+---
+
 **SHIPPED — 2026-06-27 — log copy → clipboard + toast (branch: `perf-render-audit_theme_01_sheets_01`)**
 - `[sheets]` (🧩 Improvements) — `LogDetailSheet` **Copy text** now copies straight to the clipboard with a "Copied to clipboard" toast instead of opening the OS share sheet. `copyAll`: `Share.share` → `expo-clipboard` `setStringAsync` + `useToast()`; copied text = **comment + diary only** (dropped the `cigNumber · time` header). New `copiedToast` string (he/en); added `expo-clipboard ~56.0.4`. Side-fix: restored `eslint`/`eslint-config-expo` as devDeps (extraneous → pruned by the install; lint gate needs them). tsc + lint clean.
 
