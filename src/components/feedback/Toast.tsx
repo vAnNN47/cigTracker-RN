@@ -3,11 +3,12 @@
  * screen can call useToast().show({ message, actionLabel, onAction }).
  */
 import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
-import { fonts, makeUseStyles, radius, spacing } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, Text, View } from "@/tw";
 
 interface ToastOptions {
   message: string;
@@ -31,7 +32,7 @@ export function useToast(): ToastContextValue {
 
 /** Provides the toast context and renders the self-dismissing toast overlay. */
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const styles = useStyles();
+  const green = useColors();
   const [toast, setToast] = useState<ToastOptions | null>(null);
   const [opacity] = useState(() => new Animated.Value(0));
   const [translateY] = useState(() => new Animated.Value(12));
@@ -66,10 +67,28 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toast && (
         <Animated.View
           pointerEvents="box-none"
-          style={[styles.wrap, { bottom: insets.bottom + 92, opacity, transform: [{ translateY }] }]}
+          style={{
+            position: "absolute",
+            left: 16,
+            right: 16,
+            bottom: insets.bottom + 92,
+            opacity,
+            transform: [{ translateY }],
+          }}
         >
-          <View style={styles.toast}>
-            <Text style={styles.message}>{toast.message}</Text>
+          <View
+            className="flex-row items-center bg-card border border-border rounded-input py-3 pl-4 pr-2"
+            style={{
+              shadowColor: green.shadow,
+              shadowOpacity: 0.18,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 8,
+            }}
+          >
+            <Text className="flex-1 text-text text-[15px] font-regular" style={{ textAlign: textStart }}>
+              {toast.message}
+            </Text>
             {toast.actionLabel && (
               <Pressable
                 onPress={() => {
@@ -77,7 +96,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   toast.onAction?.();
                 }}
               >
-                <Text style={styles.action}>{toast.actionLabel}</Text>
+                <Text className="text-green font-bold p-2">{toast.actionLabel}</Text>
               </Pressable>
             )}
           </View>
@@ -86,27 +105,3 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     </ToastContext.Provider>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    wrap: { position: "absolute", left: spacing.lg, right: spacing.lg },
-    toast: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: green.card,
-      borderWidth: 1,
-      borderColor: green.border,
-      borderRadius: radius.input,
-      paddingVertical: spacing.md,
-      paddingLeft: spacing.lg,
-      paddingRight: spacing.sm,
-      shadowColor: green.shadow,
-      shadowOpacity: 0.18,
-      shadowRadius: 14,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 8,
-    },
-    message: { flex: 1, color: green.text, fontSize: 15, fontFamily: fonts.regular, textAlign: textStart },
-    action: { color: green.green, fontFamily: fonts.bold, padding: spacing.sm },
-  }),
-);

@@ -6,12 +6,13 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
-import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 // Placeholder policy copy until the real documents are wired in.
 const DOC =
@@ -21,66 +22,41 @@ const DOC =
 export function LegalFooter() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const [doc, setDoc] = useState<"privacy" | "terms" | null>(null);
 
   return (
     <>
-      <Text style={styles.footer}>
+      <Text
+        className="text-text-dim text-[12px] font-regular text-center leading-[18px] mt-4 px-2"
+      >
         {s.agreePrefix}{" "}
-        <Text style={styles.link} onPress={() => setDoc("privacy")}>
+        <Text className="text-green font-semibold" onPress={() => setDoc("privacy")}>
           {s.privacyPolicy}
         </Text>{" "}
         {s.agreeAnd}
-        <Text style={styles.link} onPress={() => setDoc("terms")}>
+        <Text className="text-green font-semibold" onPress={() => setDoc("terms")}>
           {s.termsOfService}
         </Text>
         .
       </Text>
 
       <Modal visible={doc !== null} animationType="slide" onRequestClose={() => setDoc(null)} transparent={false}>
-        <SafeAreaView style={styles.docSafe} edges={["top", "bottom"]}>
-          <View style={styles.docHeader}>
-            <Text style={styles.docTitle}>{doc === "privacy" ? s.privacyPolicy : s.termsOfService}</Text>
-            <Pressable onPress={() => setDoc(null)} hitSlop={10} style={styles.closeBtn}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: green.bg }} edges={["top", "bottom"]}>
+          <View className="flex-row items-center justify-between px-5 py-3 border-b border-border">
+            <Text className="text-text text-[18px] font-bold flex-1" style={{ textAlign: textStart }}>
+              {doc === "privacy" ? s.privacyPolicy : s.termsOfService}
+            </Text>
+            <Pressable onPress={() => setDoc(null)} hitSlop={10} className="w-9 h-9 items-center justify-center rounded-[18px] bg-card-soft">
               <MaterialIcons name="close" size={24} color={green.text} />
             </Pressable>
           </View>
-          <ScrollView contentContainerStyle={styles.docBody}>
-            <Text style={styles.docText}>{DOC}</Text>
+          <ScrollView contentContainerClassName="px-5 py-4 pb-6">
+            <Text className="text-text-secondary text-[15px] font-regular leading-6" style={{ textAlign: textStart }}>
+              {DOC}
+            </Text>
           </ScrollView>
         </SafeAreaView>
       </Modal>
     </>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    footer: {
-      color: green.textDim,
-      fontSize: 12,
-      fontFamily: fonts.regular,
-      textAlign: "center",
-      lineHeight: 18,
-      marginTop: spacing.lg,
-      paddingHorizontal: spacing.sm,
-    },
-    link: { color: green.green, fontFamily: fonts.semibold },
-
-    docSafe: { flex: 1, backgroundColor: green.bg },
-    docHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: spacing.xl,
-      paddingVertical: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: green.border,
-    },
-    docTitle: { color: green.text, fontSize: 18, fontFamily: fonts.bold, flex: 1, textAlign: textStart },
-    closeBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center", borderRadius: 18, backgroundColor: green.cardSoft },
-    docBody: { paddingHorizontal: spacing.xl, paddingVertical: spacing.lg, paddingBottom: spacing.xxl },
-    docText: { color: green.textSecondary, fontSize: 15, fontFamily: fonts.regular, lineHeight: 24, textAlign: textStart },
-  }),
-);

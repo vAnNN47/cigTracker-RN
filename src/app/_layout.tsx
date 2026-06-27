@@ -25,7 +25,6 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -41,8 +40,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { USE_SUPABASE } from "@/lib/config";
 import { supabase } from "@/lib/supabase";
 import { useAppStore } from "@/store/useAppStore";
-import { useColors } from "@/theme";
-import { ColorSchemeBridge } from "@/tw";
+import { ColorSchemeBridge, View } from "@/tw";
 import { PortalHost } from "../../packages/keyboard-sheet";
 
 SplashScreen.preventAutoHideAsync();
@@ -117,17 +115,15 @@ function Gate() {
   else if (limits.length === 0 && !onboardDone)
     overlay = <OnboardingView onDone={() => setOnboardDone(true)} />;
 
-  const c = useColors();
-
   return (
-    <View style={[styles.fill, { backgroundColor: c.bg }]}>
+    <View className="flex-1 bg-bg">
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
         <Stack.Screen name="purchases" />
         <Stack.Screen name="settings" />
       </Stack>
-      {overlay && <View style={[StyleSheet.absoluteFill, styles.overlay]}>{overlay}</View>}
+      {overlay && <View className="absolute inset-0 z-10">{overlay}</View>}
       {/* Slide-in drawers render above everything (incl. the tab bar). */}
       <MainDrawer />
       <AccountDrawer />
@@ -158,7 +154,7 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <GestureHandlerRootView style={styles.fill}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
         <SafeAreaProvider>
           <ToastProvider>
@@ -180,8 +176,3 @@ function ThemedStatusBar() {
   const isDark = mode === "dark" || (mode === "device" && scheme === "dark");
   return <StatusBar style={isDark ? "light" : "dark"} />;
 }
-
-const styles = StyleSheet.create({
-  fill: { flex: 1 },
-  overlay: { zIndex: 10 },
-});

@@ -9,14 +9,15 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname } from "expo-router";
 import { useState } from "react";
-import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { I18nManager } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { SlideDrawer } from "@/components/drawers/SlideDrawer";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useDrawerStore } from "@/store/useDrawerStore";
-import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 type Link = { icon: keyof typeof MaterialIcons.glyphMap; label: string };
 type TabKey = "today" | "diary" | "community" | "progress";
@@ -73,7 +74,6 @@ const DUMMY_BODY =
 export function MainDrawer() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const open = useDrawerStore((st) => st.open) === "main";
   const hide = useDrawerStore((st) => st.hide);
   const path = usePathname();
@@ -114,28 +114,28 @@ export function MainDrawer() {
       onClose={hide}
       onCollapse={() => setSub(null)}
       expandedContent={
-        <SafeAreaView style={[styles.safe, styles.subSafe]} edges={["top", "bottom"]}>
-          <View style={styles.subHeader}>
-            <Pressable onPress={() => setSub(null)} hitSlop={10} style={styles.backBtn}>
+        <SafeAreaView style={{ flex: 1, paddingHorizontal: 16, backgroundColor: green.bg }} edges={["top", "bottom"]}>
+          <View className="flex-row items-center py-2">
+            <Pressable onPress={() => setSub(null)} hitSlop={10} className="w-9 h-9 items-center justify-center">
               <MaterialIcons name={backIcon} size={24} color={green.text} />
             </Pressable>
-            <Text style={styles.subTitle}>{shownLink?.label}</Text>
-            <View style={styles.backBtn} />
+            <Text className="flex-1 text-text text-[18px] font-bold text-center">{shownLink?.label}</Text>
+            <View className="w-9 h-9 items-center justify-center" />
           </View>
-          <ScrollView contentContainerStyle={styles.subBody}>
-            <View style={styles.subIcon}>
+          <ScrollView contentContainerClassName="py-5 items-center">
+            <View className="w-16 h-16 rounded-[32px] bg-card-soft items-center justify-center mb-4">
               {shownLink && <MaterialIcons name={shownLink.icon} size={32} color={green.green} />}
             </View>
-            <Text style={styles.subHeadline}>{shownLink?.label}</Text>
-            <Text style={styles.subText}>{DUMMY_BODY}</Text>
-            <Text style={styles.subText}>{DUMMY_BODY}</Text>
+            <Text className="text-text text-[20px] font-bold mb-3 text-center">{shownLink?.label}</Text>
+            <Text className="text-text-dim text-[14px] font-regular leading-[22px] mb-3" style={{ textAlign: textStart }}>{DUMMY_BODY}</Text>
+            <Text className="text-text-dim text-[14px] font-regular leading-[22px] mb-3" style={{ textAlign: textStart }}>{DUMMY_BODY}</Text>
           </ScrollView>
         </SafeAreaView>
       }
     >
-      <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-        <Text style={styles.title}>{s.menu}</Text>
-        <Text style={styles.sectionTitle}>{cfg.title}</Text>
+      <SafeAreaView style={{ flex: 1, paddingHorizontal: 16 }} edges={["top", "bottom"]}>
+        <Text className="text-green text-[22px] font-bold mt-4" style={{ textAlign: textStart }}>{s.menu}</Text>
+        <Text className="text-text-dim text-[12px] font-medium uppercase tracking-[1.2px] mt-4 mb-1" style={{ textAlign: textStart }}>{cfg.title}</Text>
         {cfg.links.map((l) => (
           <Row key={l.label} icon={l.icon} label={l.label} onPress={() => openLink(l)} />
         ))}
@@ -146,69 +146,13 @@ export function MainDrawer() {
 
 function Row({ icon, label, onPress }: { icon: keyof typeof MaterialIcons.glyphMap; label: string; onPress: () => void }) {
   const green = useColors();
-  const styles = useStyles();
   return (
-    <Pressable style={styles.row} onPress={onPress}>
-      <View style={styles.rowIcon}>
+    <Pressable className="flex-row items-center gap-3 py-3 border-b border-border" onPress={onPress}>
+      <View className="w-9 h-9 rounded-[18px] bg-card-soft items-center justify-center">
         <MaterialIcons name={icon} size={20} color={green.green} />
       </View>
-      <Text style={styles.rowLabel}>{label}</Text>
+      <Text className="flex-1 text-text text-[15px] font-semibold" style={{ textAlign: textStart }}>{label}</Text>
       <MaterialIcons name="chevron-right" size={20} color={green.textDim} />
     </Pressable>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    safe: { flex: 1, paddingHorizontal: spacing.lg },
-    subSafe: { backgroundColor: green.bg },
-    title: { color: green.green, fontSize: 22, fontFamily: fonts.bold, marginTop: spacing.lg, textAlign: textStart },
-    sectionTitle: {
-      color: green.textDim,
-      fontSize: 12,
-      fontFamily: fonts.medium,
-      textTransform: "uppercase",
-      letterSpacing: 1.2,
-      marginTop: spacing.lg,
-      marginBottom: spacing.xs,
-      textAlign: textStart,
-    },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.md,
-      paddingVertical: spacing.md,
-      borderBottomWidth: 1,
-      borderBottomColor: green.border,
-    },
-    rowIcon: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: green.cardSoft,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    rowLabel: { flex: 1, color: green.text, fontSize: 15, fontFamily: fonts.semibold, textAlign: textStart },
-
-    subHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: spacing.sm,
-    },
-    backBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
-    subTitle: { flex: 1, color: green.text, fontSize: 18, fontFamily: fonts.bold, textAlign: "center" },
-    subBody: { paddingVertical: spacing.xl, alignItems: "center" },
-    subIcon: {
-      width: 64,
-      height: 64,
-      borderRadius: 32,
-      backgroundColor: green.cardSoft,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: spacing.lg,
-    },
-    subHeadline: { color: green.text, fontSize: 20, fontFamily: fonts.bold, marginBottom: spacing.md, textAlign: "center" },
-    subText: { color: green.textDim, fontSize: 14, fontFamily: fonts.regular, lineHeight: 22, marginBottom: spacing.md, textAlign: textStart },
-  }),
-);

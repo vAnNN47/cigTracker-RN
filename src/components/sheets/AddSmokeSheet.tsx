@@ -12,14 +12,15 @@ import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Platform, TextInput } from "react-native";
 
 import { formatTime } from "@/i18n/format";
 import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { DEFAULT_TAG, LocationTag, SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, type, useColors, useIsDark } from "@/theme";
+import { fonts, radius, useColors, useIsDark } from "@/theme";
+import { Pressable, Text, View } from "@/tw";
 
 import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../../packages/keyboard-sheet";
 
@@ -38,10 +39,23 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
   function AddSmokeSheet({ onLogged }, ref) {
     const s = useStrings();
     const green = useColors();
-    const styles = useStyles();
     const isDark = useIsDark();
     const addSmoke = useAppStore((st) => st.addSmoke);
     const sheetRef = useRef<KeyboardSheetRef>(null);
+
+    // SheetTextInput (keyboard-sheet package) isn't a className-wrapped element, so
+    // its style stays a token-built inline object (shared by both inputs).
+    const inputStyle = {
+      backgroundColor: green.card,
+      borderWidth: 1,
+      borderColor: green.border,
+      borderRadius: radius.input,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      color: green.text,
+      fontSize: 14,
+      fontFamily: fonts.regular,
+    } as const;
 
     const [tag, setTag] = useState<LocationTag>(DEFAULT_TAG);
     // Uncontrolled: native owns the caret (a controlled value re-set on iOS jumps
@@ -100,32 +114,32 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         handleColor={green.border}
         cornerRadius={radius.sheet}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>{s.logACigarette}</Text>
+        <View className="p-3 gap-2">
+          <Text className="text-text text-[20px] font-bold mb-1" style={{ textAlign: textStart }}>{s.logACigarette}</Text>
 
           {/* 1. Where were you? */}
-          <Text style={styles.label}>{s.whereWereYou}</Text>
-          <View style={styles.tagGrid}>
+          <Text className="text-text-secondary text-[13px] font-semibold" style={{ textAlign: textStart }}>{s.whereWereYou}</Text>
+          <View className="flex-row flex-wrap gap-2">
             {tags.map((t) => {
               const sel = tag === t.key;
               return (
                 <Pressable
                   key={t.key}
-                  style={[styles.tagBtn, sel && styles.tagBtnSel]}
+                  className={`basis-[47%] grow flex-row items-center gap-2 border rounded-input py-3 px-3 ${sel ? "bg-green-bright border-green-bright" : "bg-card border-border"}`}
                   onPress={() => setTag(t.key)}
                 >
                   <MaterialIcons name={t.icon} size={18} color={sel ? green.greenDeep : green.textSecondary} />
-                  <Text style={[styles.tagText, sel && styles.tagTextSel]}>{t.label}</Text>
+                  <Text className={`${sel ? "text-green-deep" : "text-text-secondary"} text-[14px] font-semibold`}>{t.label}</Text>
                 </Pressable>
               );
             })}
           </View>
 
           {/* 2. How did it feel? — free text, the user types it themselves. */}
-          <Text style={styles.label}>{s.howDidItFeel}</Text>
+          <Text className="text-text-secondary text-[13px] font-semibold" style={{ textAlign: textStart }}>{s.howDidItFeel}</Text>
           <SheetTextInput
             ref={commentInput}
-            style={[styles.input, inputAlign]}
+            style={[inputStyle, inputAlign]}
             placeholder={s.feelingHint}
             placeholderTextColor={green.textDim}
             defaultValue=""
@@ -133,17 +147,17 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
           />
 
           {/* 3. More details ▾ */}
-          <Pressable style={styles.moreToggle} onPress={() => setExpanded((v) => !v)} hitSlop={6}>
-            <Text style={styles.moreText}>{s.giveMoreInfo}</Text>
+          <Pressable className="flex-row items-center justify-center gap-1 py-2 mt-1 bg-card-soft rounded-input" onPress={() => setExpanded((v) => !v)} hitSlop={6}>
+            <Text className="text-green text-[14px] font-semibold">{s.giveMoreInfo}</Text>
             <MaterialIcons name={expanded ? "expand-less" : "expand-more"} size={20} color={green.green} />
           </Pressable>
 
           {expanded && (
-            <View style={styles.moreBody}>
-              <View style={styles.whenRow}>
-                <Text style={styles.whenLabel}>{s.whenQ}</Text>
+            <View className="gap-2">
+              <View className="flex-row items-center justify-between">
+                <Text className="text-text-secondary text-[13px] font-semibold">{s.whenQ}</Text>
                 {Platform.OS === "ios" ? (
-                  <View style={styles.timePickerWrap}>
+                  <View className="w-[112px] h-9 overflow-hidden justify-center items-end">
                     <DateTimePicker
                       mode="time"
                       value={smokedAt}
@@ -151,13 +165,13 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
                       accentColor={green.green}
                       themeVariant={isDark ? "dark" : "light"}
                       onValueChange={(_e, d) => setSmokedAt(d)}
-                      style={styles.timePicker}
+                      style={{ width: 112, height: 36 }}
                     />
                   </View>
                 ) : (
-                  <Pressable style={styles.timePill} onPress={() => setShowPicker(true)}>
+                  <Pressable className="flex-row items-center gap-1.5 bg-card-soft rounded-chip px-2 py-1" onPress={() => setShowPicker(true)}>
                     <MaterialIcons name="schedule" size={15} color={green.green} />
-                    <Text style={styles.timePillText}>{formatTime(smokedAt)}</Text>
+                    <Text className="text-green font-mono-medium text-[14px]">{formatTime(smokedAt)}</Text>
                   </Pressable>
                 )}
               </View>
@@ -176,10 +190,10 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
                 />
               )}
 
-              <Text style={[styles.label, { marginTop: spacing.md }]}>{s.anythingElse}</Text>
+              <Text className="text-text-secondary text-[13px] font-semibold mt-3" style={{ textAlign: textStart }}>{s.anythingElse}</Text>
               <SheetTextInput
                 ref={diaryInput}
-                style={[styles.input, styles.notes, inputAlign]}
+                style={[inputStyle, { height: 96, textAlignVertical: "top" }, inputAlign]}
                 placeholder={s.diaryHint}
                 placeholderTextColor={green.textDim}
                 defaultValue=""
@@ -191,107 +205,18 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
           )}
 
           <Pressable
-            style={[styles.button, saving && styles.buttonDisabled]}
+            className={`mt-2 bg-green rounded-button py-[14px] items-center${saving ? " opacity-60" : ""}`}
             onPress={save}
             disabled={saving}
           >
             {saving ? (
               <ActivityIndicator color={green.onGreen} />
             ) : (
-              <Text style={styles.buttonText}>{s.addToToday}</Text>
+              <Text className="text-on-green font-semibold text-[14px]">{s.addToToday}</Text>
             )}
           </Pressable>
         </View>
       </KeyboardSheet>
     );
   },
-);
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  card: { padding: spacing.md, gap: spacing.sm },
-  title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.xs },
-  label: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.semibold, textAlign: textStart },
-
-  tagGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  tagBtn: {
-    flexBasis: "47%",
-    flexGrow: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: radius.input,
-    paddingVertical: 12,
-    paddingHorizontal: spacing.md,
-  },
-  tagBtnSel: { backgroundColor: green.greenBright, borderColor: green.greenBright },
-  tagText: { color: green.textSecondary, fontSize: 14, fontFamily: fonts.semibold },
-  tagTextSel: { color: green.greenDeep },
-
-  chipWrap: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  feelChip: {
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: radius.pill,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  feelChipSel: { backgroundColor: green.feelChipSel, borderColor: green.greenBright },
-  feelChipText: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.medium },
-  feelChipTextSel: { color: green.green },
-
-  input: {
-    backgroundColor: green.card,
-    borderWidth: 1,
-    borderColor: green.border,
-    borderRadius: radius.input,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: green.text,
-    fontSize: type.body.fontSize,
-    fontFamily: fonts.regular,
-  },
-  notes: { height: 96, textAlignVertical: "top" },
-
-  moreToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    paddingVertical: spacing.sm,
-    marginTop: spacing.xs,
-    backgroundColor: green.cardSoft,
-    borderRadius: radius.input,
-  },
-  moreText: { color: green.green, fontSize: 14, fontFamily: fonts.semibold },
-  moreBody: { gap: spacing.sm },
-  whenRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  whenLabel: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.semibold },
-  timePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: green.cardSoft,
-    borderRadius: radius.chip,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  timePillText: { color: green.green, fontFamily: fonts.monoMedium, fontSize: 14 },
-  timePickerWrap: { width: 112, height: 36, overflow: "hidden", justifyContent: "center", alignItems: "flex-end" },
-  timePicker: { width: 112, height: 36 },
-
-  button: {
-    marginTop: spacing.sm,
-    backgroundColor: green.green,
-    borderRadius: radius.button,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-  }),
 );

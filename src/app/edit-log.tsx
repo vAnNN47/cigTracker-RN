@@ -8,7 +8,7 @@ import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Platform } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -17,7 +17,8 @@ import { inputAlign, textEnd, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { LocationTag } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, type, useColors, useIsDark } from "@/theme";
+import { useColors, useIsDark } from "@/theme";
+import { Pressable, Text, TextInput, View } from "@/tw";
 
 type TagDef = { key: LocationTag; label: string; icon: keyof typeof MaterialIcons.glyphMap };
 
@@ -25,7 +26,6 @@ type TagDef = { key: LocationTag; label: string; icon: keyof typeof MaterialIcon
 export default function EditLogModal() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const isDark = useIsDark();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,34 +65,38 @@ export default function EditLogModal() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: green.bg }} edges={["top", "bottom"]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={close} hitSlop={8} style={styles.headerBtn}>
-          <Text style={styles.cancel}>{s.cancel}</Text>
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-border">
+        <Pressable onPress={close} hitSlop={8} className="min-w-[64px] justify-center">
+          <Text className="text-text-dim text-[14px] font-medium" style={{ textAlign: textStart }}>{s.cancel}</Text>
         </Pressable>
-        <Text style={styles.title}>{s.editEntry}</Text>
-        <Pressable onPress={save} hitSlop={8} disabled={saving} style={styles.headerBtn}>
-          {saving ? <ActivityIndicator color={green.green} /> : <Text style={styles.saveBtn}>{s.save}</Text>}
+        <Text className="text-text text-[18px] font-bold">{s.editEntry}</Text>
+        <Pressable onPress={save} hitSlop={8} disabled={saving} className="min-w-[64px] justify-center">
+          {saving ? (
+            <ActivityIndicator color={green.green} />
+          ) : (
+            <Text className="text-green text-[14px] font-bold" style={{ textAlign: textEnd }}>{s.save}</Text>
+          )}
         </Pressable>
       </View>
 
       <KeyboardAwareScrollView
-        contentContainerStyle={styles.body}
+        contentContainerStyle={{ padding: 16, gap: 12 }}
         keyboardShouldPersistTaps="handled"
         bottomOffset={20}
       >
         {/* Time card */}
         {log && (
-          <View style={styles.timeRow}>
-            <View style={styles.timeLeft}>
-              <View style={styles.timeIcon}>
+          <View className="flex-row items-center justify-between bg-card-soft rounded-input px-3 py-3">
+            <View className="flex-row items-center gap-3">
+              <View className="w-[34px] h-[34px] rounded-[17px] bg-card items-center justify-center">
                 <MaterialIcons name="schedule" size={18} color={green.green} />
               </View>
-              <Text style={styles.timeLabel}>{s.timeLabel}</Text>
+              <Text className="text-text text-[14px] font-semibold">{s.timeLabel}</Text>
             </View>
             {Platform.OS === "ios" ? (
-              <View style={styles.timePickerWrap}>
+              <View className="w-[112px] h-9 overflow-hidden justify-center items-end">
                 <DateTimePicker
                   mode="time"
                   value={smokedAt}
@@ -100,12 +104,12 @@ export default function EditLogModal() {
                   accentColor={green.green}
                   themeVariant={isDark ? "dark" : "light"}
                   onValueChange={(_e, d) => setSmokedAt(d)}
-                  style={styles.timePicker}
+                  style={{ width: 112, height: 36 }}
                 />
               </View>
             ) : (
-              <Pressable style={styles.timeEditBtn} onPress={() => setShowPicker(true)}>
-                <Text style={styles.timeValue}>{formatTime(smokedAt)}</Text>
+              <Pressable className="flex-row items-center gap-1.5 bg-card rounded-chip px-3 py-2" onPress={() => setShowPicker(true)}>
+                <Text className="text-text font-mono-medium text-[16px]">{formatTime(smokedAt)}</Text>
                 <MaterialIcons name="edit" size={14} color={green.green} />
               </Pressable>
             )}
@@ -127,23 +131,28 @@ export default function EditLogModal() {
         )}
 
         {/* Location (task: edit where you were) */}
-        <Text style={styles.fieldLabel}>{s.whereWereYou}</Text>
-        <View style={styles.tagGrid}>
+        <Text className="text-text-secondary text-[13px] font-semibold" style={{ textAlign: textStart }}>{s.whereWereYou}</Text>
+        <View className="flex-row flex-wrap gap-2">
           {tags.map((t) => {
             const sel = tag === t.key;
             return (
-              <Pressable key={t.key} style={[styles.tagBtn, sel && styles.tagBtnSel]} onPress={() => setTag(t.key)}>
+              <Pressable
+                key={t.key}
+                className={`basis-[47%] grow flex-row items-center gap-2 border rounded-input py-3 px-3 ${sel ? "bg-green-bright border-green-bright" : "bg-card border-border"}`}
+                onPress={() => setTag(t.key)}
+              >
                 <MaterialIcons name={t.icon} size={18} color={sel ? green.greenDeep : green.textSecondary} />
-                <Text style={[styles.tagText, sel && styles.tagTextSel]}>{t.label}</Text>
+                <Text className={`${sel ? "text-green-deep" : "text-text-secondary"} text-[14px] font-semibold`}>{t.label}</Text>
               </Pressable>
             );
           })}
         </View>
 
-        <View style={styles.fieldBlock}>
-          <Text style={styles.fieldLabel}>{s.comment}</Text>
+        <View className="gap-1">
+          <Text className="text-text-secondary text-[13px] font-semibold" style={{ textAlign: textStart }}>{s.comment}</Text>
           <TextInput
-            style={[styles.input, inputAlign]}
+            className="bg-card rounded-input border border-border px-3 py-2 text-text text-[14px] font-regular"
+            style={inputAlign}
             placeholder={s.commentHint}
             placeholderTextColor={green.textDim}
             defaultValue={log?.comment ?? ""}
@@ -151,10 +160,11 @@ export default function EditLogModal() {
           />
         </View>
 
-        <View style={styles.fieldBlock}>
-          <Text style={styles.fieldLabel}>{s.diary}</Text>
+        <View className="gap-1">
+          <Text className="text-text-secondary text-[13px] font-semibold" style={{ textAlign: textStart }}>{s.diary}</Text>
           <TextInput
-            style={[styles.input, styles.diary, inputAlign]}
+            className="bg-card rounded-input border border-border px-3 py-2 text-text text-[14px] font-regular min-h-[200px]"
+            style={inputAlign}
             placeholder={s.diaryHint}
             placeholderTextColor={green.textDim}
             defaultValue={log?.diary ?? ""}
@@ -167,91 +177,3 @@ export default function EditLogModal() {
     </SafeAreaView>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    safe: { flex: 1, backgroundColor: green.bg },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: spacing.xl,
-      paddingVertical: spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: green.border,
-    },
-    // Both actions stretch to fill their (equal min-width) box; each Text is pinned
-    // to its own reading edge via the same RTL-safe swap, so they sit parallel.
-    headerBtn: { minWidth: 64, justifyContent: "center" },
-    cancel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.medium, textAlign: textStart },
-    title: { color: green.text, fontSize: 18, fontFamily: fonts.bold },
-    saveBtn: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold, textAlign: textEnd },
-    body: { padding: spacing.lg, gap: spacing.md },
-
-    timeRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      backgroundColor: green.cardSoft,
-      borderRadius: radius.input,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.md,
-    },
-    timeLeft: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-    timeIcon: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      backgroundColor: green.card,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    timePickerWrap: { width: 112, height: 36, overflow: "hidden", justifyContent: "center", alignItems: "flex-end" },
-    timeLabel: { color: green.text, fontSize: type.body.fontSize, fontFamily: fonts.semibold },
-    timeValue: { color: green.text, fontFamily: fonts.monoMedium, fontSize: 16 },
-    timeEditBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      backgroundColor: green.card,
-      borderRadius: radius.chip,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-    },
-    timePicker: { width: 112, height: 36 },
-
-    tagGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-    tagBtn: {
-      flexBasis: "47%",
-      flexGrow: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.sm,
-      backgroundColor: green.card,
-      borderWidth: 1,
-      borderColor: green.border,
-      borderRadius: radius.input,
-      paddingVertical: 12,
-      paddingHorizontal: spacing.md,
-    },
-    tagBtnSel: { backgroundColor: green.greenBright, borderColor: green.greenBright },
-    tagText: { color: green.textSecondary, fontSize: 14, fontFamily: fonts.semibold },
-    tagTextSel: { color: green.greenDeep },
-
-    fieldBlock: { gap: spacing.xs },
-    fieldLabel: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.semibold, textAlign: textStart },
-    input: {
-      backgroundColor: green.card,
-      borderRadius: radius.input,
-      borderWidth: 1,
-      borderColor: green.border,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-      color: green.text,
-      fontSize: type.body.fontSize,
-      fontFamily: fonts.regular,
-      textAlign: textStart,
-    },
-    diary: { minHeight: 200 },
-  }),
-);

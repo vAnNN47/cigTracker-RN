@@ -12,6 +12,7 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - [x] NativeWind v5 / Tailwind v4 setup — deps, metro/postcss, token map, `tw` wrappers, color-scheme bridge — 2026-06-27
 - [x] Pilot screen converted: `community.tsx` (StyleSheet → className), gate green — 2026-06-27
 - [x] Green-fill blocker root-caused + fixed — real cause was `light-dark()` losing its dark branch under metro's `inlineVariables:false`, dropping ALL themed backgrounds; replaced with `@media (prefers-color-scheme: dark)` var overrides — 2026-06-27
+- [x] Batch-converted 16 mechanical screens (the simple + medium tiers) StyleSheet → className in one run; tsc + lint clean + all novel utilities compile-checked through the real react-native-css pipeline — 2026-06-27 (device-eyeball pending)
 
 ## How it's wired (so the next screens follow the same pattern)
 
@@ -86,22 +87,22 @@ Order chosen by style-block count (smallest first) so each run stays small. Tick
 after device-verifying it** in light + dark + RTL against the original.
 
 - [x] `src/app/(tabs)/community.tsx` — pilot (2026-06-27); green-fill blocker fixed (2026-06-27) ⚠️ device-eyeball still the user's final check
-- [ ] `src/app/_layout.tsx` — 2 styles (fill/overlay)
-- [ ] `src/auth/SplashView.tsx` — 2
-- [ ] `src/components/ui/TabHeader.tsx` — 3
-- [ ] `src/components/feedback/Toast.tsx` — 5 (Animated.View — use `@/tw/animated`)
-- [ ] `src/auth/LegalFooter.tsx` — 8
-- [ ] `src/auth/LoginView.tsx` — 9
-- [ ] `src/auth/OnboardingView.tsx` — 11
-- [ ] `src/app/purchases.tsx` — 15 (SectionList)
-- [ ] `src/components/sheets/AddPurchaseSheet.tsx` — 15
-- [ ] `src/components/drawers/MainDrawer.tsx` — 18
-- [ ] `src/auth/WelcomeView.tsx` — 21
-- [ ] `src/components/sheets/LogDetailSheet.tsx` — 22
-- [ ] `src/app/edit-log.tsx` — 24
-- [ ] `src/app/settings.tsx` — 27
-- [ ] `src/components/sheets/AddSmokeSheet.tsx` — 27
-- [ ] `src/components/drawers/AccountDrawer.tsx` — 28
+- [x] `src/app/_layout.tsx` — 2 styles (fill/overlay) — batch 2026-06-27 ⚠️ device-eyeball pending
+- [x] `src/auth/SplashView.tsx` — 2 (kept light-only via inline static `green`; layout→className) — batch 2026-06-27 ⚠️
+- [x] `src/components/ui/TabHeader.tsx` — 3 — batch 2026-06-27 ⚠️
+- [x] `src/components/feedback/Toast.tsx` — 5 (uses **RN** `Animated`, NOT reanimated — kept RN `Animated.View` inline, the roadmap's `@/tw/animated` note was wrong) — batch 2026-06-27 ⚠️
+- [x] `src/auth/LegalFooter.tsx` — 8 — batch 2026-06-27 ⚠️
+- [x] `src/auth/LoginView.tsx` — 9 — batch 2026-06-27 ⚠️
+- [x] `src/auth/OnboardingView.tsx` — 11 — batch 2026-06-27 ⚠️
+- [x] `src/app/purchases.tsx` — 15 (SectionList stays RN, inline `contentContainerStyle`) — batch 2026-06-27 ⚠️
+- [x] `src/components/sheets/AddPurchaseSheet.tsx` — 15 — batch 2026-06-27 ⚠️
+- [x] `src/components/drawers/MainDrawer.tsx` — 18 — batch 2026-06-27 ⚠️
+- [x] `src/auth/WelcomeView.tsx` — 21 — batch 2026-06-27 ⚠️
+- [x] `src/components/sheets/LogDetailSheet.tsx` — 22 — batch 2026-06-27 ⚠️
+- [x] `src/app/edit-log.tsx` — 24 (TextInput keeps `inputAlign` inline for RTL writing-direction) — batch 2026-06-27 ⚠️
+- [x] `src/app/settings.tsx` — 27 (dropped dead unused `title` style) — batch 2026-06-27 ⚠️
+- [x] `src/components/sheets/AddSmokeSheet.tsx` — 27 (`SheetTextInput` isn't tw-wrappable → input style stays a token-built inline object; dropped dead `feelChip*`) — batch 2026-06-27 ⚠️
+- [x] `src/components/drawers/AccountDrawer.tsx` — 28 (`StyleSheet.hairlineWidth` dividers kept inline — `border-b` is 2× thicker) — batch 2026-06-27 ⚠️
 - [ ] `src/app/(tabs)/progress.tsx` — 29 (SVG charts — colors stay via `useColors`)
 - [ ] `src/app/(tabs)/index.tsx` — 41 (Today — Ring/FAB/pulse, Animated)
 - [ ] `src/app/(tabs)/calendar.tsx` — 43 (heaviest — day grid)
@@ -143,3 +144,12 @@ after device-verifying it** in light + dark + RTL against the original.
   through `@tailwindcss/postcss` → react-native-css with `inlineVariables:false`: every token now
   carries both light + dark (`vr color-green = [["#3ba55d",[dark]],["#006d37"]]`). tsc + lint clean.
   Needs a cache-cleared reload (`expo start -c`) to land on device; eyeball left to user.
+- 2026-06-27 — Batch-migrated 16 screens (simple + medium tiers) `StyleSheet` → `className` in one
+  run (the green-fill blocker being fixed made the conversion mechanical + safe to batch). Per-screen
+  notes captured in the queue above. Conventions held: icon/SVG colors + non-CSS elements
+  (`SafeAreaView`, `SectionList`, `KeyboardAwareScrollView`, `DateTimePicker`, `SheetTextInput`, RN
+  `Animated`, `Switch`) keep `useColors`/inline; RTL `textStart`/`textEnd`/`inputAlign` stay inline;
+  off-scale numbers use arbitrary values. Gate: `tsc` + `lint` clean, and all 30 novel utility classes
+  compile-checked through the real `@tailwindcss/postcss` → react-native-css pipeline (incl. `ms-*` →
+  `marginInlineStart`, RTL-aware + RN-0.85-supported). 3 special screens (`progress` SVG, `index`
+  Animated, `calendar` grid) deliberately left for solo runs. Device-eyeball pending.

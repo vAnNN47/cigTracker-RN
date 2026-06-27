@@ -9,14 +9,15 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { randomUUID } from "expo-crypto";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert } from "react-native";
 
 import { useToast } from "@/components/feedback/Toast";
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { cigsInPurchase, PACKS_PER_CARTON, PackUnit, Purchase } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
+import { radius, useColors } from "@/theme";
+import { Pressable, Text, View } from "@/tw";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../../packages/keyboard-sheet";
 import { NumberPad, NumberPadRef } from "../../../packages/number-pad";
@@ -31,7 +32,6 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
   function AddPurchaseSheet(_props, ref) {
     const s = useStrings();
     const green = useColors();
-    const styles = useStyles();
     const toast = useToast();
     const addPurchase = useAppStore((st) => st.addPurchase);
     const editPurchase = useAppStore((st) => st.editPurchase);
@@ -119,18 +119,20 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
         handleColor={green.border}
         cornerRadius={radius.sheet}
       >
-        <View style={styles.card}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>{editing ? s.editPurchase : s.addPurchase}</Text>
+        <View className="p-3 gap-2">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-text text-[20px] font-bold" style={{ textAlign: textStart }}>
+              {editing ? s.editPurchase : s.addPurchase}
+            </Text>
             {editing && (
-              <Pressable onPress={remove} hitSlop={8} style={styles.deleteBtn}>
+              <Pressable onPress={remove} hitSlop={8} className="p-0.5">
                 <MaterialIcons name="delete-outline" size={22} color={green.error} />
               </Pressable>
             )}
           </View>
 
           {/* Unit segmented control */}
-          <View style={styles.segment}>
+          <View className="flex-row gap-2 bg-card-soft rounded-chip p-1">
             {(["pack", "carton"] as PackUnit[]).map((u) => {
               const sel = unit === u;
               return (
@@ -140,9 +142,9 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
                     setUnit(u);
                     if (!priceEdited) setPrice(derivedPrice(u, quantity));
                   }}
-                  style={[styles.segBtn, sel && styles.segBtnSel]}
+                  className={`flex-1 items-center py-2.5 rounded-[10px]${sel ? " bg-green" : ""}`}
                 >
-                  <Text style={[styles.segText, sel && { color: green.onGreen }]}>
+                  <Text className={`${sel ? "text-on-green" : "text-text-dim"} font-bold`}>
                     {u === "carton" ? s.carton : s.pack}
                   </Text>
                 </Pressable>
@@ -184,10 +186,20 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
             }
           />
 
-          <Text style={styles.hint}>{s.cigsInThis(cigs)}</Text>
+          <Text className="text-text-dim text-[13px] font-regular ml-1" style={{ textAlign: textStart }}>
+            {s.cigsInThis(cigs)}
+          </Text>
 
-          <Pressable style={[styles.button, saving && styles.buttonDisabled]} onPress={save} disabled={saving}>
-            {saving ? <ActivityIndicator color={green.onGreen} /> : <Text style={styles.buttonText}>{s.save}</Text>}
+          <Pressable
+            className={`mt-1 bg-green rounded-button py-3 items-center${saving ? " opacity-60" : ""}`}
+            onPress={save}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color={green.onGreen} />
+            ) : (
+              <Text className="text-on-green font-bold text-[14px]">{s.save}</Text>
+            )}
           </Pressable>
         </View>
 
@@ -209,54 +221,13 @@ export const AddPurchaseSheet = forwardRef<AddPurchaseSheetRef, object>(
 );
 
 function EditRow({ label, value, onPress }: { label: string; value: string; onPress: () => void }) {
-  const styles = useStyles();
   return (
-    <Pressable onPress={onPress} style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
+    <Pressable
+      onPress={onPress}
+      className="flex-row items-center justify-between bg-card-soft rounded-input px-3 py-2"
+    >
+      <Text className="text-text-dim text-[14px] font-regular" style={{ textAlign: textStart }}>{label}</Text>
+      <Text className="text-text text-[18px] font-mono-medium">{value}</Text>
     </Pressable>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  card: {
-    padding: spacing.md,
-    gap: spacing.sm,
-  },
-  titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
-  deleteBtn: { padding: 2 },
-  segment: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    backgroundColor: green.cardSoft,
-    borderRadius: radius.chip,
-    padding: 4,
-  },
-  segBtn: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: radius.chip - 2 },
-  segBtnSel: { backgroundColor: green.green },
-  segText: { color: green.textDim, fontFamily: fonts.bold },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: green.cardSoft,
-    borderRadius: radius.input,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  rowLabel: { color: green.textDim, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
-  rowValue: { color: green.text, fontSize: 18, fontFamily: fonts.monoMedium },
-  hint: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, marginLeft: spacing.xs, textAlign: textStart },
-  button: {
-    marginTop: spacing.xs,
-    backgroundColor: green.green,
-    borderRadius: radius.button,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: green.onGreen, fontFamily: fonts.bold, fontSize: type.body.fontSize },
-  }),
-);

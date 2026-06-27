@@ -15,7 +15,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert } from "react-native";
 
 import { useToast } from "@/components/feedback/Toast";
 import { formatTime } from "@/i18n/format";
@@ -23,7 +23,8 @@ import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { copyToClipboard } from "@/lib/clipboard";
 import { LocationTag, SmokeLog } from "@/models";
-import { fonts, makeUseStyles, radius, spacing, useColors } from "@/theme";
+import { radius, useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 import { KeyboardSheet, KeyboardSheetRef } from "../../../packages/keyboard-sheet";
 
@@ -43,7 +44,6 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
   function LogDetailSheet(_props, ref) {
     const s = useStrings();
     const green = useColors();
-    const styles = useStyles();
     const router = useRouter();
     const toast = useToast();
     const sheetRef = useRef<KeyboardSheetRef>(null);
@@ -94,57 +94,57 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
         handleColor={green.border}
         cornerRadius={radius.sheet}
       >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{s.cigNumber(number)}</Text>
-              <Text style={styles.time}>{time}</Text>
+        <View className="px-1 pb-1 gap-3">
+          <View className="flex-row items-center">
+            <View className="flex-1">
+              <Text className="text-text text-[20px] font-bold" style={{ textAlign: textStart }}>{s.cigNumber(number)}</Text>
+              <Text className="text-text-dim text-[14px] font-regular mt-0.5" style={{ textAlign: textStart }}>{time}</Text>
             </View>
             {editable && (
-              <Pressable style={styles.iconBtn} onPress={openEdit} hitSlop={8}>
+              <Pressable className="w-[38px] h-[38px] rounded-[19px] bg-card-soft items-center justify-center" onPress={openEdit} hitSlop={8}>
                 <MaterialIcons name="edit" size={18} color={green.green} />
               </Pressable>
             )}
           </View>
 
           {/* Meta chips: time + location */}
-          <View style={styles.chipRow}>
-            <View style={styles.chip}>
+          <View className="flex-row gap-2 flex-wrap">
+            <View className="flex-row items-center gap-1.5 bg-card-soft rounded-pill px-3 py-[7px]">
               <MaterialIcons name="schedule" size={14} color={green.textDim} />
-              <Text style={styles.chipText}>{time}</Text>
+              <Text className="text-text-secondary text-[13px] font-medium">{time}</Text>
             </View>
             {log && (
-              <View style={styles.chip}>
+              <View className="flex-row items-center gap-1.5 bg-card-soft rounded-pill px-3 py-[7px]">
                 <MaterialIcons name={TAG_ICON[log.tag]} size={14} color={green.textDim} />
-                <Text style={styles.chipText}>{tagLabel}</Text>
+                <Text className="text-text-secondary text-[13px] font-medium">{tagLabel}</Text>
               </View>
             )}
           </View>
 
           {/* Comment (only when present) */}
           {comment ? (
-            <View style={styles.fieldCard}>
-              <Text style={styles.fieldLabel}>{s.comment}</Text>
-              <Text style={styles.readonly}>{comment}</Text>
+            <View className="bg-card-soft rounded-input px-3 py-3">
+              <Text className="text-text-dim text-[13px] font-semibold mb-1" style={{ textAlign: textStart }}>{s.comment}</Text>
+              <Text className="text-text text-[15px] font-regular leading-[22px]" style={{ textAlign: textStart }}>{comment}</Text>
             </View>
           ) : null}
 
           {/* Diary (only when present) — tap to expand to the full text */}
           {diary ? (
-            <Pressable style={styles.fieldCard} onPress={() => setExpanded((v) => !v)}>
-              <View style={styles.fieldHead}>
-                <Text style={styles.fieldLabel}>{s.diary}</Text>
-                <View style={styles.expandHint}>
-                  <Text style={styles.expandText}>{expanded ? s.showLess : s.readAll}</Text>
+            <Pressable className="bg-card-soft rounded-input px-3 py-3" onPress={() => setExpanded((v) => !v)}>
+              <View className="flex-row items-center justify-between">
+                <Text className="text-text-dim text-[13px] font-semibold mb-1" style={{ textAlign: textStart }}>{s.diary}</Text>
+                <View className="flex-row items-center gap-0.5">
+                  <Text className="text-green text-[12px] font-semibold">{expanded ? s.showLess : s.readAll}</Text>
                   <MaterialIcons name={expanded ? "expand-less" : "expand-more"} size={16} color={green.green} />
                 </View>
               </View>
               {expanded ? (
-                <ScrollView style={styles.diaryScroll} nestedScrollEnabled>
-                  <Text style={styles.readonly}>{diary}</Text>
+                <ScrollView className="max-h-[260px]" nestedScrollEnabled>
+                  <Text className="text-text text-[15px] font-regular leading-[22px]" style={{ textAlign: textStart }}>{diary}</Text>
                 </ScrollView>
               ) : (
-                <Text style={styles.readonly} numberOfLines={4}>
+                <Text className="text-text text-[15px] font-regular leading-[22px]" style={{ textAlign: textStart }} numberOfLines={4}>
                   {diary}
                 </Text>
               )}
@@ -153,18 +153,18 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
 
           {/* Copy / share all text */}
           {hasNotes && (
-            <Pressable style={styles.copyBtn} onPress={copyAll}>
+            <Pressable className="flex-row items-center justify-center gap-2 bg-card-soft rounded-button py-[13px]" onPress={copyAll}>
               <MaterialIcons name="content-copy" size={16} color={green.green} />
-              <Text style={styles.copyText}>{s.copyText}</Text>
+              <Text className="text-green text-[14px] font-semibold">{s.copyText}</Text>
             </Pressable>
           )}
 
           {!editable && (
-            <View style={styles.lockRow}>
+            <View className="flex-row items-center gap-1.5 mt-1">
               <MaterialIcons name="lock-outline" size={15} color={green.textDim} />
-              <Text style={styles.lockText}>{s.pastLocked}</Text>
+              <Text className="text-text-dim text-[12px] font-regular flex-1" style={{ textAlign: textStart }}>{s.pastLocked}</Text>
               <Pressable onPress={() => Alert.alert(s.whyLockTitle, s.whyLockBody)} hitSlop={8}>
-                <Text style={styles.info}>ⓘ</Text>
+                <Text className="text-text-dim text-[16px] font-regular">ⓘ</Text>
               </Pressable>
             </View>
           )}
@@ -172,61 +172,4 @@ export const LogDetailSheet = forwardRef<LogDetailSheetRef, object>(
       </KeyboardSheet>
     );
   },
-);
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    card: { paddingHorizontal: spacing.xs, paddingBottom: spacing.xs, gap: spacing.md },
-    header: { flexDirection: "row", alignItems: "center" },
-    title: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
-    time: { color: green.textDim, fontSize: 14, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-    iconBtn: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      backgroundColor: green.cardSoft,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-
-    chipRow: { flexDirection: "row", gap: spacing.sm, flexWrap: "wrap" },
-    chip: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      backgroundColor: green.cardSoft,
-      borderRadius: radius.pill,
-      paddingHorizontal: spacing.md,
-      paddingVertical: 7,
-    },
-    chipText: { color: green.textSecondary, fontSize: 13, fontFamily: fonts.medium },
-
-    fieldCard: {
-      backgroundColor: green.cardSoft,
-      borderRadius: radius.input,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.md,
-    },
-    fieldHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-    fieldLabel: { color: green.textDim, fontSize: 13, fontFamily: fonts.semibold, marginBottom: spacing.xs, textAlign: textStart },
-    expandHint: { flexDirection: "row", alignItems: "center", gap: 2 },
-    expandText: { color: green.green, fontSize: 12, fontFamily: fonts.semibold },
-    readonly: { color: green.text, fontSize: 15, fontFamily: fonts.regular, lineHeight: 22, textAlign: textStart },
-    diaryScroll: { maxHeight: 260 },
-
-    copyBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: spacing.sm,
-      backgroundColor: green.cardSoft,
-      borderRadius: radius.button,
-      paddingVertical: 13,
-    },
-    copyText: { color: green.green, fontSize: 14, fontFamily: fonts.semibold },
-
-    lockRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: spacing.xs },
-    lockText: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, flex: 1, textAlign: textStart },
-    info: { color: green.textDim, fontSize: 16, fontFamily: fonts.regular },
-  }),
 );

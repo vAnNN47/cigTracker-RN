@@ -6,12 +6,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { statusCodes } from "@react-native-google-signin/google-signin";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useStrings } from "@/i18n/useStrings";
 import { signInWithGoogle } from "@/lib/googleAuth";
-import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, Text, View } from "@/tw";
 
 import { LegalFooter } from "./LegalFooter";
 
@@ -19,7 +20,6 @@ import { LegalFooter } from "./LegalFooter";
 export function LoginView() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -39,16 +39,16 @@ export function LoginView() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.box}>
-        <View style={styles.logo}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" }}>
+      <View className="w-full max-w-[360px] p-6 items-center">
+        <View className="w-[72px] h-[72px] rounded-[22px] bg-card-soft items-center justify-center">
           <MaterialIcons name="insights" size={36} color={green.green} />
         </View>
-        <Text style={styles.title}>{s.appName}</Text>
-        <Text style={styles.tagline}>{s.loginTagline}</Text>
+        <Text className="text-green text-[24px] font-bold mt-6">{s.appName}</Text>
+        <Text className="text-text-dim font-regular text-center mt-2">{s.loginTagline}</Text>
 
         <Pressable
-          style={[styles.btn, busy && styles.btnDisabled]}
+          className={`flex-row items-center justify-center gap-2 bg-green rounded-button py-[14px] self-stretch mt-9${busy ? " opacity-60" : ""}`}
           onPress={signIn}
           disabled={busy}
         >
@@ -57,46 +57,15 @@ export function LoginView() {
           ) : (
             <>
               <MaterialIcons name="login" size={20} color={green.onGreen} />
-              <Text style={styles.btnText}>{s.continueWithGoogle}</Text>
+              <Text className="text-on-green font-semibold text-[14px]">{s.continueWithGoogle}</Text>
             </>
           )}
         </Pressable>
 
-        {err ? <Text style={styles.err}>{err}</Text> : null}
+        {err ? <Text className="text-error text-[12px] font-regular text-center mt-4">{err}</Text> : null}
 
         <LegalFooter />
       </View>
     </SafeAreaView>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  safe: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
-  box: { width: "100%", maxWidth: 360, padding: spacing.xxl, alignItems: "center" },
-  logo: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
-    backgroundColor: green.cardSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: { color: green.green, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xxl },
-  tagline: { color: green.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
-  btn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    backgroundColor: green.green,
-    borderRadius: radius.button,
-    paddingVertical: 14,
-    alignSelf: "stretch",
-    marginTop: spacing.xxl + spacing.md,
-  },
-  btnDisabled: { opacity: 0.6 },
-  btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-  err: { color: green.error, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
-  }),
-);

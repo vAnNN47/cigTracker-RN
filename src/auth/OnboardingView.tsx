@@ -5,20 +5,20 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
+import { radius, useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 /** First-run setup: capture baseline + daily limit, then save and call onDone. */
 export function OnboardingView({ onDone }: { onDone: () => void }) {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const settings = useAppStore((st) => st.settings);
   const saveSettings = useAppStore((st) => st.saveSettings);
   const setLimit = useAppStore((st) => st.setLimit);
@@ -40,13 +40,17 @@ export function OnboardingView({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.logo}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: green.bg }}>
+      <ScrollView contentContainerClassName="grow justify-center p-6 max-w-[420px] self-center w-full">
+        <View className="w-16 h-16 rounded-[20px] bg-card-soft items-center justify-center">
           <MaterialIcons name="insights" size={32} color={green.green} />
         </View>
-        <Text style={styles.title}>{s.welcomeTitle}</Text>
-        <Text style={styles.intro}>{s.onboardingIntro}</Text>
+        <Text className="text-green text-[24px] font-bold mt-5" style={{ textAlign: textStart }}>
+          {s.welcomeTitle}
+        </Text>
+        <Text className="text-text-dim font-regular mt-2" style={{ textAlign: textStart }}>
+          {s.onboardingIntro}
+        </Text>
 
         <PickRow
           label={s.onboardBaselineQ}
@@ -63,8 +67,16 @@ export function OnboardingView({ onDone }: { onDone: () => void }) {
           }
         />
 
-        <Pressable style={[styles.btn, saving && styles.btnDisabled]} onPress={finish} disabled={saving}>
-          {saving ? <ActivityIndicator color={green.onGreen} /> : <Text style={styles.btnText}>{s.startTracking}</Text>}
+        <Pressable
+          className={`bg-green rounded-button py-[14px] items-center mt-6${saving ? " opacity-60" : ""}`}
+          onPress={finish}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator color={green.onGreen} />
+          ) : (
+            <Text className="text-on-green font-semibold text-[14px]">{s.startTracking}</Text>
+          )}
         </Pressable>
       </ScrollView>
 
@@ -86,51 +98,16 @@ export function OnboardingView({ onDone }: { onDone: () => void }) {
 
 function PickRow({ label, value, onPress }: { label: string; value: number; onPress: () => void }) {
   const green = useColors();
-  const styles = useStyles();
   return (
-    <View style={{ marginTop: spacing.lg }}>
-      <Text style={styles.pickLabel}>{label}</Text>
-      <Pressable style={styles.pickBox} onPress={onPress}>
-        <Text style={styles.pickValue}>{value}</Text>
+    <View className="mt-4">
+      <Text className="text-text font-semibold mb-2" style={{ textAlign: textStart }}>{label}</Text>
+      <Pressable
+        className="flex-row items-center justify-between bg-card-soft rounded-input px-[18px] py-4"
+        onPress={onPress}
+      >
+        <Text className="text-text text-[20px] font-mono-semibold">{value}</Text>
         <MaterialIcons name="edit" size={18} color={green.textDim} />
       </Pressable>
     </View>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  safe: { flex: 1, backgroundColor: green.bg },
-  content: { flexGrow: 1, justifyContent: "center", padding: spacing.xxl, maxWidth: 420, alignSelf: "center", width: "100%" },
-  logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: green.cardSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: { color: green.green, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: textStart },
-  intro: { color: green.textDim, fontFamily: fonts.regular, marginTop: spacing.sm, textAlign: textStart },
-  pickLabel: { color: green.text, fontFamily: fonts.semibold, marginBottom: spacing.sm, textAlign: textStart },
-  pickBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: green.cardSoft,
-    borderRadius: radius.input,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-  },
-  pickValue: { color: green.text, fontSize: 20, fontFamily: fonts.monoSemibold },
-  btn: {
-    backgroundColor: green.green,
-    borderRadius: radius.button,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: spacing.xxl,
-  },
-  btnDisabled: { opacity: 0.6 },
-  btnText: { color: green.onGreen, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-  }),
-);

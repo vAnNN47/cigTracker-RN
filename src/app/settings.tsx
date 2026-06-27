@@ -8,7 +8,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { Alert, I18nManager, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
 
@@ -18,7 +18,8 @@ import { useStrings } from "@/i18n/useStrings";
 import { signOut } from "@/lib/googleAuth";
 import { AppSettings } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
+import { radius, useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 import { NumberPad, NumberPadRef } from "../../packages/number-pad";
 
 const COMMIT_MS = 400;
@@ -32,7 +33,6 @@ const COMMIT_MS = 400;
 export function SettingsView({ onClose }: { onClose: () => void }) {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const backIcon = I18nManager.isRTL ? "chevron-right" : "chevron-left";
   const { limits, settings, locale } = useAppStore(
     useShallow((st) => ({ limits: st.limits, settings: st.settings, locale: st.locale })),
@@ -137,29 +137,29 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
-      <View style={styles.topBar}>
-        <Pressable onPress={onClose} hitSlop={10} style={styles.backBtn}>
+      <View className="flex-row items-center gap-2 px-4 py-2">
+        <Pressable onPress={onClose} hitSlop={10} className="w-8 h-8 items-center justify-center">
           <MaterialIcons name={backIcon} size={26} color={green.text} />
         </Pressable>
-        <Text style={styles.topTitle}>{s.settings}</Text>
+        <Text className="text-text text-[20px] font-bold" style={{ textAlign: textStart }}>{s.settings}</Text>
       </View>
       <ScrollView
-        contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl }}
+        contentContainerClassName="pt-2 px-5 pb-6"
         alwaysBounceVertical
         overScrollMode="always"
       >
 
         {/* Reduction plan banner */}
-        <Text style={styles.groupTitle}>{s.reductionPlan}</Text>
-        <View style={styles.plan}>
-          <View style={styles.planSide}>
-            <Text style={styles.planLabel}>{s.oldHabit}</Text>
-            <Text style={styles.planValueDim}>{form.baselinePerDay}</Text>
+        <Text className="text-text-dim text-[12px] font-medium uppercase tracking-[1.2px] mb-2 ms-3" style={{ textAlign: textStart }}>{s.reductionPlan}</Text>
+        <View className="flex-row items-center justify-between py-4 mb-5 border-t border-b border-border">
+          <View className="items-center flex-1">
+            <Text className="text-text-dim text-[12px] font-regular mb-1">{s.oldHabit}</Text>
+            <Text className="text-text-dim text-[26px] font-mono-medium">{form.baselinePerDay}</Text>
           </View>
           <MaterialIcons name={planArrow} size={22} color={green.green} />
-          <View style={styles.planSide}>
-            <Text style={styles.planLabel}>{s.todaysLimitShort}</Text>
-            <Text style={styles.planValue}>{limitDraft}</Text>
+          <View className="items-center flex-1">
+            <Text className="text-text-dim text-[12px] font-regular mb-1">{s.todaysLimitShort}</Text>
+            <Text className="text-green text-[26px] font-mono-medium">{limitDraft}</Text>
           </View>
         </View>
 
@@ -217,10 +217,10 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
             }
           />
           <Divider />
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>{s.countDown}</Text>
-              <Text style={styles.rowHint}>{s.countDownHint}</Text>
+          <View className="flex-row items-center py-3">
+            <View className="flex-1">
+              <Text className="text-text text-[14px] font-regular" style={{ textAlign: textStart }}>{s.countDown}</Text>
+              <Text className="text-text-dim text-[11px] font-regular mt-0.5" style={{ textAlign: textStart }}>{s.countDownHint}</Text>
             </View>
             <Switch
               value={form.countDown}
@@ -252,18 +252,18 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
             }
           />
           <Divider />
-          <View style={styles.row}>
-            <Text style={[styles.rowLabel, { flex: 1 }]}>{s.currency}</Text>
-            <View style={styles.segmentRow}>
+          <View className="flex-row items-center py-3">
+            <Text className="text-text text-[14px] font-regular flex-1" style={{ textAlign: textStart }}>{s.currency}</Text>
+            <View className="flex-row gap-2">
               {["₪", "$"].map((c) => {
                 const sel = cur === c;
                 return (
                   <Pressable
                     key={c}
                     onPress={() => commitSettings({ ...form, currencySymbol: c }, true)}
-                    style={[styles.curSeg, { backgroundColor: sel ? green.green : green.cardSoft }]}
+                    className={`px-4 py-1.5 rounded-chip min-w-[44px] items-center ${sel ? "bg-green" : "bg-card-soft"}`}
                   >
-                    <Text style={{ color: sel ? green.onGreen : green.textDim, fontFamily: fonts.bold }}>{c}</Text>
+                    <Text className={`${sel ? "text-on-green" : "text-text-dim"} font-bold`}>{c}</Text>
                   </Pressable>
                 );
               })}
@@ -273,8 +273,8 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
 
         {/* Language — dropdown; selected sits on top, highlighted */}
         <Group title={s.language}>
-          <Pressable style={styles.row} onPress={() => setLangOpen((v) => !v)}>
-            <Text style={[styles.langCurrent, { flex: 1 }]}>{currentLangLabel}</Text>
+          <Pressable className="flex-row items-center py-3" onPress={() => setLangOpen((v) => !v)}>
+            <Text className="text-green text-[14px] font-bold flex-1" style={{ textAlign: textStart }}>{currentLangLabel}</Text>
             <MaterialIcons name="check" size={18} color={green.green} />
             <MaterialIcons name={langOpen ? "expand-less" : "expand-more"} size={22} color={green.textDim} />
           </Pressable>
@@ -283,29 +283,29 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
               <View key={l.key}>
                 <Divider />
                 <Pressable
-                  style={styles.row}
+                  className="flex-row items-center py-3"
                   onPress={() => {
                     setLangOpen(false);
                     confirmLang(l);
                   }}
                 >
-                  <Text style={[styles.rowLabel, { flex: 1 }]}>{l.label}</Text>
+                  <Text className="text-text text-[14px] font-regular flex-1" style={{ textAlign: textStart }}>{l.label}</Text>
                 </Pressable>
               </View>
             ))}
         </Group>
 
         {dataMode === "supabase" ? (
-          <Pressable style={styles.signOut} onPress={confirmSignOut}>
+          <Pressable className="flex-row items-center justify-center gap-2 py-4 border-t border-border" onPress={confirmSignOut}>
             <MaterialIcons name="logout" size={18} color={green.error} />
-            <Text style={styles.signOutText}>{s.signOut}</Text>
+            <Text className="text-error font-semibold">{s.signOut}</Text>
           </Pressable>
         ) : (
           <Group title={s.account}>
-            <Text style={styles.localNote}>{s.localDataNote}</Text>
-            <Pressable style={styles.switchBtn} onPress={() => setDataMode(null)}>
+            <Text className="text-text-dim text-[13px] font-regular py-2" style={{ textAlign: textStart }}>{s.localDataNote}</Text>
+            <Pressable className="flex-row items-center gap-2 py-3 border-t border-border" onPress={() => setDataMode(null)}>
               <MaterialIcons name="login" size={18} color={green.green} />
-              <Text style={styles.switchText}>{s.signInToAccount}</Text>
+              <Text className="text-green font-bold text-[15px]">{s.signInToAccount}</Text>
             </Pressable>
           </Group>
         )}
@@ -328,10 +328,9 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
 }
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
-  const styles = useStyles();
   return (
-    <View style={{ marginBottom: spacing.lg }}>
-      <Text style={styles.groupTitle}>{title}</Text>
+    <View className="mb-4">
+      <Text className="text-text-dim text-[12px] font-medium uppercase tracking-[1.2px] mb-2 ms-3" style={{ textAlign: textStart }}>{title}</Text>
       <View>{children}</View>
     </View>
   );
@@ -359,22 +358,21 @@ function StepperRow({
   onPressValue: () => void;
 }) {
   const green = useColors();
-  const styles = useStyles();
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100));
   return (
-    <View style={styles.row}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        {hint ? <Text style={styles.rowHint}>{hint}</Text> : null}
+    <View className="flex-row items-center py-3">
+      <View className="flex-1">
+        <Text className="text-text text-[14px] font-regular" style={{ textAlign: textStart }}>{label}</Text>
+        {hint ? <Text className="text-text-dim text-[11px] font-regular mt-0.5" style={{ textAlign: textStart }}>{hint}</Text> : null}
       </View>
-      <View style={styles.stepper}>
-        <Pressable style={styles.stepBtn} onPress={() => onChange(clamp(value - step))} hitSlop={6}>
+      <View className="flex-row items-center gap-3">
+        <Pressable className="w-[34px] h-[34px] rounded-[10px] border border-border items-center justify-center" onPress={() => onChange(clamp(value - step))} hitSlop={6}>
           <MaterialIcons name="remove" size={18} color={green.text} />
         </Pressable>
         <Pressable onPress={onPressValue} hitSlop={6}>
-          <Text style={styles.stepValue}>{display}</Text>
+          <Text className="text-text text-[16px] font-mono-medium min-w-[44px] text-center">{display}</Text>
         </Pressable>
-        <Pressable style={styles.stepBtn} onPress={() => onChange(clamp(value + step))} hitSlop={6}>
+        <Pressable className="w-[34px] h-[34px] rounded-[10px] border border-border items-center justify-center" onPress={() => onChange(clamp(value + step))} hitSlop={6}>
           <MaterialIcons name="add" size={18} color={green.text} />
         </Pressable>
       </View>
@@ -383,86 +381,8 @@ function StepperRow({
 }
 
 function Divider() {
-  const styles = useStyles();
-  return <View style={styles.divider} />;
+  return <View className="h-px bg-border" />;
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  topBar: { flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  backBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
-  topTitle: { color: green.text, fontSize: 20, fontFamily: fonts.bold, textAlign: textStart },
-  title: { color: green.text, fontSize: 22, fontFamily: fonts.bold, marginBottom: spacing.xl, textAlign: textStart },
-  groupTitle: {
-    color: green.textDim,
-    fontSize: 12,
-    fontFamily: fonts.medium,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    marginBottom: spacing.sm,
-    marginStart: spacing.md,
-    textAlign: textStart,
-  },
-
-  plan: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing.lg,
-    marginBottom: spacing.xl,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: green.border,
-  },
-  planSide: { alignItems: "center", flex: 1 },
-  planLabel: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, marginBottom: 4 },
-  planValue: { color: green.green, fontSize: 26, fontFamily: fonts.monoMedium },
-  planValueDim: { color: green.textDim, fontSize: 26, fontFamily: fonts.monoMedium },
-
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: spacing.md },
-  rowLabel: { color: green.text, fontSize: type.body.fontSize, fontFamily: fonts.regular, textAlign: textStart },
-  rowHint: { color: green.textDim, fontSize: 11, fontFamily: fonts.regular, marginTop: 2, textAlign: textStart },
-  divider: { height: 1, backgroundColor: green.border },
-
-  stepper: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  stepBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: green.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stepValue: { color: green.text, fontSize: 16, fontFamily: fonts.monoMedium, minWidth: 44, textAlign: "center" },
-
-  segmentRow: { flexDirection: "row", gap: spacing.sm },
-  curSeg: { paddingHorizontal: spacing.lg, paddingVertical: 6, borderRadius: 12, minWidth: 44, alignItems: "center" },
-
-  langCurrent: { color: green.green, fontSize: type.body.fontSize, fontFamily: fonts.bold, textAlign: textStart },
-
-  signOut: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: green.border,
-  },
-  signOutText: { color: green.error, fontFamily: fonts.semibold },
-  localNote: { color: green.textDim, fontSize: 13, fontFamily: fonts.regular, paddingVertical: spacing.sm, textAlign: textStart },
-  switchBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: green.border,
-  },
-  switchText: { color: green.green, fontFamily: fonts.bold, fontSize: 15 },
-  }),
-);
 
 /** /settings route — kept so deep links still work; closes by popping. */
 export default function SettingsScreen() {

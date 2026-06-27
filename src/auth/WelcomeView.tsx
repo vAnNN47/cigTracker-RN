@@ -12,14 +12,15 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { statusCodes } from "@react-native-google-signin/google-signin";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { resolveLang } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { signInWithGoogle } from "@/lib/googleAuth";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, radius, spacing, type, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, Text, View } from "@/tw";
 
 import { LegalFooter } from "./LegalFooter";
 
@@ -27,7 +28,6 @@ import { LegalFooter } from "./LegalFooter";
 export function WelcomeView() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   const setDataMode = useAppStore((st) => st.setDataMode);
   const locale = useAppStore((st) => st.locale);
   const setLocale = useAppStore((st) => st.setLocale);
@@ -59,123 +59,66 @@ export function WelcomeView() {
   const goLocal = () => setDataMode("local");
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.box}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" }}>
+      <View className="w-full max-w-[380px] p-6 items-center">
         {/* Language picker (task: choose language on the welcome screen) */}
-        <View style={styles.langRow}>
+        <View className="flex-row gap-2 mb-5">
           {langs.map((l) => {
             const sel = effectiveLang === l.key;
             return (
               <Pressable
                 key={l.key}
                 onPress={() => !sel && setLocale(l.key)}
-                style={[styles.langChip, sel && styles.langChipSel]}
+                className={`px-4 py-2 rounded-pill border ${sel ? "bg-green border-green" : "bg-card-soft border-border"}`}
               >
-                <Text style={[styles.langText, sel && styles.langTextSel]}>{l.label}</Text>
+                <Text className={`${sel ? "text-on-green" : "text-text-dim"} text-[13px] font-semibold`}>{l.label}</Text>
               </Pressable>
             );
           })}
         </View>
 
-        <View style={styles.logo}>
+        <View className="w-[72px] h-[72px] rounded-[22px] bg-card-soft items-center justify-center">
           <MaterialIcons name="insights" size={36} color={green.green} />
         </View>
-        <Text style={styles.title}>{s.welcomeHeadline}</Text>
-        <Text style={styles.blurb}>{s.welcomeBlurb}</Text>
+        <Text className="text-green text-[24px] font-bold mt-5 text-center">{s.welcomeHeadline}</Text>
+        <Text className="text-text-dim font-regular text-center mt-2 leading-5">{s.welcomeBlurb}</Text>
 
-        <Pressable style={[styles.primaryBtn, busy && styles.disabled]} onPress={signIn} disabled={busy}>
+        <Pressable
+          className={`flex-row items-center justify-center gap-2 bg-green rounded-button py-[14px] self-stretch mt-6${busy ? " opacity-60" : ""}`}
+          onPress={signIn}
+          disabled={busy}
+        >
           {busy ? (
             <ActivityIndicator color={green.onGreen} />
           ) : (
             <>
               <MaterialIcons name="login" size={20} color={green.onGreen} />
-              <Text style={styles.primaryText}>{s.continueWithGoogle}</Text>
+              <Text className="text-on-green font-bold text-[14px]">{s.continueWithGoogle}</Text>
             </>
           )}
         </Pressable>
-        <Text style={styles.note}>{s.cloudModeNote}</Text>
+        <Text className="text-text-dim text-[12px] font-regular text-center mt-2">{s.cloudModeNote}</Text>
 
-        <View style={styles.dividerRow}>
-          <View style={styles.line} />
-          <Text style={styles.or}>{s.orDivider}</Text>
-          <View style={styles.line} />
+        <View className="flex-row items-center self-stretch gap-3 my-5">
+          <View className="flex-1 h-px bg-border" />
+          <Text className="text-text-dim text-[12px] font-regular">{s.orDivider}</Text>
+          <View className="flex-1 h-px bg-border" />
         </View>
 
-        <Pressable style={[styles.outlineBtn, busy && styles.disabled]} onPress={goLocal} disabled={busy}>
+        <Pressable
+          className={`flex-row items-center justify-center gap-2 bg-card border border-border rounded-button py-[14px] self-stretch${busy ? " opacity-60" : ""}`}
+          onPress={goLocal}
+          disabled={busy}
+        >
           <MaterialIcons name="smartphone" size={18} color={green.text} />
-          <Text style={styles.outlineText}>{s.continueLocally}</Text>
+          <Text className="text-text font-semibold text-[14px]">{s.continueLocally}</Text>
         </Pressable>
-        <Text style={styles.note}>{s.localModeNote}</Text>
+        <Text className="text-text-dim text-[12px] font-regular text-center mt-2">{s.localModeNote}</Text>
 
-        {err ? <Text style={styles.err}>{err}</Text> : null}
+        {err ? <Text className="text-error text-[12px] font-regular text-center mt-4">{err}</Text> : null}
 
         <LegalFooter />
       </View>
     </SafeAreaView>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-    safe: { flex: 1, backgroundColor: green.bg, alignItems: "center", justifyContent: "center" },
-    box: { width: "100%", maxWidth: 380, padding: spacing.xxl, alignItems: "center" },
-
-    langRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.xl },
-    langChip: {
-      paddingHorizontal: spacing.lg,
-      paddingVertical: 8,
-      borderRadius: radius.pill,
-      backgroundColor: green.cardSoft,
-      borderWidth: 1,
-      borderColor: green.border,
-    },
-    langChipSel: { backgroundColor: green.green, borderColor: green.green },
-    langText: { color: green.textDim, fontSize: 13, fontFamily: fonts.semibold },
-    langTextSel: { color: green.onGreen },
-
-    logo: {
-      width: 72,
-      height: 72,
-      borderRadius: 22,
-      backgroundColor: green.cardSoft,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    title: { color: green.green, fontSize: 24, fontFamily: fonts.bold, marginTop: spacing.xl, textAlign: "center" },
-    blurb: { color: green.textDim, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm, lineHeight: 20 },
-
-    primaryBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: spacing.sm,
-      backgroundColor: green.green,
-      borderRadius: radius.button,
-      paddingVertical: 14,
-      alignSelf: "stretch",
-      marginTop: spacing.xxl,
-    },
-    primaryText: { color: green.onGreen, fontFamily: fonts.bold, fontSize: type.body.fontSize },
-    outlineBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: spacing.sm,
-      backgroundColor: green.card,
-      borderWidth: 1,
-      borderColor: green.border,
-      borderRadius: radius.button,
-      paddingVertical: 14,
-      alignSelf: "stretch",
-    },
-    outlineText: { color: green.text, fontFamily: fonts.semibold, fontSize: type.body.fontSize },
-    disabled: { opacity: 0.6 },
-    note: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.sm },
-
-    dividerRow: { flexDirection: "row", alignItems: "center", alignSelf: "stretch", gap: spacing.md, marginVertical: spacing.xl },
-    line: { flex: 1, height: 1, backgroundColor: green.border },
-    or: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
-
-    err: { color: green.error, fontSize: 12, fontFamily: fonts.regular, textAlign: "center", marginTop: spacing.lg },
-  }),
-);
