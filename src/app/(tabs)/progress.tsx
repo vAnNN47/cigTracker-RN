@@ -7,7 +7,6 @@
  */
 import { MaterialIcons } from "@expo/vector-icons";
 import { ReactNode, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShallow } from "zustand/react/shallow";
 
@@ -27,7 +26,8 @@ import {
 import { textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, makeUseStyles, spacing, useColors } from "@/theme";
+import { useColors } from "@/theme";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 const RANGES: { key: string; value: number | null }[] = [
   { key: "7d", value: 7 },
@@ -39,7 +39,6 @@ const RANGES: { key: string; value: number | null }[] = [
 export default function ProgressScreen() {
   const s = useStrings();
   const green = useColors();
-  const styles = useStyles();
   // Select only the slices this screen reads (shallow-compared) so an unrelated
   // store write doesn't re-render the charts.
   const { logs, limits, purchases, settings } = useAppStore(
@@ -83,31 +82,31 @@ export default function ProgressScreen() {
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <TabHeader />
       <ScrollView
-        style={{ flex: 1, backgroundColor: green.bg }}
-        contentContainerStyle={{ paddingTop: spacing.sm, paddingHorizontal: 22, paddingBottom: spacing.xxl }}
+        className="flex-1 bg-bg"
+        contentContainerClassName="pt-2 px-[22px] pb-6"
         alwaysBounceVertical
         overScrollMode="always"
       >
         {/* Header + range */}
-        <Text style={styles.title}>{s.progress}</Text>
-        <View style={styles.rangeRow}>
+        <Text className="text-text text-[22px] font-bold mb-3" style={{ textAlign: textStart }}>{s.progress}</Text>
+        <View className="flex-row gap-2 mb-4">
           {RANGES.map((r) => {
             const sel = range === r.value;
             return (
               <Pressable
                 key={r.key}
                 onPress={() => setRange(r.value)}
-                style={[styles.chip, sel && styles.chipSel]}
+                className={`px-4 py-2 rounded-full ${sel ? "bg-green" : "bg-card-soft"}`}
               >
-                <Text style={[styles.chipText, sel && styles.chipTextSel]}>{r.key}</Text>
+                <Text className={`${sel ? "text-on-green" : "text-text-dim"} text-[13px] font-semibold`}>{r.key}</Text>
               </Pressable>
             );
           })}
         </View>
 
         {/* Metrics — two hairline-separated rows of two cells */}
-        <View style={styles.metrics}>
-          <View style={styles.metricRow}>
+        <View className="mb-2">
+          <View className="flex-row">
             <Metric value={avg.toFixed(1)} label={s.avgPerDay} />
             <Metric
               value={`${withinDays}`}
@@ -117,7 +116,7 @@ export default function ProgressScreen() {
               divider
             />
           </View>
-          <View style={[styles.metricRow, styles.metricRowDivider]}>
+          <View className="flex-row border-t border-border">
             <Metric value={`${cur}${totalSaved.toFixed(0)}`} valueColor={green.green} label={s.saved} />
             <Metric
               value={`${weekNow}`}
@@ -132,7 +131,7 @@ export default function ProgressScreen() {
 
         {/* Cigs vs limit */}
         <Section title={s.cigsVsLimit}>
-          <View style={styles.chartWrap}>
+          <View className="mt-3">
             <LineChart
               series={[
                 { points: stats.map((st) => st.count), color: green.green, fill: true },
@@ -146,7 +145,7 @@ export default function ProgressScreen() {
               labelColor={green.textDim}
             />
           </View>
-          <View style={styles.legend}>
+          <View className="flex-row gap-4 mt-3">
             <Legend color={green.green} label={s.smoked} />
             <Legend color={green.textDim} label={s.limitLabel} />
             <Legend color={green.error} label={s.over} />
@@ -155,7 +154,7 @@ export default function ProgressScreen() {
 
         {/* Time of day */}
         <Section title={s.whenYouSmoke} sub={histTotal < 3 ? s.notEnoughData : s.peakAround(peakLabel)}>
-          <View style={styles.histRow}>
+          <View className="flex-row items-end h-14 mt-3">
             {hist.map((c, h) => {
               const frac = histMax === 0 ? 0 : c / histMax;
               const isPeak = h === peakHour && c > 0;
@@ -173,9 +172,9 @@ export default function ProgressScreen() {
               );
             })}
           </View>
-          <View style={styles.ticks}>
+          <View className="flex-row justify-between mt-1.5">
             {["00", "06", "12", "18", "23"].map((t) => (
-              <Text key={t} style={styles.tick}>
+              <Text key={t} className="text-text-dim text-[10px] font-regular">
                 {t}
               </Text>
             ))}
@@ -184,7 +183,7 @@ export default function ProgressScreen() {
 
         {/* Money saved */}
         <Section title={s.moneySaved} sub={s.baselineNote(settings.baselinePerDay)}>
-          <View style={styles.chartWrap}>
+          <View className="mt-3">
             <LineChart
               series={[{ points: savings.map((p) => p.saved), color: green.green, fill: true }]}
               xLabels={savings.map((p) => `${p.day.getDate()}/${p.day.getMonth() + 1}`)}
@@ -196,9 +195,9 @@ export default function ProgressScreen() {
         </Section>
 
         {/* Spend summary */}
-        <View style={styles.spendRow}>
+        <View className="flex-row items-center gap-3 py-4 border-t border-border">
           <MaterialIcons name="payments" size={20} color={green.textDim} />
-          <Text style={styles.spendText}>
+          <Text className="text-text-dim flex-1 text-[13px] font-regular" style={{ textAlign: textStart }}>
             {s.spentSummary(cur, totalSpent(purchases).toFixed(0), totalCigarettesBought(purchases))}
           </Text>
         </View>
@@ -226,19 +225,25 @@ function Metric({
   trailing?: ReactNode;
   divider?: boolean;
 }) {
-  const styles = useStyles();
   return (
-    <View style={[styles.metricCell, divider && styles.metricCellDivider]}>
-      <View style={styles.metricTop}>
-        <Text style={[styles.metricVal, valueColor ? { color: valueColor } : null]}>
+    <View className={`flex-1 py-3 px-2${divider ? " border-l border-border" : ""}`}>
+      <View className="flex-row items-center justify-between">
+        <Text
+          className="text-text text-[24px] font-mono-semibold"
+          style={[{ textAlign: textStart }, valueColor ? { color: valueColor } : null]}
+        >
           {value}
-          {valueSuffix ? <Text style={styles.metricValDim}>{valueSuffix}</Text> : null}
+          {valueSuffix ? <Text className="text-text-dim text-[16px] font-mono">{valueSuffix}</Text> : null}
         </Text>
         {trailing}
       </View>
-      <Text style={styles.metricLabel}>{label}</Text>
+      <Text className="text-text-dim text-[12px] font-regular mt-1" style={{ textAlign: textStart }}>{label}</Text>
       {caption ? (
-        <Text style={[styles.metricCaption, captionColor ? { color: captionColor } : null]} numberOfLines={1}>
+        <Text
+          className="text-[11px] font-medium mt-0.5"
+          style={[{ textAlign: textStart }, captionColor ? { color: captionColor } : null]}
+          numberOfLines={1}
+        >
           {caption}
         </Text>
       ) : null}
@@ -247,76 +252,20 @@ function Metric({
 }
 
 function Section({ title, sub, children }: { title: string; sub?: string; children: ReactNode }) {
-  const styles = useStyles();
   return (
-    <View style={styles.section}>
-      <Text style={styles.eyebrow}>{title}</Text>
-      {sub ? <Text style={styles.sectionSub}>{sub}</Text> : null}
+    <View className="py-4 border-t border-border">
+      <Text className="text-text-dim text-[12px] uppercase tracking-[1.2px] font-medium" style={{ textAlign: textStart }}>{title}</Text>
+      {sub ? <Text className="text-text-dim text-[12px] font-regular mt-1" style={{ textAlign: textStart }}>{sub}</Text> : null}
       {children}
     </View>
   );
 }
 
 function Legend({ color, label }: { color: string; label: string }) {
-  const styles = useStyles();
   return (
-    <View style={styles.legendItem}>
-      <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={styles.legendText}>{label}</Text>
+    <View className="flex-row items-center gap-1.5">
+      <View className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+      <Text className="text-text-dim text-[12px] font-regular">{label}</Text>
     </View>
   );
 }
-
-const useStyles = makeUseStyles((green) =>
-  StyleSheet.create({
-  title: { color: green.text, fontSize: 22, fontFamily: fonts.bold, textAlign: textStart, marginBottom: spacing.md },
-
-  rangeRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.lg },
-  chip: { paddingHorizontal: spacing.lg, paddingVertical: 8, borderRadius: 999, backgroundColor: green.cardSoft },
-  chipSel: { backgroundColor: green.green },
-  chipText: { color: green.textDim, fontSize: 13, fontFamily: fonts.semibold },
-  chipTextSel: { color: green.onGreen },
-
-  metrics: { marginBottom: spacing.sm },
-  metricRow: { flexDirection: "row" },
-  metricRowDivider: { borderTopWidth: 1, borderTopColor: green.border },
-  metricCell: { flex: 1, paddingVertical: spacing.md, paddingHorizontal: spacing.sm },
-  metricCellDivider: { borderLeftWidth: 1, borderLeftColor: green.border },
-  metricTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  metricVal: { color: green.text, fontSize: 24, fontFamily: fonts.monoSemibold, textAlign: textStart },
-  metricValDim: { color: green.textDim, fontSize: 16, fontFamily: fonts.mono },
-  metricLabel: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
-  metricCaption: { fontSize: 11, fontFamily: fonts.medium, marginTop: 2, textAlign: textStart },
-
-  section: { paddingVertical: spacing.lg, borderTopWidth: 1, borderTopColor: green.border },
-  eyebrow: {
-    color: green.textDim,
-    fontSize: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    fontFamily: fonts.medium,
-    textAlign: textStart,
-  },
-  sectionSub: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular, marginTop: 4, textAlign: textStart },
-  chartWrap: { marginTop: spacing.md },
-
-  legend: { flexDirection: "row", gap: spacing.lg, marginTop: spacing.md },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { color: green.textDim, fontSize: 12, fontFamily: fonts.regular },
-
-  histRow: { flexDirection: "row", alignItems: "flex-end", height: 56, marginTop: spacing.md },
-  ticks: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  tick: { color: green.textDim, fontSize: 10, fontFamily: fonts.regular },
-
-  spendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    paddingVertical: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: green.border,
-  },
-  spendText: { color: green.textDim, flex: 1, fontSize: 13, fontFamily: fonts.regular, textAlign: textStart },
-  }),
-);

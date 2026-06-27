@@ -13,6 +13,7 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 - [x] Pilot screen converted: `community.tsx` (StyleSheet → className), gate green — 2026-06-27
 - [x] Green-fill blocker root-caused + fixed — real cause was `light-dark()` losing its dark branch under metro's `inlineVariables:false`, dropping ALL themed backgrounds; replaced with `@media (prefers-color-scheme: dark)` var overrides — 2026-06-27
 - [x] Batch-converted 16 mechanical screens (the simple + medium tiers) StyleSheet → className in one run; tsc + lint clean + all novel utilities compile-checked through the real react-native-css pipeline — 2026-06-27 (device-eyeball pending)
+- [x] Converted the 3 special screens — `progress` (SVG), `index` (Today, RN Animated), `calendar` (day grid) — 2026-06-27. **All 20 screens now className.** Only the FINAL cleanup (retire `makeUseStyles` + flip the docs rule) + the user's device-eyeball remain. (device-eyeball pending)
 
 ## How it's wired (so the next screens follow the same pattern)
 
@@ -103,9 +104,9 @@ after device-verifying it** in light + dark + RTL against the original.
 - [x] `src/app/settings.tsx` — 27 (dropped dead unused `title` style) — batch 2026-06-27 ⚠️
 - [x] `src/components/sheets/AddSmokeSheet.tsx` — 27 (`SheetTextInput` isn't tw-wrappable → input style stays a token-built inline object; dropped dead `feelChip*`) — batch 2026-06-27 ⚠️
 - [x] `src/components/drawers/AccountDrawer.tsx` — 28 (`StyleSheet.hairlineWidth` dividers kept inline — `border-b` is 2× thicker) — batch 2026-06-27 ⚠️
-- [ ] `src/app/(tabs)/progress.tsx` — 29 (SVG charts — colors stay via `useColors`)
-- [ ] `src/app/(tabs)/index.tsx` — 41 (Today — Ring/FAB/pulse, Animated)
-- [ ] `src/app/(tabs)/calendar.tsx` — 43 (heaviest — day grid)
+- [x] `src/app/(tabs)/progress.tsx` — 29 (SVG `LineChart` colors via `useColors`; dynamic-height histogram bar stays inline) — 2026-06-27 ⚠️ device-eyeball pending
+- [x] `src/app/(tabs)/index.tsx` — 41 (Today — **RN** `Animated` ScrollView/View can't take className → hero/fab + their shadows stay inline; rest className) — 2026-06-27 ⚠️
+- [x] `src/app/(tabs)/calendar.tsx` — 43 (day grid: one class per property — selection>today>status — so conflicting border/bg utilities never stack) — 2026-06-27 ⚠️
 - [ ] **FINAL:** retire `src/theme`'s `makeUseStyles` (keep `useColors` for icon/SVG/safe-area),
   then **flip the "no Tailwind/NativeWind, StyleSheet only" rule** in `coding-standards.md`,
   `CLAUDE.md`, `project-overview.md`, and verify no skill names `StyleSheet` directly.
@@ -153,3 +154,12 @@ after device-verifying it** in light + dark + RTL against the original.
   compile-checked through the real `@tailwindcss/postcss` → react-native-css pipeline (incl. `ms-*` →
   `marginInlineStart`, RTL-aware + RN-0.85-supported). 3 special screens (`progress` SVG, `index`
   Animated, `calendar` grid) deliberately left for solo runs. Device-eyeball pending.
+- 2026-06-27 — Converted the 3 special screens, completing all 20. `progress`: SVG `LineChart` keeps
+  color props via `useColors`, the dynamic-height histogram bar stays inline. `index` (Today): uses
+  **RN** `Animated` (not reanimated) — `Animated.ScrollView`/`Animated.View` can't take className, so
+  the hero ring, fab, and their shadow styles stay inline objects; everything else className. `calendar`:
+  the day grid computes **one class per property** (selection > today > status precedence) instead of
+  stacking conflicting `border-*`/`bg-*` utilities, because NativeWind resolves same-property conflicts
+  by CSS source order, not className order. Gate: `tsc` + `lint` clean; the 17 new utilities
+  (`aspect-square`, `rounded-cell`, `bg-under-bg`/`text-over-text`/… status tokens, `border-[1.5px]`,
+  `-bottom-1.5`, `gap-px`) compile-checked through the real pipeline. Device-eyeball pending.

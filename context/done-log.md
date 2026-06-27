@@ -24,6 +24,10 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 > Format: newest at the top. `ASKED` = an intake batch. `SHIPPED` = completed work.
 
+**SHIPPED — 2026-06-27 — `[styling]` convert the 3 special screens (all 20 now done) — branch `nativewindv5_migration_01_styling_01`**
+- `progress` (SVG `LineChart` keeps color props via `useColors`; dynamic-height histogram bar stays inline), `index`/Today (RN `Animated` ScrollView/View can't take className → hero ring + fab + their shadows stay inline objects; rest className), `calendar` (day grid — computes one class per property with selection>today>status precedence so conflicting `border-*`/`bg-*` never stack, since NativeWind resolves same-property conflicts by CSS order not className order).
+- Gate: tsc + lint clean; the 17 new utilities (`aspect-square`, `rounded-cell`, status tokens `bg-under-bg`/`text-over-text`/…, `border-[1.5px]`, `-bottom-1.5`, `gap-px`) compile-checked through the real pipeline. **All 20 screens are now className**; only the FINAL cleanup (retire `makeUseStyles` + flip the standards-doc rule) + the user's whole-app device-eyeball remain.
+
 **SHIPPED — 2026-06-27 — `[styling]` batch-migrate 16 screens StyleSheet → className — branch `nativewindv5_migration_01_styling_01`**
 - Converted the full simple + medium tiers in one run (green-fill fix made it mechanical + safe to batch): `_layout`, `SplashView`, `TabHeader`, `Toast`, `LegalFooter`, `LoginView`, `OnboardingView`, `purchases`, `AddPurchaseSheet`, `MainDrawer`, `WelcomeView`, `LogDetailSheet`, `edit-log`, `settings`, `AddSmokeSheet`, `AccountDrawer`.
 - Conventions held: non-CSS / non-wrapped elements (`SafeAreaView`, `SectionList`, `KeyboardAwareScrollView`, `DateTimePicker`, `SheetTextInput`, RN `Animated`, `Switch`, `GestureHandlerRootView`) keep `useColors`/inline; icon + SVG colors via `useColors`; RTL `textStart`/`textEnd`/`inputAlign` stay inline; off-scale px use arbitrary values. Corrected the roadmap's wrong "Toast → @/tw/animated" note (Toast uses RN Animated, not reanimated). Dropped dead styles (settings `title`, AddSmokeSheet `feelChip*`).
