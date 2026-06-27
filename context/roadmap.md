@@ -20,7 +20,7 @@ _(none open)_
 
 ## 🔍 Audits
 
-- [ ] **[perf]** Whole-app render audit — run **`expo-react-native-performance`** (the 42-rule Expo render/perf skill) across `src/` **and** `packages/` (keyboard-sheet, month-pager, number-pad, pull-refresh) to catch re-render storms, missing list virtualization, and absent memoization before they bite. Also cross **`app-ui-design`** over the UI (sheets/drawers/screens) for design best-practice. Goal: no "multiple rendering issues". Pairs with the **[inputs]** iOS cursor-jump bug (same render-storm root). (אודיט רינדור לכל האפליקציה — perf + ui-design skills מול הקוד והפקג'ים)
+- [ ] **[perf]** Render-audit follow-ups (the store-subscription storm + Stats memoization are **done** — see [features/perf.md](features/perf.md)). Still open: (1) cross **`app-ui-design`** over the UI (sheets/drawers/screens) for design best-practice; (2) `purchases.tsx` history is an unbounded `ScrollView`+`.map` → `FlashList`/`SectionList` if histories get long; (3) `calendar.tsx` `renderMonth` scans all logs per cell × 42 cells × 3 month slots — memoize per-month if a profiler flags it on large data. (אודיט רינדור — הסטॉרm תוקן; נשאר ui-design + וירטואליזציה)
 
 ## 🧹 Tech debt
 

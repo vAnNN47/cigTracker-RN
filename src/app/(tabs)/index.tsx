@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useShallow } from "zustand/react/shallow";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/sheets/AddPurchaseSheet";
 import { AddSmokeSheet, AddSmokeSheetRef } from "@/components/sheets/AddSmokeSheet";
@@ -39,7 +40,11 @@ export default function TodayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { logs, limits, purchases, settings } = useAppStore();
+  // Select only the slices this screen reads (shallow-compared) so an unrelated
+  // store write (theme, locale, another tab's data) doesn't re-render it.
+  const { logs, limits, purchases, settings } = useAppStore(
+    useShallow((st) => ({ logs: st.logs, limits: st.limits, purchases: st.purchases, settings: st.settings })),
+  );
   const deleteLog = useAppStore((st) => st.deleteLog);
   const refresh = useAppStore((st) => st.refresh);
 

@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Alert, I18nManager, Pressable, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useShallow } from "zustand/react/shallow";
 
 import { currentLimit } from "@/domain/logic";
 import { resolveLang, textStart } from "@/i18n/rtl";
@@ -34,7 +35,9 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
   const green = useColors();
   const styles = useStyles();
   const backIcon = I18nManager.isRTL ? "chevron-right" : "chevron-left";
-  const { limits, settings, locale } = useAppStore();
+  const { limits, settings, locale } = useAppStore(
+    useShallow((st) => ({ limits: st.limits, settings: st.settings, locale: st.locale })),
+  );
   const dataMode = useAppStore((st) => st.dataMode);
   const setDataMode = useAppStore((st) => st.setDataMode);
   const setLimit = useAppStore((st) => st.setLimit);

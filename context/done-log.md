@@ -21,6 +21,19 @@ so nothing vanishes. See [archive/README.md](archive/README.md).
 
 ---
 
+## 2026-06-27 — SHIPPED (branch: `perf-render-audit`)
+Built via `/fire perf` (partial — render-storm + memoization done; item stays open for the rest):
+- **[perf]** Killed the whole-app render-storm: 5 screens (`index`, `calendar`, `progress`,
+  `purchases`, `settings`) subscribed to the **entire** store (`useAppStore()` no selector), so any
+  `set()` re-rendered every mounted tab. Switched all to `useShallow` slice selectors. Same root as
+  the `[inputs]` caret bug.
+- **[perf]** Memoized `progress.tsx`'s O(logs) Stats series (`dailyStats`/`savingsSeries`/
+  `hourlyHistogram`) with `useMemo`.
+- **Left open** (narrowed roadmap `[perf]`): `app-ui-design` cross-check, `purchases` list
+  virtualization, `calendar` per-cell month scan. See `context/features/perf.md`.
+
+---
+
 ## 2026-06-27 — SHIPPED (branch: `input-fast-type-fix`)
 Built via `/fire inputs`. Closed:
 - **[inputs]** iOS cursor-jumps-backwards-on-fast-typing bug. Made all four free-text fields

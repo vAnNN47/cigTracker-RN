@@ -6,9 +6,10 @@
  * week that simply had no data.
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { ReactNode, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useShallow } from "zustand/react/shallow";
 
 import { LineChart } from "@/components/charts/LineChart";
 import { TabHeader } from "@/components/ui/TabHeader";
@@ -42,15 +43,21 @@ export default function ProgressScreen() {
   const s = useStrings();
   const green = useColors();
   const styles = useStyles();
-  const { logs, limits, purchases, settings } = useAppStore();
+  // Select only the slices this screen reads (shallow-compared) so an unrelated
+  // store write doesn't re-render the charts.
+  const { logs, limits, purchases, settings } = useAppStore(
+    useShallow((st) => ({ logs: st.logs, limits: st.limits, purchases: st.purchases, settings: st.settings })),
+  );
   const dsh = settings.dayStartHour;
   const cur = settings.currencySymbol;
 
   const [range, setRange] = useState<number | null>(30);
 
-  const stats = dailyStats(logs, limits, settings, range ?? undefined);
-  const savings = savingsSeries(logs, limits, settings, range ?? undefined);
-  const histogram = hourlyHistogram(logs, dsh, range ?? undefined);
+  // Each series is an O(logs) sweep — memoize so they only recompute when the
+  // underlying data or the selected range changes, not on every render.
+  const stats = useMemo(() => dailyStats(logs, limits, settings, range ?? undefined), [logs, limits, settings, range]);
+  const savings = useMemo(() => savingsSeries(logs, limits, settings, range ?? undefined), [logs, limits, settings, range]);
+  const histogram = useMemo(() => hourlyHistogram(logs, dsh, range ?? undefined), [logs, dsh, range]);
 
   const withinDays = stats.filter(withinLimit).length;
   const avg = stats.length ? stats.reduce((a, st) => a + st.count, 0) / stats.length : 0;

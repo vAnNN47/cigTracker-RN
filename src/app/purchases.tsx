@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import { useMemo, useRef } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useShallow } from "zustand/react/shallow";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/sheets/AddPurchaseSheet";
 import { dayKey, keyOf } from "@/domain/day";
@@ -31,7 +32,9 @@ export default function PurchasesScreen() {
   const green = useColors();
   const styles = useStyles();
   const router = useRouter();
-  const { purchases, settings } = useAppStore();
+  const { purchases, settings } = useAppStore(
+    useShallow((st) => ({ purchases: st.purchases, settings: st.settings })),
+  );
   const purchaseRef = useRef<AddPurchaseSheetRef>(null);
 
   const cur = settings.currencySymbol;

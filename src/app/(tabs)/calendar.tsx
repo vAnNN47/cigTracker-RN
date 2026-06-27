@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useShallow } from "zustand/react/shallow";
 
 import { AddPurchaseSheet, AddPurchaseSheetRef } from "@/components/sheets/AddPurchaseSheet";
 import { LogDetailSheet, LogDetailSheetRef } from "@/components/sheets/LogDetailSheet";
@@ -70,7 +71,11 @@ export default function HistoryScreen() {
   const green = useColors();
   const styles = useStyles();
   const router = useRouter();
-  const { logs, limits, purchases, settings } = useAppStore();
+  // Select only the slices this screen reads (shallow-compared) so an unrelated
+  // store write doesn't re-render the whole calendar.
+  const { logs, limits, purchases, settings } = useAppStore(
+    useShallow((st) => ({ logs: st.logs, limits: st.limits, purchases: st.purchases, settings: st.settings })),
+  );
   const dsh = settings.dayStartHour;
 
   const today = logicalToday(dsh);
