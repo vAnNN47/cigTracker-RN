@@ -11,6 +11,7 @@ staged on branch `nativewindv5_migration_01`. Tokens are ported to CSS in
 
 - [x] NativeWind v5 / Tailwind v4 setup — deps, metro/postcss, token map, `tw` wrappers, color-scheme bridge — 2026-06-27
 - [x] Pilot screen converted: `community.tsx` (StyleSheet → className), gate green — 2026-06-27
+- [x] Green-fill blocker root-caused + fixed (`--color-*: initial` drops Tailwind's default palette so the `green` family no longer shadows our `bg-green`/`bg-green-bright`) — 2026-06-27
 
 ## How it's wired (so the next screens follow the same pattern)
 
@@ -80,7 +81,7 @@ wrappers) is already in place, so each remaining screen is just steps 1–5:
 Order chosen by style-block count (smallest first) so each run stays small. Tick a screen **only
 after device-verifying it** in light + dark + RTL against the original.
 
-- [x] `src/app/(tabs)/community.tsx` — pilot (2026-06-27) ⚠️ device-verify still pending (green-fill bug, see below)
+- [x] `src/app/(tabs)/community.tsx` — pilot (2026-06-27); green-fill blocker fixed (2026-06-27) ⚠️ device-eyeball still the user's final check
 - [ ] `src/app/_layout.tsx` — 2 styles (fill/overlay)
 - [ ] `src/auth/SplashView.tsx` — 2
 - [ ] `src/components/ui/TabHeader.tsx` — 3
@@ -106,14 +107,17 @@ after device-verifying it** in light + dark + RTL against the original.
 
 ## Known issues / blockers (resolve as part of the loop)
 
-- ⚠️ **Green fills not painting in the pilot (OPEN).** In the `community.tsx` screenshots the share
-  button (`bg-green`) and the megaphone circle (`bg-green-bright`) don't visibly fill — in dark the
-  icon (dark glyph on the missing circle) disappears. The *compiled* CSS is correct
-  (`background-color: var(--color-green)`), and themed **text** colors (also `var()` + `light-dark`)
-  DO resolve, so it's narrower than "vars don't work". **First task before more screens:** repro +
-  root-cause (try `metro.config.js` `inlineVariables: true`; test a plain-hex bg vs a token bg vs a
-  `light-dark()` bg to isolate whether it's `var()` scope, `light-dark()`, or background-on-`<Text>`;
-  check react-native-css issues). Don't convert more screens until green/`bg-*` tokens paint.
+- ✅ **Green fills not painting in the pilot (RESOLVED 2026-06-27).** Share button (`bg-green`) +
+  megaphone circle (`bg-green-bright`) rendered empty. **Root cause:** Tailwind v4's default color
+  palette ships a `green-50…950` family; react-native-css treats `green` as a known color *family*,
+  so `bg-green` / `bg-green-bright` parsed as `family green, shade {none|bright}` → invalid shade →
+  dropped. Tokens whose name isn't a default family (`card-soft`, `text`, …) were unaffected, which
+  is why only the greens failed while text colors resolved. **Fix:** `--color-*: initial` at the top
+  of the `@theme` block in `src/global.css` drops the entire default palette, so `green` is no longer
+  a family and `bg-green`/`bg-green-bright` resolve as plain single-name colors. Proven by compiling
+  `global.css` through `@tailwindcss/postcss`: `.bg-green { background-color: var(--color-green) }`,
+  `.bg-green-bright { background-color: var(--color-green-bright) }`, and `--color-green-500` is gone.
+  Committed in `71bd951`.
 
 ## Fix log
 
@@ -124,3 +128,8 @@ after device-verifying it** in light + dark + RTL against the original.
   + `ColorSchemeBridge` (store `themeMode` → RN `Appearance`), imported `global.css` in the root
   layout. Converted the pilot screen `community.tsx` from `StyleSheet` → `className`, pixel-faithful
   (RTL alignment kept inline, icon colors via `useColors`). tsc + lint clean.
+- 2026-06-27 — Green-fill blocker resolved: `--color-*: initial` in `global.css` drops Tailwind's
+  default palette so the `green` family stops shadowing our `bg-green`/`bg-green-bright`. Verified by
+  compiling `global.css` (`.bg-green` → `var(--color-green)`, default `green-500` gone). Re-checked the
+  pilot conversion against the original `makeUseStyles` block — every value pixel-exact (gap-3=12,
+  mt-6=24, py-3=12, mt-px=1, tracking-[1.2px], px-[22px]). tsc + lint clean. Device-eyeball left to user.
