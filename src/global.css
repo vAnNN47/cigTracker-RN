@@ -31,6 +31,11 @@
     --radius-stepper: 10px;
     --radius-sheet: 28px;
 
+    /* Drop Tailwind's default color palette so our semantic token names (notably
+     * `green`) don't collide with built-ins like the `green-50…950` scale — the
+     * collision left `bg-green`/`bg-green-bright` unresolved at runtime. */
+    --color-*: initial;
+
     /* Colors — light-dark(green, dark) */
     --color-bg: light-dark(#f7f9ff, #1e1f22);
     --color-card: light-dark(#ffffff, #2b2d31);
