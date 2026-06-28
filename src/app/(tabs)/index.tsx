@@ -38,6 +38,7 @@ import { useColors } from "@/theme";
 import { Pressable, ScrollView, Text, View } from "@/tw";
 
 const HOUR = 60 * 60 * 1000;
+const HERO_DEPTH = 8; // px the hero "button" face sits above its darker 3D base
 
 /** Today tab: tap-to-log hero ring (count up/down), streak, savings, and recent logs. */
 export default function TodayScreen() {
@@ -101,7 +102,11 @@ export default function TodayScreen() {
     run(); // first entry (mount)
     return navigation.addListener("focus", run); // every return to the tab
   }, [navigation, hint]);
-  const hintStyle = useAnimatedStyle(() => ({ transform: [{ scale: hint.value }] }));
+  // Press depresses the hero onto its base (0→1 = up→down) for a tactile button.
+  const press = useSharedValue(0);
+  const heroStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: press.value * HERO_DEPTH }, { scale: hint.value }],
+  }));
 
   // Floating add button: POPS in (spring overshoot) once the hero circle has
   // scrolled away, so logging is always one tap away (task: pinned add button).
@@ -174,28 +179,47 @@ export default function TodayScreen() {
         <View className="items-center mt-5">
           <Pressable
             onPress={() => addRef.current?.present()}
+            onPressIn={() => {
+              press.value = withTiming(1, { duration: 60 });
+            }}
+            onPressOut={() => {
+              press.value = withSpring(0, { damping: 12, stiffness: 220 });
+            }}
             accessibilityLabel={over ? `${s.addCigarette}, ${s.overLimit(overBy)}` : s.addCigarette}
           >
-            <Animated.View
-              style={[
-                {
+            {/* 3D button: a darker base peeks below the top face = physical
+                thickness; pressing translates the face down onto the base. */}
+            <View style={{ width: 220, height: 220 + HERO_DEPTH, alignItems: "center" }}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: HERO_DEPTH,
                   width: 220,
                   height: 220,
                   borderRadius: 110,
-                  backgroundColor: green.ring,
-                  borderWidth: 1,
-                  borderColor: over ? green.overBorder : green.ringStroke,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  shadowColor: green.shadow,
-                  shadowOpacity: 0.12,
-                  shadowRadius: 16,
-                  shadowOffset: { width: 0, height: 6 },
-                  elevation: 3,
-                },
-                hintStyle,
-              ]}
-            >
+                  backgroundColor: green.ringDeep,
+                }}
+              />
+              <Animated.View
+                style={[
+                  {
+                    width: 220,
+                    height: 220,
+                    borderRadius: 110,
+                    backgroundColor: green.ring,
+                    borderWidth: 1,
+                    borderColor: over ? green.overBorder : green.ringStroke,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: green.shadow,
+                    shadowOpacity: 0.18,
+                    shadowRadius: 12,
+                    shadowOffset: { width: 0, height: 8 },
+                    elevation: 6,
+                  },
+                  heroStyle,
+                ]}
+              >
               <Text className={`${over ? "text-over-text" : "text-green"} text-[44px] font-mono-semibold`}>{heroCount}</Text>
               <Text className="text-green text-[14px] font-medium mt-1">{heroLabel}</Text>
               <Text className="text-green text-[14px] font-semibold mt-0.5">{heroSub}</Text>
@@ -206,7 +230,8 @@ export default function TodayScreen() {
                   <Text className="text-over-text text-[11px] font-bold">{s.overLimit(overBy)}</Text>
                 </View>
               )}
-            </Animated.View>
+              </Animated.View>
+            </View>
           </Pressable>
           <View className="flex-row items-center gap-[5px] mt-4">
             <MaterialIcons name="touch-app" size={14} color={green.textDim} />

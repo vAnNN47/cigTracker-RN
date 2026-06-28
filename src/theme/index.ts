@@ -86,6 +86,7 @@ export const green = {
 
   ring: "#D1E4FB", // hero circle fill
   ringStroke: "#C9DCF3",
+  ringDeep: "#A9C6EF", // hero button 3D bottom edge (the "thickness")
 
   // Semantic — error + count-status tints + shadow (themed per palette so
   // screens stop hardcoding hex). Status tints follow each theme's accent.
@@ -123,6 +124,7 @@ export const dark = {
 
   ring: "#232529", // hero circle fill — elevated gray
   ringStroke: "#2E4D3A",
+  ringDeep: "#141519", // hero button 3D bottom edge (the "thickness")
 
   // Semantic — themed to the forest-green accent + a softer dark-mode red.
   error: "#ED7373", // destructive / over-limit text + icons
