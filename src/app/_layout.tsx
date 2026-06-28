@@ -119,7 +119,7 @@ function Gate() {
     <View className="flex-1 bg-bg">
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="edit-log" options={{ presentation: "modal" }} />
+        <Stack.Screen name="edit-log" options={{ presentation: "card" }} />
         <Stack.Screen name="purchases" />
         <Stack.Screen name="settings" />
       </Stack>

@@ -172,6 +172,7 @@ export default function EditLogModal() {
             defaultValue={log?.diary ?? ""}
             onChangeText={(t) => (diaryRef.current = t)}
             multiline
+            scrollEnabled={false}
             textAlignVertical="top"
           />
         </View>

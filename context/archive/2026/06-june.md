@@ -3,7 +3,7 @@
 <!-- Shipped this month, newest day on top. Format + rules → context/archive/README.md -->
 
 ## 2026-06-28
-- [app][edit-log] Android diary-scroll fix — the `KeyboardAwareScrollView` had no `flex: 1`, so under the flex-column `SafeAreaView` it sized to content and overflowed unbounded → Android wouldn't scroll (only focusing the diary made keyboard-controller resize/bound it). Added `style={{ flex: 1 }}`. Proven on-device (adb): pre-fix swipe did nothing; post-fix content scrolls and the diary sits above the keyboard. (rn-debug; iOS was lenient)
+- [app][edit-log] Android diary-scroll fix (3 parts; flex:1 alone was NOT enough) — root cause: `presentation: "modal"` makes the edit screen a separate Android window the root `KeyboardProvider` doesn't reach, so `KeyboardAwareScrollView` never applied the keyboard inset (no scroll). Fix: (1) `presentation: "card"`, (2) `flex:1` on the KeyboardAwareScrollView, (3) `scrollEnabled={false}` on the multiline diary so a drag scrolls the page not the textarea. Proven on-device (adb screencap + user real-time). (rn-debug; iOS lenient)
 - [app][edit-log] Edit-screen iOS clock RTL fix — same as the AddSmokeSheet fix: dropped the `w-[112px] items-end` wrapper around the `@expo/ui` compact `DateTimePicker` and snugged its style to `84×44`, so the leading-aligned time pill no longer leaves trailing dead-space ("pushed too far right") in RTL; 44pt min touch target.
 
 ## 2026-06-27
