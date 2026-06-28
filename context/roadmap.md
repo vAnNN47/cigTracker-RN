@@ -10,6 +10,8 @@ OPEN queue, not a tombstone wall.
 
 ## 🐞 Bugs
 
+- [ ] **[sheets]** **On the cigarette-log sheet, tapping "more details" shoots the sheet up under the phone's status-bar icons, and it then sits frozen — you can't scroll up to change the location tag (car / social / etc.).** — The add-cig sheet's expanded ("more details") state overshoots the top safe-area inset (renders under the status bar / notch) and is statically positioned with no scroll, so fields above the fold (location tags) are unreachable. Cap the expanded height below the top inset and make it scrollable/draggable so every field stays reachable. (השיט עולה מעל ה-status bar ותקוע סטטי — אי אפשר לגלול לתגיות מיקום)
+
 
 ## 🧩 Improvements
 
