@@ -92,6 +92,9 @@ export default function TodayScreen() {
   // the old infinite pulse + the "+" badge — the nudge teaches tappability).
   const hint = useSharedValue(1);
   const navigation = useNavigation();
+  // Re-fire the hint every time the hero becomes visible (mount, tab focus, or
+  // scrolling back up to it) — not just once. `heroVisible` flips on scroll below.
+  const [heroVisible, setHeroVisible] = useState(true);
   useEffect(() => {
     const run = () => {
       hint.value = withSequence(
@@ -99,9 +102,9 @@ export default function TodayScreen() {
         withSpring(1, { damping: 6, stiffness: 150 }),
       );
     };
-    run(); // first entry (mount)
-    return navigation.addListener("focus", run); // every return to the tab
-  }, [navigation, hint]);
+    if (heroVisible) run(); // mount + each time the hero scrolls back into view
+    return navigation.addListener("focus", run); // and on returning to the tab
+  }, [heroVisible, navigation, hint]);
   // Press depresses the hero onto its base (0→1 = up→down) for a tactile button.
   const press = useSharedValue(0);
   const heroStyle = useAnimatedStyle(() => ({
@@ -115,6 +118,12 @@ export default function TodayScreen() {
     const y = e.nativeEvent.contentOffset.y;
     setFabShown((prev) => {
       const v = y > 300;
+      return prev === v ? prev : v;
+    });
+    // Lower threshold than the FAB's (hysteresis) so the hint re-fires only once
+    // the hero is clearly back in view, not on tiny scrolls around the edge.
+    setHeroVisible((prev) => {
+      const v = y < 200;
       return prev === v ? prev : v;
     });
   };

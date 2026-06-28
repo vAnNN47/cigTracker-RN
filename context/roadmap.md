@@ -13,7 +13,6 @@ OPEN queue, not a tombstone wall.
 
 ## 🧩 Improvements
 
-- [ ] **[a11y]** **Re-check big-text mode after the 1.4 scaling cap — confirm nothing still overlaps, and bump any screen that can take more.** — A global `maxFontSizeMultiplier: 1.4` clamp shipped 2026-06-28 (in `@/tw` Text). Device-re-test at max font (S9 / iOS) that hero, recent-log times, savings buttons, calendar cells, stepper rows no longer clip; if a body-text screen can safely allow more than 1.4 toward WCAG 200%, raise it there. (Dynamic Type — אימות אחרי clamp)
 
 
 ## 🔍 Audits
