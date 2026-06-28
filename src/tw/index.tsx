@@ -50,9 +50,17 @@ export type ViewProps = React.ComponentProps<typeof RNView> & { className?: stri
 export const View = (props: ViewProps) => useCssElement(RNView, props, { className: "style" });
 View.displayName = "CSS(View)";
 
-/** `Text` with `className` support. */
-export const Text = (props: React.ComponentProps<typeof RNText> & { className?: string }) =>
-  useCssElement(RNText, props, { className: "style" });
+/**
+ * `Text` with `className` support. Defaults `maxFontSizeMultiplier` to 1.4 so OS
+ * font-scaling (Dynamic Type / Android font size) still enlarges text for
+ * low-vision users without shattering fixed-size layouts (hero circle, time
+ * rows, chips) at the extreme accessibility sizes. Callers can override per use.
+ */
+export const Text = ({
+  maxFontSizeMultiplier = 1.4,
+  ...props
+}: React.ComponentProps<typeof RNText> & { className?: string }) =>
+  useCssElement(RNText, { maxFontSizeMultiplier, ...props }, { className: "style" });
 Text.displayName = "CSS(Text)";
 
 /** `ScrollView` with `className` + `contentContainerClassName` support. */
