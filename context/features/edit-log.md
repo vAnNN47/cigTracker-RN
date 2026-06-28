@@ -1,6 +1,6 @@
 # Edit-log modal
 
-**What / where:** Full-screen modal route to edit a today log's time, location, comment and diary — [src/app/edit-log.tsx](../../src/app/edit-log.tsx).
+**What / where:** Full-screen modal route — [src/app/edit-log.tsx](../../src/app/edit-log.tsx) — **dual-mode**: with an `id` param it EDITs an existing today log (via `editLog`); with **no `id`** (optional `tag`/`comment` prefill params) it ADDs a new log (`addSmoke` + a "logged" undo toast after `router.back`). The add mode is the "more details" escalation from the quick `AddSmokeSheet`, per the platform rule that complex content leaves the bottom sheet. Edits time, location, comment + diary.
 
 ## Gotchas / lessons
 

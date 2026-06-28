@@ -1,8 +1,11 @@
 /**
- * Edit-log modal (full-screen route, presented modally). Opened from the Diary /
- * Today detail sheet's pencil for a today entry. Full-screen so a long diary has
- * room and respects safe areas. Edits the time, location, comment + diary and
- * saves via the store. Light/dark themed.
+ * Add / edit log modal (full-screen route). Two modes by params:
+ *  - EDIT (`id`): opened from the Diary / Today detail sheet's pencil; edits an
+ *    existing today entry via the store.
+ *  - ADD (no `id`, optional `tag` + `comment` prefill): the "more details"
+ *    escalation from the quick log sheet — a full screen for the longer fields
+ *    (time + diary) per the platform rule that complex content leaves the sheet.
+ * Full-screen so a long diary has room and respects safe areas. Light/dark themed.
  */
 import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -12,6 +15,7 @@ import { ActivityIndicator, Alert, Platform } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useToast } from "@/components/feedback/Toast";
 import { formatTime } from "@/i18n/format";
 import { inputAlign, textEnd, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
@@ -22,22 +26,30 @@ import { Pressable, Text, TextInput, View } from "@/tw";
 
 type TagDef = { key: LocationTag; label: string; icon: keyof typeof MaterialIcons.glyphMap };
 
-/** Full-screen modal route to edit a today log's time, location, comment and diary. */
+/** Full-screen modal route to add a new log or edit a today log's time, location, comment and diary. */
 export default function EditLogModal() {
   const s = useStrings();
   const green = useColors();
   const isDark = useIsDark();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const toast = useToast();
+  const { id, tag: tagParam, comment: commentParam } = useLocalSearchParams<{
+    id?: string;
+    tag?: string;
+    comment?: string;
+  }>();
   const logs = useAppStore((st) => st.logs);
   const editLog = useAppStore((st) => st.editLog);
+  const addSmoke = useAppStore((st) => st.addSmoke);
+  const deleteLog = useAppStore((st) => st.deleteLog);
 
-  const log = useMemo(() => logs.find((l) => l.id === id) ?? null, [logs, id]);
+  const log = useMemo(() => (id ? logs.find((l) => l.id === id) ?? null : null), [logs, id]);
+  const isAdd = !id; // no id → creating a new entry (escalated from the quick sheet)
 
-  const [tag, setTag] = useState<LocationTag>(log?.tag ?? "home");
+  const [tag, setTag] = useState<LocationTag>(log?.tag ?? (tagParam as LocationTag | undefined) ?? "home");
   // Uncontrolled: native owns the caret (controlled value re-set on iOS jumps it
   // backwards on fast typing). Read at save time only — never displayed elsewhere.
-  const commentRef = useRef(log?.comment ?? "");
+  const commentRef = useRef(log?.comment ?? commentParam ?? "");
   const diaryRef = useRef(log?.diary ?? "");
   const [smokedAt, setSmokedAt] = useState<Date>(log?.smokedAt ?? new Date());
   const [showPicker, setShowPicker] = useState(false);
@@ -52,12 +64,20 @@ export default function EditLogModal() {
 
   const close = () => router.back();
   const save = async () => {
-    if (!log) return close();
     setSaving(true);
+    const fields = { tag, comment: commentRef.current.trim(), diary: diaryRef.current.trim(), smokedAt };
     try {
       // Any time is allowed, including the future (logging a smoke you're about to have).
-      await editLog(log.id, { tag, comment: commentRef.current.trim(), diary: diaryRef.current.trim(), smokedAt });
-      close();
+      if (isAdd) {
+        const created = await addSmoke(fields);
+        close();
+        toast.show({ message: s.loggedToast, actionLabel: s.undo, onAction: () => deleteLog(created.id) });
+      } else if (log) {
+        await editLog(log.id, fields);
+        close();
+      } else {
+        close(); // edit target vanished (deleted) — nothing to save
+      }
     } catch (e) {
       Alert.alert(`${s.couldNotSave}: ${e}`);
       setSaving(false);
@@ -71,12 +91,12 @@ export default function EditLogModal() {
         <Pressable onPress={close} hitSlop={8} className="min-w-[64px] justify-center">
           <Text className="text-text-dim text-[14px] font-medium" style={{ textAlign: textStart }}>{s.cancel}</Text>
         </Pressable>
-        <Text className="text-text text-[18px] font-bold">{s.editEntry}</Text>
+        <Text className="text-text text-[18px] font-bold">{isAdd ? s.logACigarette : s.editEntry}</Text>
         <Pressable onPress={save} hitSlop={8} disabled={saving} className="min-w-[64px] justify-center">
           {saving ? (
             <ActivityIndicator color={green.green} />
           ) : (
-            <Text className="text-green text-[14px] font-bold" style={{ textAlign: textEnd }}>{s.save}</Text>
+            <Text className="text-green text-[14px] font-bold" style={{ textAlign: textEnd }}>{isAdd ? s.addToToday : s.save}</Text>
           )}
         </Pressable>
       </View>
@@ -93,9 +113,8 @@ export default function EditLogModal() {
         // it. "layout" appends a real spacer view instead → genuine scroll range on Android.
         mode="layout"
       >
-        {/* Time card */}
-        {log && (
-          <View className="flex-row items-center justify-between bg-card-soft rounded-input px-3 py-3">
+        {/* Time card (both modes — add defaults to now, edit to the logged time) */}
+        <View className="flex-row items-center justify-between bg-card-soft rounded-input px-3 py-3">
             <View className="flex-row items-center gap-3">
               <View className="w-[34px] h-[34px] rounded-[17px] bg-card items-center justify-center">
                 <MaterialIcons name="schedule" size={18} color={green.green} />
@@ -121,8 +140,7 @@ export default function EditLogModal() {
                 <MaterialIcons name="edit" size={14} color={green.green} />
               </Pressable>
             )}
-          </View>
-        )}
+        </View>
         {showPicker && Platform.OS !== "ios" && (
           <DateTimePicker
             mode="time"
@@ -167,7 +185,7 @@ export default function EditLogModal() {
             style={Platform.OS === "android" ? { writingDirection: inputAlign.writingDirection } : inputAlign}
             placeholder={s.commentHint}
             placeholderTextColor={green.textDim}
-            defaultValue={log?.comment ?? ""}
+            defaultValue={log?.comment ?? commentParam ?? ""}
             onChangeText={(t) => (commentRef.current = t)}
           />
         </View>

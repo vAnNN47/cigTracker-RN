@@ -1,25 +1,23 @@
 /**
- * Log a cigarette — "v2" light/green theme, same logic as before:
+ * Log a cigarette — quick bottom sheet (kept deliberately short per the platform
+ * rule that complex content leaves the sheet):
  *   1. Where were you?  — 2×2 location tag grid (Home / Work / Car / Social).
- *   2. How did it feel?  — feeling chips + a free-text field (same value).
- *   3. More details ▾    — expandable: time (backfill an earlier smoke) + notes.
- *   4. Add to today      — saves { tag, comment(=feeling), diary(=note), smokedAt }.
- *
- * Notes field has a fixed height + internal scroll so long text stays readable
- * and scrolling it no longer drags the whole sheet.
+ *   2. How did it feel?  — a free-text field.
+ *   3. More details →    — escalates to the full-screen add modal (`/edit-log`,
+ *      no id) carrying tag + feeling, where time + notes live.
+ *   4. Add to today      — quick save { tag, comment(=feeling), smokedAt = now }.
  */
-import { DateTimePicker } from "@expo/ui/community/datetime-picker";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Platform, TextInput } from "react-native";
+import { ActivityIndicator, Alert, I18nManager, TextInput } from "react-native";
 
-import { formatTime } from "@/i18n/format";
 import { inputAlign, textStart } from "@/i18n/rtl";
 import { useStrings } from "@/i18n/useStrings";
 import { DEFAULT_TAG, LocationTag, SmokeLog } from "@/models";
 import { useAppStore } from "@/store/useAppStore";
-import { fonts, radius, useColors, useIsDark } from "@/theme";
+import { fonts, radius, useColors } from "@/theme";
 import { Pressable, Text, View } from "@/tw";
 
 import { KeyboardSheet, KeyboardSheetRef, SheetTextInput } from "../../../packages/keyboard-sheet";
@@ -39,7 +37,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
   function AddSmokeSheet({ onLogged }, ref) {
     const s = useStrings();
     const green = useColors();
-    const isDark = useIsDark();
+    const router = useRouter();
     const addSmoke = useAppStore((st) => st.addSmoke);
     const sheetRef = useRef<KeyboardSheetRef>(null);
 
@@ -59,15 +57,10 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
 
     const [tag, setTag] = useState<LocationTag>(DEFAULT_TAG);
     // Uncontrolled: native owns the caret (a controlled value re-set on iOS jumps
-    // it backwards on fast typing). Captured in refs, read only at save; the input
-    // refs let present() clear the fields since the sheet stays mounted across opens.
+    // it backwards on fast typing). Captured in a ref, read only at save; the input
+    // ref lets present() clear the field since the sheet stays mounted across opens.
     const commentRef = useRef(""); // the feeling value
-    const diaryRef = useRef("");
     const commentInput = useRef<TextInput>(null);
-    const diaryInput = useRef<TextInput>(null);
-    const [smokedAt, setSmokedAt] = useState<Date>(new Date());
-    const [expanded, setExpanded] = useState(false);
-    const [showPicker, setShowPicker] = useState(false);
     const [saving, setSaving] = useState(false);
 
     const tags: TagDef[] = [
@@ -81,12 +74,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
       present: () => {
         setTag(DEFAULT_TAG);
         commentRef.current = "";
-        diaryRef.current = "";
         commentInput.current?.clear();
-        diaryInput.current?.clear();
-        setSmokedAt(new Date());
-        setExpanded(false);
-        setShowPicker(false);
         setSaving(false);
         sheetRef.current?.present();
       },
@@ -95,8 +83,9 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
     const save = async () => {
       setSaving(true);
       try {
-        // Any time is allowed, including the future (logging a smoke you're about to have).
-        const log = await addSmoke({ tag, comment: commentRef.current.trim(), diary: diaryRef.current.trim(), smokedAt });
+        // Quick log: now, no diary. (Backfilling a time or adding notes is the
+        // "more details" path → the full-screen add modal.)
+        const log = await addSmoke({ tag, comment: commentRef.current.trim(), diary: "", smokedAt: new Date() });
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         sheetRef.current?.dismiss();
         onLogged(log);
@@ -106,6 +95,13 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
       }
     };
 
+    // Escalate to the full-screen modal for the longer fields (time + notes),
+    // carrying the tag + feeling already entered. Dismiss the sheet first.
+    const openDetails = () => {
+      sheetRef.current?.dismiss();
+      router.push({ pathname: "/edit-log", params: { tag, comment: commentRef.current } });
+    };
+
     return (
       <KeyboardSheet
         ref={sheetRef}
@@ -113,7 +109,6 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         backgroundColor={green.bg}
         handleColor={green.border}
         cornerRadius={radius.sheet}
-        scrollable
       >
         <View className="p-3 gap-2">
           <Text className="text-text text-[20px] font-bold mb-1" style={{ textAlign: textStart }}>{s.logACigarette}</Text>
@@ -147,64 +142,11 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
             onChangeText={(t) => (commentRef.current = t)}
           />
 
-          {/* 3. More details ▾ */}
-          <Pressable className="flex-row items-center justify-center gap-1 py-2 mt-1 bg-card-soft rounded-input" onPress={() => setExpanded((v) => !v)} hitSlop={6}>
+          {/* 3. More details → full-screen modal (time + notes) */}
+          <Pressable className="flex-row items-center justify-center gap-1 py-2 mt-1 bg-card-soft rounded-input" onPress={openDetails} hitSlop={6} accessibilityRole="button" accessibilityLabel={s.giveMoreInfo}>
             <Text className="text-green text-[14px] font-semibold">{s.giveMoreInfo}</Text>
-            <MaterialIcons name={expanded ? "expand-less" : "expand-more"} size={20} color={green.green} />
+            <MaterialIcons name={I18nManager.isRTL ? "arrow-back" : "arrow-forward"} size={18} color={green.green} />
           </Pressable>
-
-          {expanded && (
-            <View className="gap-2">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-text-secondary text-[13px] font-semibold">{s.whenQ}</Text>
-                {Platform.OS === "ios" ? (
-                  // Keep the frame snug to the compact picker's content: a wider frame
-                  // leaves trailing dead-space the native control fills with an artifact
-                  // in RTL (the time pill is leading-aligned). 44pt tall = min touch target.
-                  <DateTimePicker
-                    mode="time"
-                    value={smokedAt}
-                    display="compact"
-                    accentColor={green.green}
-                    themeVariant={isDark ? "dark" : "light"}
-                    onValueChange={(_e, d) => setSmokedAt(d)}
-                    style={{ width: 84, height: 44 }}
-                  />
-                ) : (
-                  <Pressable className="flex-row items-center gap-1.5 bg-card-soft rounded-chip px-2 py-1" onPress={() => setShowPicker(true)}>
-                    <MaterialIcons name="schedule" size={15} color={green.green} />
-                    <Text className="text-green font-mono-medium text-[14px]">{formatTime(smokedAt)}</Text>
-                  </Pressable>
-                )}
-              </View>
-              {showPicker && Platform.OS !== "ios" && (
-                <DateTimePicker
-                  mode="time"
-                  value={smokedAt}
-                  is24Hour
-                  display="default"
-                  accentColor={green.green}
-                  onValueChange={(_e, d) => {
-                    setSmokedAt(d);
-                    setShowPicker(false);
-                  }}
-                  onDismiss={() => setShowPicker(false)}
-                />
-              )}
-
-              <Text className="text-text-secondary text-[13px] font-semibold mt-3" style={{ textAlign: textStart }}>{s.anythingElse}</Text>
-              <SheetTextInput
-                ref={diaryInput}
-                style={[inputStyle, { height: 96, textAlignVertical: "top" }, inputAlign]}
-                placeholder={s.diaryHint}
-                placeholderTextColor={green.textDim}
-                defaultValue=""
-                onChangeText={(t) => (diaryRef.current = t)}
-                multiline
-                scrollEnabled
-              />
-            </View>
-          )}
 
           <Pressable
             className={`mt-2 bg-green rounded-button py-[14px] items-center${saving ? " opacity-60" : ""}`}
