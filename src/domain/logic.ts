@@ -187,10 +187,10 @@ export function spentForDay(
 // ---- Headline figures for the Today screen --------------------------------
 
 /**
- * Day streak = consecutive COMPLETED days within limit, ending yesterday.
- * Today is in progress so it doesn't count yet; if yesterday went over the
- * limit the streak is 0 (broken). Walks back from yesterday, stopping at the
- * first over-limit day or before tracking began.
+ * Day streak = consecutive COMPLETED days within limit, ending yesterday — BUT
+ * passing today's limit kills it immediately (returns 0), even a 90-day run.
+ * Staying within today doesn't yet add to the streak (the day's not done); it
+ * counts completed days, walking back from yesterday to the first over-limit day.
  */
 export function currentStreak(
   logs: SmokeLog[],
@@ -198,6 +198,8 @@ export function currentStreak(
   settings: AppSettings,
 ): number {
   const today = logicalToday(settings.dayStartHour);
+  // Over today's limit → streak dead now, regardless of how long it was.
+  if (countForDay(logs, today, settings.dayStartHour) > limitForDay(limits, today, settings)) return 0;
   const first = firstTrackedDay(logs, limits, settings.dayStartHour);
   let streak = 0;
   for (let d = addDays(today, -1); d >= first; d = addDays(d, -1)) {
