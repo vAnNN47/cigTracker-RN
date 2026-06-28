@@ -8,6 +8,20 @@
       "PowerShell(git push *)"
     ]
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "out=$(git ls-files -- .env \".claude/settings.local.json\" 2>/dev/null | while IFS= read -r f; do [ -n \"$f\" ] && printf \"%s (should be gitignored); \" \"$f\"; done); if [ -n \"$out\" ]; then printf \"{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"SessionStart\\\",\\\"additionalContext\\\":\\\"⚠️ git hygiene: %s\\\"}}\n\" \"$out\"; fi",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }
