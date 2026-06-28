@@ -19,6 +19,7 @@ Read these for full project context:
 - @context/ai-interaction.md — how we work together: workflow, branching, commits
 - @context/roadmap.md — global list of all open bugs & problems
 - @context/current-feature.md — what's actively in progress right now
+- @context/rn-gotchas.md — **solved-once RN/Expo bugs (symptom→fix). Check here BEFORE debugging any inputs / scroll / keyboard / sheet / reanimated / RTL / a11y issue — don't re-debug what's already solved.**
 
 Per-feature/component notes live in `context/features/<name>.md` (context + what's done + a dated fix log); open work lives in `context/roadmap.md` tagged `[area]`. Sort ideas in with `/inbox`, build an area with `/fire <area>`, tidy before release with `/polish`. See `.claude/skills/SKILLS_README.md` for how the skills work.
 
