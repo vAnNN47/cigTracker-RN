@@ -1,25 +1,23 @@
 /**
  * Today — "v2" light/dark themed. Header + sub-headers scroll with the page (so
  * the pull-to-refresh spinner opens its own space above them). The hero circle
- * is the primary action: it gently pulses, carries a "+" badge so it clearly
- * reads as "add a cigarette", and opens the log sheet when tapped. The ring
- * shows count-up (smoked / allowance) or count-down (remaining first) per the
- * Settings "count down" toggle. When the hero scrolls out of view a floating "+"
- * button fades in so logging is always one tap away. Below: streak pill,
+ * is the primary action: a subtle one-shot "pop" hint fires each time you land
+ * on Today (teaching it's tappable), and it opens the log sheet when tapped. The
+ * ring shows count-up (smoked / allowance) or count-down (remaining first) per
+ * the Settings "count down" toggle. When the hero scrolls out of view a floating
+ * "+" button pops in (start-side) so logging is always one tap away. Below: streak pill,
  * weekly-savings card, recent-log card (last 6h, up to 5; dot marks notes), and
  * a momentum quote.
  */
 import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { NativeScrollEvent, NativeSyntheticEvent, RefreshControl } from "react-native";
 import Animated, {
-  Extrapolation,
-  interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -89,32 +87,41 @@ export default function TodayScreen() {
   const heroLabel = settings.countDown ? s.remainingTodayShort : s.smokedTodayShort;
   const heroSub = settings.countDown ? s.smokedTodayN(count) : s.leftTodayN(left);
 
-  // Gentle pulse so the circle reads as tappable.
-  const pulse = useSharedValue(1);
+  // One-shot "tap me" hint: a subtle pop each time you land on Today (replaces
+  // the old infinite pulse + the "+" badge — the nudge teaches tappability).
+  const hint = useSharedValue(1);
+  const navigation = useNavigation();
   useEffect(() => {
-    pulse.value = withRepeat(
-      withSequence(withTiming(1.03, { duration: 1000 }), withTiming(1, { duration: 1000 })),
-      -1,
-      false,
-    );
-  }, [pulse]);
-  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
+    const run = () => {
+      hint.value = withSequence(
+        withTiming(1.05, { duration: 240 }),
+        withSpring(1, { damping: 6, stiffness: 150 }),
+      );
+    };
+    run(); // first entry (mount)
+    return navigation.addListener("focus", run); // every return to the tab
+  }, [navigation, hint]);
+  const hintStyle = useAnimatedStyle(() => ({ transform: [{ scale: hint.value }] }));
 
-  // Floating add button: fades in once the hero circle has scrolled away, so the
-  // user never has to scroll back up to log (task: pinned add button).
-  const scrollY = useSharedValue(0);
+  // Floating add button: POPS in (spring overshoot) once the hero circle has
+  // scrolled away, so logging is always one tap away (task: pinned add button).
   const [fabShown, setFabShown] = useState(false);
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y;
-    scrollY.value = y;
     setFabShown((prev) => {
       const v = y > 300;
       return prev === v ? prev : v;
     });
   };
+  const fabAppear = useSharedValue(0);
+  useEffect(() => {
+    fabAppear.value = fabShown
+      ? withSpring(1, { damping: 9, stiffness: 170, mass: 0.6 })
+      : withTiming(0, { duration: 140 });
+  }, [fabShown, fabAppear]);
   const fabStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [240, 320], [0, 1], Extrapolation.CLAMP),
-    transform: [{ scale: interpolate(scrollY.value, [240, 320], [0.8, 1], Extrapolation.CLAMP) }],
+    opacity: fabAppear.value,
+    transform: [{ scale: fabAppear.value }],
   }));
 
   // Weekly savings (matches the "חיסכון שבועי" card).
@@ -186,7 +193,7 @@ export default function TodayScreen() {
                   shadowOffset: { width: 0, height: 6 },
                   elevation: 3,
                 },
-                pulseStyle,
+                hintStyle,
               ]}
             >
               <Text className={`${over ? "text-over-text" : "text-green"} text-[44px] font-mono-semibold`}>{heroCount}</Text>
@@ -200,12 +207,6 @@ export default function TodayScreen() {
                 </View>
               )}
             </Animated.View>
-            <View
-              className="absolute -bottom-1.5 self-center w-12 h-12 rounded-[24px] bg-green items-center justify-center border-[3px] border-bg"
-              style={{ shadowColor: green.shadow, shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 4 }}
-            >
-              <MaterialIcons name="add" size={26} color={green.onGreen} />
-            </View>
           </Pressable>
           <View className="flex-row items-center gap-[5px] mt-4">
             <MaterialIcons name="touch-app" size={14} color={green.textDim} />
@@ -290,7 +291,7 @@ export default function TodayScreen() {
       {/* Floating add button (appears when the hero is scrolled away) */}
       <Animated.View
         pointerEvents={fabShown ? "box-none" : "none"}
-        style={[{ position: "absolute", end: 22, bottom: insets.bottom + 76 }, fabStyle]}
+        style={[{ position: "absolute", start: 22, bottom: insets.bottom + 76 }, fabStyle]}
       >
         <Pressable
           className="w-[58px] h-[58px] rounded-[29px] bg-green items-center justify-center"
