@@ -246,12 +246,16 @@ export default function TodayScreen() {
                   }
                 >
                   <View className={`w-2 h-2 rounded-full ${hasNote ? "bg-dot" : "bg-border"}`} />
-                  <Text className="text-text text-[15px] font-mono-medium">{formatTime(log.smokedAt)}</Text>
-                  {log.comment ? (
-                    <Text className="flex-1 text-green text-[13px] font-regular" style={{ textAlign: textStart }} numberOfLines={1}>
-                      {log.comment}
-                    </Text>
-                  ) : null}
+                  {/* Baseline-align so the smaller note text sits on the time's baseline
+                      (items-center would float the 13px note off the 15px time). */}
+                  <View className="flex-1 flex-row items-baseline gap-3">
+                    <Text className="text-text text-[15px] font-mono-medium">{formatTime(log.smokedAt)}</Text>
+                    {log.comment ? (
+                      <Text className="flex-1 text-green text-[13px] font-regular" style={{ textAlign: textStart }} numberOfLines={1}>
+                        {log.comment}
+                      </Text>
+                    ) : null}
+                  </View>
                 </Pressable>
               );
             })

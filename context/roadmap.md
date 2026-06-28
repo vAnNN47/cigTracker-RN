@@ -10,7 +10,6 @@ OPEN queue, not a tombstone wall.
 
 ## 🐞 Bugs
 
-- [ ] **[edit-log]** **When a late-logged cigarette has a note, the note text doesn't line up with the time next to it.** — On the edit screen, the comment/note text isn't aligned against the time (`align` off). Check the row alignment for the note-vs-time layout. (הערה לא מיושרת מול השעה)
 
 ## 🧩 Improvements
 
