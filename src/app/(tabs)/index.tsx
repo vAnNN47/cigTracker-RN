@@ -233,7 +233,7 @@ export default function TodayScreen() {
               </Animated.View>
             </View>
           </Pressable>
-          <View className="flex-row items-center gap-[5px] mt-4">
+          <View className="flex-row items-center gap-[5px] mt-4" accessible accessibilityLabel={s.tapToLog}>
             <MaterialIcons name="touch-app" size={14} color={green.textDim} />
             <Text className="text-text-dim text-[12px] font-regular">{s.tapToLog}</Text>
           </View>
@@ -241,7 +241,7 @@ export default function TodayScreen() {
 
         {/* Streak pill */}
         <View className="items-center mt-4">
-          <View className="flex-row items-center gap-1.5 bg-card-soft rounded-full px-4 py-2">
+          <View className="flex-row items-center gap-1.5 bg-card-soft rounded-full px-4 py-2" accessible accessibilityLabel={s.streakDaysN(streak)}>
             <MaterialIcons name="local-fire-department" size={16} color={green.green} />
             <Text className="text-green text-[13px] font-semibold">{s.streakDaysN(streak)}</Text>
           </View>
@@ -251,18 +251,18 @@ export default function TodayScreen() {
         <View className="bg-green-bright rounded-[24px] p-5 mt-5">
           <View className="flex-row items-center gap-2">
             <View className="w-[30px] h-[30px] rounded-[15px] items-center justify-center" style={{ backgroundColor: "rgba(0,80,39,0.12)" }}>
-              <MaterialIcons name="attach-money" size={18} color={green.greenDeep} />
+              <MaterialIcons name="attach-money" size={18} color={green.greenDeep} accessible={false} />
             </View>
             <Text className="text-green-deep text-[14px] font-semibold" style={{ textAlign: textStart }}>{s.weeklySavings}</Text>
           </View>
           <Text className="text-green-deep text-[32px] font-bold mt-2" style={{ textAlign: textStart }}>{money(savedWeek)}</Text>
           <View className="flex-row gap-2 mt-4">
-            <Pressable className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[17px] py-[11px]" style={{ backgroundColor: "#FFFFFF" }} onPress={() => purchaseRef.current?.present()}>
-              <MaterialIcons name="add-shopping-cart" size={16} color={green.greenDeep} />
+            <Pressable className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[17px] py-[11px]" style={{ backgroundColor: "#FFFFFF" }} onPress={() => purchaseRef.current?.present()} accessibilityRole="button" accessibilityLabel={s.logPurchaseBtn}>
+              <MaterialIcons name="add-shopping-cart" size={16} color={green.greenDeep} accessible={false} />
               <Text className="text-green-deep text-[13px] font-bold">{s.logPurchaseBtn}</Text>
             </Pressable>
-            <Pressable className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[17px] py-[11px]" style={{ backgroundColor: "#FFFFFF" }} onPress={() => router.push("/purchases")}>
-              <MaterialIcons name="history" size={16} color={green.greenDeep} />
+            <Pressable className="flex-1 flex-row items-center justify-center gap-1.5 rounded-[17px] py-[11px]" style={{ backgroundColor: "#FFFFFF" }} onPress={() => router.push("/purchases")} accessibilityRole="button" accessibilityLabel={s.purchaseHistoryBtn}>
+              <MaterialIcons name="history" size={16} color={green.greenDeep} accessible={false} />
               <Text className="text-green-deep text-[13px] font-bold">{s.purchaseHistoryBtn}</Text>
             </Pressable>
           </View>
@@ -308,7 +308,7 @@ export default function TodayScreen() {
             <Text className="text-text-dim text-[13px] font-regular mt-1" style={{ textAlign: textStart }}>{quote}</Text>
           </View>
           <View className="w-10 h-10 rounded-full bg-bg items-center justify-center">
-            <MaterialIcons name="lightbulb-outline" size={20} color={green.green} />
+            <MaterialIcons name="lightbulb-outline" size={20} color={green.green} accessible={false} />
           </View>
         </View>
       </ScrollView>
