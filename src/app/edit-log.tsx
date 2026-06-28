@@ -86,6 +86,11 @@ export default function EditLogModal() {
         contentContainerStyle={{ padding: 16, gap: 12 }}
         keyboardShouldPersistTaps="handled"
         bottomOffset={20}
+        // mode="insets" (default) uses an internal contentInset/clipping mechanism that
+        // is broken on Android in keyboard-controller 1.21.x (issue #1394) — it fails to
+        // extend the scroll range when the keyboard opens, so content stays trapped behind
+        // it. "layout" appends a real spacer view instead → genuine scroll range on Android.
+        mode="layout"
       >
         {/* Time card */}
         {log && (

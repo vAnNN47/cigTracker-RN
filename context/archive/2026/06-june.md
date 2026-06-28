@@ -3,7 +3,7 @@
 <!-- Shipped this month, newest day on top. Format + rules → context/archive/README.md -->
 
 ## 2026-06-28
-- [app][edit-log] Android diary-scroll fix (3 parts; flex:1 alone was NOT enough) — root cause: `presentation: "modal"` makes the edit screen a separate Android window the root `KeyboardProvider` doesn't reach, so `KeyboardAwareScrollView` never applied the keyboard inset (no scroll). Fix: (1) `presentation: "card"`, (2) `flex:1` on the KeyboardAwareScrollView, (3) `scrollEnabled={false}` on the multiline diary so a drag scrolls the page not the textarea. Proven on-device (adb screencap + user real-time). (rn-debug; iOS lenient)
+- [app][edit-log] Android diary-scroll fix — linchpin: **`mode="layout"`** on `KeyboardAwareScrollView`. keyboard-controller 1.21.x's default `mode="insets"` has a broken Android contentInset/clipping path (lib #1394) that never extends the scroll range when the keyboard opens → content trapped behind it; `mode="layout"` uses a real spacer view. Plus `flex:1` (bounded scroll), `presentation:"card"` not `"modal"` (modal = separate Android window the root KeyboardProvider misses), and `scrollEnabled={false}` on the multiline diary. Caveat: dragging on the diary textarea still won't scroll (Android multiline grabs the drag — inherent). flex:1 alone was NOT enough. Proven on-device (user real-time on S9 + adb). (rn-debug; iOS lenient)
 - [app][edit-log] Edit-screen iOS clock RTL fix — same as the AddSmokeSheet fix: dropped the `w-[112px] items-end` wrapper around the `@expo/ui` compact `DateTimePicker` and snugged its style to `84×44`, so the leading-aligned time pill no longer leaves trailing dead-space ("pushed too far right") in RTL; 44pt min touch target.
 
 ## 2026-06-27
