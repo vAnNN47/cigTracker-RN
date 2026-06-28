@@ -80,6 +80,9 @@ export default function TodayScreen() {
   const limit = currentLimit(limits, settings);
   const streak = currentStreak(logs, limits, settings);
   const left = Math.max(0, limit - count);
+  // Past the daily limit — drives the hero's over-budget cue (red number + pill).
+  const over = count > limit;
+  const overBy = count - limit;
 
   // Hero ring counts up (smoked) or down (remaining) per the setting.
   const heroCount = settings.countDown ? `${left}/${limit}` : `${count}/${limit}`;
@@ -162,7 +165,10 @@ export default function TodayScreen() {
 
         {/* Hero circle — tap to log (the "+" badge signals it adds a cigarette) */}
         <View className="items-center mt-5">
-          <Pressable onPress={() => addRef.current?.present()} accessibilityLabel={s.addCigarette}>
+          <Pressable
+            onPress={() => addRef.current?.present()}
+            accessibilityLabel={over ? `${s.addCigarette}, ${s.overLimit(overBy)}` : s.addCigarette}
+          >
             <Animated.View
               style={[
                 {
@@ -171,7 +177,7 @@ export default function TodayScreen() {
                   borderRadius: 110,
                   backgroundColor: green.ring,
                   borderWidth: 1,
-                  borderColor: green.ringStroke,
+                  borderColor: over ? green.overBorder : green.ringStroke,
                   alignItems: "center",
                   justifyContent: "center",
                   shadowColor: green.shadow,
@@ -183,9 +189,16 @@ export default function TodayScreen() {
                 pulseStyle,
               ]}
             >
-              <Text className="text-green text-[44px] font-mono-semibold">{heroCount}</Text>
+              <Text className={`${over ? "text-over-text" : "text-green"} text-[44px] font-mono-semibold`}>{heroCount}</Text>
               <Text className="text-green text-[14px] font-medium mt-1">{heroLabel}</Text>
               <Text className="text-green text-[14px] font-semibold mt-0.5">{heroSub}</Text>
+              {/* Over-budget cue: red number + ring border isn't conveyed by color
+                  alone — this pill spells out how far over (WCAG 1.4.1). */}
+              {over && (
+                <View className="bg-over-bg rounded-full px-2.5 py-0.5 mt-1.5">
+                  <Text className="text-over-text text-[11px] font-bold">{s.overLimit(overBy)}</Text>
+                </View>
+              )}
             </Animated.View>
             <View
               className="absolute -bottom-1.5 self-center w-12 h-12 rounded-[24px] bg-green items-center justify-center border-[3px] border-bg"
