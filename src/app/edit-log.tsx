@@ -160,7 +160,11 @@ export default function EditLogModal() {
           <Text className="text-text-secondary text-[13px] font-semibold" style={{ textAlign: textStart }}>{s.comment}</Text>
           <TextInput
             className="bg-card rounded-input border border-border px-3 py-2 text-text text-[14px] font-regular"
-            style={inputAlign}
+            // Platform split: a single-line TextInput with textAlign:"right" breaks ScrollView
+            // scroll on Android RTL (RN #16206) — there writingDirection alone right-aligns. But
+            // iOS needs textAlign (writingDirection alone leaves the placeholder left) and has no
+            // such scroll bug. So: Android → writingDirection only; iOS → full inputAlign.
+            style={Platform.OS === "android" ? { writingDirection: inputAlign.writingDirection } : inputAlign}
             placeholder={s.commentHint}
             placeholderTextColor={green.textDim}
             defaultValue={log?.comment ?? ""}
