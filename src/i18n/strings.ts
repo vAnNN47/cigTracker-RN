@@ -13,6 +13,23 @@ export function makeStrings(he: boolean) {
     progress: he ? "התקדמות" : "Progress",
     settings: he ? "הגדרות" : "Settings",
 
+    // Accessibility — screen-reader labels for icon-only controls
+    a11yBack: he ? "חזרה" : "Back",
+    a11yOpenMenu: he ? "פתח תפריט" : "Open menu",
+    a11yOpenAccount: he ? "פתח חשבון" : "Open account",
+    a11yPrevMonth: he ? "החודש הקודם" : "Previous month",
+    a11yNextMonth: he ? "החודש הבא" : "Next month",
+    a11yDecrease: (label: string) => (he ? `הפחתת ${label}` : `Decrease ${label}`),
+    a11yIncrease: (label: string) => (he ? `הגדלת ${label}` : `Increase ${label}`),
+    a11yDayCell: (date: number, count: number, status: "none" | "under" | "over") =>
+      he
+        ? status === "none"
+          ? `${date} בחודש, אין רישומים`
+          : `${date} בחודש, ${count} סיגריות, ${status === "over" ? "מעל המכסה" : "בתוך המכסה"}`
+        : status === "none"
+          ? `Day ${date}, no entries`
+          : `Day ${date}, ${count} cigarettes, ${status === "over" ? "over limit" : "within limit"}`,
+
     // Home
     ofToday: (limit: number) => (he ? `מתוך ${limit} היום` : `of ${limit} today`),
     leftInBudget: (n: number) => (he ? `נשארו ${n} במכסה` : `${n} left in budget`),

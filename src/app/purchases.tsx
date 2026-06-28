@@ -62,7 +62,7 @@ export default function PurchasesScreen() {
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <View className="flex-row items-center gap-2 px-4 py-2">
-        <Pressable onPress={() => router.back()} hitSlop={10} className="w-8 h-8 items-center justify-center">
+        <Pressable onPress={() => router.back()} hitSlop={10} className="w-8 h-8 items-center justify-center" accessibilityRole="button" accessibilityLabel={s.a11yBack}>
           <MaterialIcons name={backIcon} size={26} color={green.text} />
         </Pressable>
         <Text className="text-text text-[20px] font-bold" style={{ textAlign: textStart }}>{s.purchaseHistory}</Text>

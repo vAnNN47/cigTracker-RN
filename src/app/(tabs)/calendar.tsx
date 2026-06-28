@@ -161,6 +161,8 @@ export default function HistoryScreen() {
               key={di}
               className="flex-1 aspect-square p-[3px]"
               disabled={future}
+              accessibilityRole="button"
+              accessibilityLabel={s.a11yDayCell(day.getDate(), c, status === "over" ? "over" : status === "under" ? "under" : "none")}
               onPress={() => {
                 setSelected(keyOf(day));
                 setFocused(new Date(day.getFullYear(), day.getMonth(), 1));
@@ -169,7 +171,9 @@ export default function HistoryScreen() {
               <View className={`flex-1 rounded-cell items-center justify-center gap-px ${cellBorder} ${cellBg}`}>
                 <Text className={`text-[11px] font-mono ${numColor}`}>{day.getDate()}</Text>
                 {!future && c > 0 && (
-                  <Text className={`text-[13px] font-semibold ${status === "over" ? "text-over-text" : "text-green"}`}>
+                  // Over-days underline the count too, so "over the limit" isn't
+                  // signalled by red color alone (WCAG 1.4.1).
+                  <Text className={`text-[13px] font-semibold ${status === "over" ? "text-over-text underline" : "text-green"}`}>
                     {c}
                   </Text>
                 )}
@@ -197,6 +201,8 @@ export default function HistoryScreen() {
             onPress={() => setFocused(new Date(focused.getFullYear(), focused.getMonth() - 1, 1))}
             hitSlop={8}
             className="w-8 h-8 rounded-[9px] border border-border items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel={s.a11yPrevMonth}
           >
             <MaterialIcons name={prevArrow} size={20} color={green.textDim} />
           </Pressable>
@@ -206,6 +212,8 @@ export default function HistoryScreen() {
             hitSlop={8}
             disabled={atCurrentMonth}
             className="w-8 h-8 rounded-[9px] border border-border items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel={s.a11yNextMonth}
           >
             <MaterialIcons name={nextArrow} size={20} color={atCurrentMonth ? green.border : green.textDim} />
           </Pressable>

@@ -116,7 +116,7 @@ export function MainDrawer() {
       expandedContent={
         <SafeAreaView style={{ flex: 1, paddingHorizontal: 16, backgroundColor: green.bg }} edges={["top", "bottom"]}>
           <View className="flex-row items-center py-2">
-            <Pressable onPress={() => setSub(null)} hitSlop={10} className="w-9 h-9 items-center justify-center">
+            <Pressable onPress={() => setSub(null)} hitSlop={10} className="w-9 h-9 items-center justify-center" accessibilityRole="button" accessibilityLabel={s.a11yBack}>
               <MaterialIcons name={backIcon} size={24} color={green.text} />
             </Pressable>
             <Text className="flex-1 text-text text-[18px] font-bold text-center">{shownLink?.label}</Text>

@@ -82,7 +82,7 @@ export function AccountDrawer() {
     <SlideDrawer open={open} side="end" widthPct={1} onClose={hide}>
       <SafeAreaView style={{ flex: 1, backgroundColor: green.bg, paddingHorizontal: 16 }} edges={["top", "bottom"]}>
         <View className="flex-row items-center py-2">
-          <Pressable onPress={hide} hitSlop={8} className="w-8 h-8 items-center justify-center">
+          <Pressable onPress={hide} hitSlop={8} className="w-8 h-8 items-center justify-center" accessibilityRole="button" accessibilityLabel={s.a11yBack}>
             <MaterialIcons name={backIcon} size={26} color={green.text} />
           </Pressable>
           <Text className="flex-1 text-text text-[18px] font-bold text-center">{s.account}</Text>
@@ -166,7 +166,7 @@ export function AccountDrawer() {
         ) : (
           <SafeAreaView style={{ flex: 1, backgroundColor: green.bg, paddingHorizontal: 16 }} edges={["top", "bottom"]}>
             <View className="flex-row items-center py-2">
-              <Pressable onPress={() => setSub("none")} hitSlop={8} className="w-8 h-8 items-center justify-center">
+              <Pressable onPress={() => setSub("none")} hitSlop={8} className="w-8 h-8 items-center justify-center" accessibilityRole="button" accessibilityLabel={s.a11yBack}>
                 <MaterialIcons name={backIcon} size={26} color={green.text} />
               </Pressable>
               <Text className="flex-1 text-text text-[18px] font-bold text-center">{subTitle}</Text>

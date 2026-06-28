@@ -96,6 +96,8 @@ export default function ProgressScreen() {
               <Pressable
                 key={r.key}
                 onPress={() => setRange(r.value)}
+                hitSlop={{ top: 8, bottom: 8 }}
+                accessibilityRole="button"
                 className={`px-4 py-2 rounded-full ${sel ? "bg-green" : "bg-card-soft"}`}
               >
                 <Text className={`${sel ? "text-on-green" : "text-text-dim"} text-[13px] font-semibold`}>{r.key}</Text>

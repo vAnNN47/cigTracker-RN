@@ -138,7 +138,7 @@ export function SettingsView({ onClose }: { onClose: () => void }) {
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: green.bg }}>
       <View className="flex-row items-center gap-2 px-4 py-2">
-        <Pressable onPress={onClose} hitSlop={10} className="w-8 h-8 items-center justify-center">
+        <Pressable onPress={onClose} hitSlop={10} className="w-8 h-8 items-center justify-center" accessibilityRole="button" accessibilityLabel={s.a11yBack}>
           <MaterialIcons name={backIcon} size={26} color={green.text} />
         </Pressable>
         <Text className="text-text text-[20px] font-bold" style={{ textAlign: textStart }}>{s.settings}</Text>
@@ -357,6 +357,7 @@ function StepperRow({
   onChange: (v: number) => void;
   onPressValue: () => void;
 }) {
+  const s = useStrings();
   const green = useColors();
   const clamp = (v: number) => Math.min(max, Math.max(min, Math.round(v * 100) / 100));
   return (
@@ -366,13 +367,13 @@ function StepperRow({
         {hint ? <Text className="text-text-dim text-[11px] font-regular mt-0.5" style={{ textAlign: textStart }}>{hint}</Text> : null}
       </View>
       <View className="flex-row items-center gap-3">
-        <Pressable className="w-[34px] h-[34px] rounded-[10px] border border-border items-center justify-center" onPress={() => onChange(clamp(value - step))} hitSlop={6}>
+        <Pressable className="w-[34px] h-[34px] rounded-[10px] border border-border items-center justify-center" onPress={() => onChange(clamp(value - step))} hitSlop={6} accessibilityRole="button" accessibilityLabel={s.a11yDecrease(label)}>
           <MaterialIcons name="remove" size={18} color={green.text} />
         </Pressable>
-        <Pressable onPress={onPressValue} hitSlop={6}>
+        <Pressable onPress={onPressValue} hitSlop={6} accessibilityRole="button" accessibilityLabel={`${label}, ${display}`}>
           <Text className="text-text text-[16px] font-mono-medium min-w-[44px] text-center">{display}</Text>
         </Pressable>
-        <Pressable className="w-[34px] h-[34px] rounded-[10px] border border-border items-center justify-center" onPress={() => onChange(clamp(value + step))} hitSlop={6}>
+        <Pressable className="w-[34px] h-[34px] rounded-[10px] border border-border items-center justify-center" onPress={() => onChange(clamp(value + step))} hitSlop={6} accessibilityRole="button" accessibilityLabel={s.a11yIncrease(label)}>
           <MaterialIcons name="add" size={18} color={green.text} />
         </Pressable>
       </View>
