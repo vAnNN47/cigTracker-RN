@@ -38,7 +38,16 @@ import {
     useMemo,
     useState,
 } from "react";
-import { BackHandler, LayoutChangeEvent, Platform, StyleSheet, View, ViewStyle } from "react-native";
+import {
+    BackHandler,
+    LayoutChangeEvent,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    useWindowDimensions,
+    View,
+    ViewStyle,
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import {
     KeyboardController,
@@ -102,6 +111,13 @@ interface KeyboardSheetProps {
   maxOverdrag?: number;
   /** Extra style for the inner content container. */
   contentStyle?: ViewStyle;
+  /**
+   * Tall content: cap the sheet below the top safe-area inset and scroll the body
+   * instead of growing under the status bar. In this mode only the grabber drags
+   * the sheet (so the scrollable body is free to scroll); backdrop tap still
+   * dismisses. Default false (sheet hugs its content height as before).
+   */
+  scrollable?: boolean;
 }
 
 const SPRING = { damping: 24, stiffness: 260, mass: 0.7 };
@@ -125,10 +141,15 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
       overdrag = true,
       maxOverdrag = 80,
       contentStyle,
+      scrollable = false,
     },
     ref,
   ) {
     const insets = useSafeAreaInsets();
+    const { height: windowHeight } = useWindowDimensions();
+    // Cap the scrollable body so the sheet's top never slides under the status
+    // bar (leaves the grabber, paddings and both safe-area insets clear).
+    const maxBodyHeight = windowHeight - insets.top - insets.bottom - 64;
     const { progress } = useReanimatedKeyboardAnimation();
     const [mounted, setMounted] = useState(false);
 
@@ -231,6 +252,20 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
 
     if (!mounted) return null;
 
+    const overdragFill = overdrag && maxOverdrag > 0 && (
+      // Background that extends below the sheet so an upward over-drag doesn't
+      // reveal a gap above the keyboard. Painted behind the content, hidden
+      // behind the keyboard at rest.
+      <View pointerEvents="none" style={[styles.overdragFill, { height: maxOverdrag + 40, backgroundColor }]} />
+    );
+    const grabber = <View style={[styles.grabber, { backgroundColor: handleColor }]} />;
+    const sheetVisualStyle = [
+      styles.sheet,
+      { backgroundColor, borderTopLeftRadius: cornerRadius, borderTopRightRadius: cornerRadius },
+      sheetStyle,
+      contentStyle,
+    ];
+
     return (
       <Portal>
         <Animated.View
@@ -238,29 +273,35 @@ export const KeyboardSheet = forwardRef<KeyboardSheetRef, KeyboardSheetProps>(
           onTouchEnd={dismiss}
         />
         <KeyboardStickyView style={styles.stickyWrap}>
-          <GestureDetector gesture={pan}>
-            <Animated.View
-              onLayout={onLayout}
-              style={[
-                styles.sheet,
-                { backgroundColor, borderTopLeftRadius: cornerRadius, borderTopRightRadius: cornerRadius },
-                sheetStyle,
-                contentStyle,
-              ]}
-            >
-              {/* Background that extends below the sheet so an upward over-drag
-                  doesn't reveal a gap above the keyboard. Rendered first (paints
-                  behind the content) and hidden behind the keyboard at rest. */}
-              {overdrag && maxOverdrag > 0 && (
-                <View
-                  pointerEvents="none"
-                  style={[styles.overdragFill, { height: maxOverdrag + 40, backgroundColor }]}
-                />
-              )}
-              <View style={[styles.grabber, { backgroundColor: handleColor }]} />
-              <SheetDragContext.Provider value={pan}>{children}</SheetDragContext.Provider>
+          {scrollable ? (
+            // Tall content: cap + scroll. The Pan is on the grabber ONLY, so the
+            // ScrollView body scrolls freely (no pan/scroll fight); inputs get a
+            // null drag-context so they scroll instead of drag-dismissing.
+            <Animated.View onLayout={onLayout} style={sheetVisualStyle}>
+              {overdragFill}
+              <GestureDetector gesture={pan}>
+                <View style={styles.grabberZone}>{grabber}</View>
+              </GestureDetector>
+              <SheetDragContext.Provider value={null}>
+                <ScrollView
+                  style={{ maxHeight: maxBodyHeight }}
+                  bounces={false}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator
+                >
+                  {children}
+                </ScrollView>
+              </SheetDragContext.Provider>
             </Animated.View>
-          </GestureDetector>
+          ) : (
+            <GestureDetector gesture={pan}>
+              <Animated.View onLayout={onLayout} style={sheetVisualStyle}>
+                {overdragFill}
+                {grabber}
+                <SheetDragContext.Provider value={pan}>{children}</SheetDragContext.Provider>
+              </Animated.View>
+            </GestureDetector>
+          )}
         </KeyboardStickyView>
       </Portal>
     );
@@ -272,5 +313,7 @@ const styles = StyleSheet.create({
   stickyWrap: { position: "absolute", left: 0, right: 0, bottom: 0 },
   sheet: { paddingHorizontal: 16, paddingTop: 10, gap: 8 },
   grabber: { alignSelf: "center", width: 40, height: 4, borderRadius: 2, marginBottom: 6 },
+  // Enlarged hit area for the grabber when it's the sole drag handle (scrollable mode).
+  grabberZone: { paddingTop: 4, paddingBottom: 8 },
   overdragFill: { position: "absolute", left: 0, right: 0, top: "100%", zIndex: -1 },
 });

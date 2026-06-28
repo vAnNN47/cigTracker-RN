@@ -113,6 +113,7 @@ export const AddSmokeSheet = forwardRef<AddSmokeSheetRef, Props>(
         backgroundColor={green.bg}
         handleColor={green.border}
         cornerRadius={radius.sheet}
+        scrollable
       >
         <View className="p-3 gap-2">
           <Text className="text-text text-[20px] font-bold mb-1" style={{ textAlign: textStart }}>{s.logACigarette}</Text>

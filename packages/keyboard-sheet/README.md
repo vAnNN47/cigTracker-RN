@@ -105,6 +105,7 @@ export function Example() {
 | `overdrag` | `true` | allow dragging the sheet UP past its resting point (rubber-band that springs back); set `false` to lock it |
 | `maxOverdrag` | `80` | max upward rubber-band stretch (px) when `overdrag` is on |
 | `contentStyle` | — | extra container style |
+| `scrollable` | `false` | tall content: cap the body below the top safe-area inset and scroll it instead of growing under the status bar. In this mode only the **grabber** drags the sheet (the body scrolls freely; backdrop tap still dismisses), and inputs scroll instead of drag-dismissing |
 | `onDismiss` | — | called after the sheet fully closes |
 
 API: `ref.present()` / `ref.dismiss()`.
