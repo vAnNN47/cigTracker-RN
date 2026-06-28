@@ -3,7 +3,7 @@
  * screen can call useToast().show({ message, actionLabel, onAction }).
  */
 import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
-import { Animated } from "react-native";
+import { AccessibilityInfo, Animated } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { textStart } from "@/i18n/rtl";
@@ -49,6 +49,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const show = (opts: ToastOptions) => {
     if (timer.current) clearTimeout(timer.current);
+    // Screen readers don't notice a new view on their own — speak the message.
+    // (announceForAccessibility covers both iOS + Android; the View's
+    // accessibilityLiveRegion is the Android-native belt-and-suspenders.)
+    AccessibilityInfo.announceForAccessibility(opts.message);
     setToast(opts);
     opacity.setValue(0);
     translateY.setValue(12);
@@ -77,6 +81,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           }}
         >
           <View
+            accessibilityLiveRegion="polite"
             className="flex-row items-center bg-card border border-border rounded-input py-3 pl-4 pr-2"
             style={{
               shadowColor: green.shadow,

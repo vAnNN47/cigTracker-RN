@@ -76,7 +76,7 @@ export const green = {
 
   text: "#091D2E", // primary
   textSecondary: "#3D4A3E",
-  textDim: "#6C7B6D", // muted
+  textDim: "#5E6B5F", // muted (darkened to clear WCAG AA 4.5:1 on bg/card — was #6C7B6D ~4.1:1)
 
   green: "#006D37", // deep green — titles, numbers, primary button
   greenBright: "#2ECC71", // bright green — savings card, active tab
